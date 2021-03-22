@@ -8,7 +8,6 @@ import com.phamthehuy.doan.model.entity.Staff;
 import com.phamthehuy.doan.service.StaffService;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
@@ -22,11 +21,11 @@ import java.util.Optional;
 
 @Service
 public class StaffServiceImpl implements StaffService {
-    @Autowired
-    private StaffRepository staffRepository;
+    final
+    StaffRepository staffRepository;
 
     final
-    private PasswordEncoder passwordEncoder;
+    PasswordEncoder passwordEncoder;
 
     public StaffServiceImpl(StaffRepository staffRepository, PasswordEncoder passwordEncoder) {
         this.staffRepository = staffRepository;

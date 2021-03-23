@@ -24,5 +24,6 @@ public class Roommate extends BaseEntity implements Serializable {
     @Column(nullable = false)
     private int quantity;
 
+    @Column
     private String description;
 }

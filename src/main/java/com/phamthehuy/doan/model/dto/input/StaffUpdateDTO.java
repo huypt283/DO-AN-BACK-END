@@ -14,7 +14,7 @@ public class StaffUpdateDTO {
 
     private String cardId;
 
-    private String birthday;
+    private long birthday;
 
     private boolean gender;
 

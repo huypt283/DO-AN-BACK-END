@@ -26,6 +26,6 @@ public class District extends BaseEntity implements Serializable {
     @JoinColumn(name = "cityId")
     private City city;
 
-    @OneToMany(mappedBy = "district", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "district", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<Ward> wards;
 }

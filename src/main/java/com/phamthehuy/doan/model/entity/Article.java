@@ -75,6 +75,6 @@ public class Article extends BaseEntity implements Serializable {
     @JoinColumn(name = "wardId")
     private Ward ward;
 
-    @OneToMany(mappedBy = "article", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "article", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<FavoriteArticle> favoriteArticles;
 }

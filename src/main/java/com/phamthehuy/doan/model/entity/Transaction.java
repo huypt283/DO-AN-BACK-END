@@ -31,6 +31,7 @@ public class Transaction extends BaseEntity implements Serializable {
     @DateTimeFormat(pattern = "MM/dd/yyyy")
     private Date time;
 
+    @Column
     private String description;
 
     @ManyToOne

@@ -51,12 +51,12 @@ public class Staff extends BaseEntity implements Serializable {
     @Column(nullable = false)
     private String image;
 
-    @OneToMany(mappedBy = "staff", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "staff", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<Newspaper> news;
 
-    @OneToMany(mappedBy = "staff", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "staff", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<Advertisement> advertisements;
 
-    @OneToMany(mappedBy = "staff", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "staff", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<Article> articles;
 }

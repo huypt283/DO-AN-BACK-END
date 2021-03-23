@@ -11,12 +11,16 @@ import java.util.List;
 @Repository
 public interface StaffRepository extends JpaRepository<Staff, Integer> {
     Page<Staff> findByDeletedFalse(Pageable pageable);
+
     List<Staff> findByDeletedFalse();
 
     Staff findByStaffIdAndDeletedFalse(Integer staffId);
 
     Page<Staff> findByNameLikeOrEmailLikeOrPhoneLikeAndDeletedFalse
             (String email, String name, String phone, Pageable pageable);
+
     List<Staff> findByNameLikeOrEmailLikeOrPhoneLikeAndDeletedFalse
             (String email, String name, String phone);
+
+    List<Staff> findByDeletedTrue();
 }

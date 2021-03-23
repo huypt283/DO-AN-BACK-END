@@ -3,6 +3,7 @@ package com.phamthehuy.doan.service.impl;
 import com.phamthehuy.doan.dao.StaffRepository;
 import com.phamthehuy.doan.model.dto.input.StaffInsertDTO;
 import com.phamthehuy.doan.model.dto.input.StaffUpdateDTO;
+import com.phamthehuy.doan.model.dto.output.Message;
 import com.phamthehuy.doan.model.dto.output.StaffOutputDTO;
 import com.phamthehuy.doan.model.entity.Staff;
 import com.phamthehuy.doan.service.StaffService;
@@ -17,16 +18,17 @@ import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class StaffServiceImpl implements StaffService {
-    @Autowired
-    private StaffRepository staffRepository;
+    final
+    StaffRepository staffRepository;
 
     final
-    private PasswordEncoder passwordEncoder;
+    PasswordEncoder passwordEncoder;
 
     public StaffServiceImpl(StaffRepository staffRepository, PasswordEncoder passwordEncoder) {
         this.staffRepository = staffRepository;
@@ -61,13 +63,13 @@ public class StaffServiceImpl implements StaffService {
             modelMapper.getConfiguration()
                     .setMatchingStrategy(MatchingStrategies.STRICT);
             Staff staff = modelMapper.map(staffInsertDTO, Staff.class);
-            staff.setDob(sdf.parse(staffInsertDTO.getBirthday()));
+            staff.setDob(new Date((staffInsertDTO.getBirthday())));
             staff.setPass(passwordEncoder.encode(staffInsertDTO.getPass()));
             Staff newStaff = staffRepository.save(staff);
             return ResponseEntity.ok(modelMapper.map(newStaff, StaffOutputDTO.class));
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.badRequest().body("Insert failed");
+            return ResponseEntity.ok(new Message("Insert failed"));
         }
     }
 
@@ -80,34 +82,34 @@ public class StaffServiceImpl implements StaffService {
             Staff staff = modelMapper.map(staffUpdateDTO, Staff.class);
             Staff oldStaff = staffRepository.findByStaffIdAndDeletedFalse(staffUpdateDTO.getStaffId());
             staff.setPass(oldStaff.getPass());
-            staff.setDob(sdf.parse(staffUpdateDTO.getBirthday()));
+            staff.setDob(new Date(staffUpdateDTO.getBirthday()));
             Staff newStaff = staffRepository.save(staff);
             return ResponseEntity.ok(modelMapper.map(newStaff, StaffOutputDTO.class));
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.badRequest().body("Update failed");
+            return ResponseEntity.ok(new Message("Update failed"));
         }
     }
 
     @Override
-    public ResponseEntity<String> blockStaff(Integer id) {
+    public Message blockStaff(Integer id) {
         Staff staff = staffRepository.findByStaffIdAndDeletedFalse(id);
-        if (staff == null) return ResponseEntity.badRequest().body("StaffId: " + id + " is not found");
+        if (staff == null) return new Message("Block staff id: " + id + " failed");
         else {
             staff.setDeleted(true);
             staffRepository.save(staff);
-            return ResponseEntity.ok("Block staff id: " + id + " successfully");
+            return new Message("Block staff id: " + id + " successfully");
         }
     }
 
     @Override
-    public ResponseEntity<String> activeStaff(Integer id) {
+    public Message activeStaff(Integer id) {
         Optional<Staff> optionalStaff = staffRepository.findById(id);
-        if (!optionalStaff.isPresent()) return ResponseEntity.badRequest().body("StaffId: " + id + " is not found");
+        if (!optionalStaff.isPresent()) return new Message("StaffId: " + id + " is not found");
         else {
             optionalStaff.get().setDeleted(false);
             staffRepository.save(optionalStaff.get());
-            return ResponseEntity.ok("Active staff id: " + id + " successfully");
+            return new Message("Active staff id: " + id + " successfully");
         }
     }
 
@@ -141,7 +143,16 @@ public class StaffServiceImpl implements StaffService {
             return ResponseEntity.ok(modelMapper.map(staffRepository.findByStaffIdAndDeletedFalse(id),
                     StaffOutputDTO.class));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("StaffId: " + id + " is not found");
+            return ResponseEntity.ok(new Message("StaffId: " + id + " is not found"));
         }
+    }
+
+    @Override
+    public Message deleteStaffs() {
+        List<Staff> staffList=staffRepository.findByDeletedTrue();
+        for(Staff staff:staffList){
+            staffRepository.delete(staff);
+        }
+        return new Message("Deleted successfully");
     }
 }

@@ -8,8 +8,8 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 public interface ArticleService {
-    //danh sách bài viêt Get/admin/articles
-    List<ArticleOutputDTO> listArticle(Integer page, Integer limit);
+//    //danh sách bài viêt Get/admin/articles
+//    List<ArticleOutputDTO> listArticle(Integer page, Integer limit);
 
     //thêm bài viết Post/admin/articles
     // lưa ý các bài viết được thêm vào thì mặc ddinjhj của nó là true có nghĩa là chưa được hiển thị
@@ -27,16 +27,25 @@ public interface ArticleService {
     //xem bài viết Get/admin/articles/{id}
     ResponseEntity<?> findOneArticle(Integer id);
 
-    // tìm kiếm bài viêt theo nội dung Get/admin/articles?seach=?
-    List<ArticleOutputDTO> findArticleByTitleAndPhone(String search, Integer page, Integer limit);
+//    // tìm kiếm bài viêt theo nội dung Get/admin/articles?seach=?
+//    List<ArticleOutputDTO> findArticleByTitleAndPhone(String search, Integer page, Integer limit);
+//
+//    // tìm kiếm bài viết theo  thời gian tăng dần Get/admin/articles/post-time=desc"//////
+//    List<ArticleOutputDTO> findArticleByPostTimeDESC(Integer page, Integer limit);
+//
+//    //tìm kiếm bào viết theo thời gian giảm dần  Get/admin/articles/post-time=asc//////
+//    List<ArticleOutputDTO> findArticleByPostTimeAsc(Integer page, Integer limit);
+//
+//    // danh sach bài đăng theo trạng thái GET/admin/articles/status-true
+//    List<ArticleOutputDTO> ListAriticleStatusTrue(Integer page, Integer limit);
 
-    // tìm kiếm bài viết theo  thời gian tăng dần Get/admin/articles/post-time=desc"//////
-    List<ArticleOutputDTO> findArticleByPostTimeDESC(Integer page, Integer limit);
+    // bộ lọc kết hợp
+    List<ArticleOutputDTO> filterArticle(Boolean status,
+                                         Long start, Long end,
+                                         Integer wardId, Integer districtId, Integer cityId,
+                                         String sort,
+                                         Integer page, Integer limit);
 
-    //tìm kiếm bào viết theo thời gian giảm dần  Get/admin/articles/post-time=asc//////
-    List<ArticleOutputDTO> findArticleByPostTimeAsc(Integer page, Integer limit);
-
-    // danh sach bài đăng theo trạng thái GET/admin/articles/status-true
-    List<ArticleOutputDTO> ListAriticleStatusTrue(Integer page, Integer limit);
-
+    //tìm kiếm theo title hoặc số điện thoại
+    List<ArticleOutputDTO> searchArticle(String search, Integer page, Integer limit);
 }

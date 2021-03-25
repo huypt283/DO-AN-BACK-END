@@ -2,6 +2,7 @@ package com.phamthehuy.doan.controller.superAdmin;
 
 import com.phamthehuy.doan.model.dto.input.StaffInsertDTO;
 import com.phamthehuy.doan.model.dto.input.StaffUpdateDTO;
+import com.phamthehuy.doan.model.dto.output.Message;
 import com.phamthehuy.doan.model.dto.output.StaffOutputDTO;
 import com.phamthehuy.doan.service.StaffService;
 import org.springframework.http.ResponseEntity;
@@ -22,11 +23,15 @@ public class StaffController {
     //page là trang mấy
     //limit là số bản ghi trong 1 trang
     //nếu ko nhập 2 tham số này thì ko phân trang
+    //search theo name or mail or phone ko nhập thì trả về all
+    //sort=asc or desc không nhập thì ko xếp
     @GetMapping("/staffs")
     public List<StaffOutputDTO> listStaffs
-            (@RequestParam(required = false) Integer page,
+            (@RequestParam(required = false) String search,
+             @RequestParam(required = false) String sort,
+             @RequestParam(required = false) Integer page,
              @RequestParam(required = false) Integer limit) {
-        return staffService.listStaff(page, limit);
+        return staffService.listStaff(search, sort, page, limit);
     }
 
     //    thêm nhân viên	Post/super-admin/staffs
@@ -43,22 +48,14 @@ public class StaffController {
 
     //    block nhân viên	GET/super-admin/staffs/block/{id}
     @DeleteMapping("/staffs/{id}")
-    public ResponseEntity<String> blockStaff(@PathVariable Integer id) {
+    public Message blockStaff(@PathVariable Integer id) {
         return staffService.blockStaff(id);
     }
 
     //    active nhân viên	DELETE/super-admin/staffs/block/{id}
     @GetMapping("/staffs/active/{id}")
-    public ResponseEntity<String> activeStaff(@PathVariable Integer id) {
+    public Message activeStaff(@PathVariable Integer id) {
         return staffService.activeStaff(id);
-    }
-
-    //    tìm kiếm nhân viên bằng email	hoặc sđt hoặc họ tên GET/super-admin/staffs?search={search}
-    @GetMapping(value = "/staffs", params = "search")
-    public List<StaffOutputDTO> searchStaff(@RequestParam String search,
-                                            @RequestParam(required = false) Integer page,
-                                            @RequestParam(required = false) Integer limit) {
-        return staffService.searchStaff(search,page,limit);
     }
 
     //    xem thông tin nhân viên	GET/super-admin/staffs/{id}
@@ -66,4 +63,11 @@ public class StaffController {
     public ResponseEntity<?> findOneStaff(@PathVariable Integer id) {
         return staffService.findOneStaff(id);
     }
+
+    // xóa toàn bộ những nhân viên đã bị xóa mềm
+    @GetMapping("/delete")
+    public Message deleteStaffs(){
+        return staffService.deleteStaffs();
+    }
+
 }

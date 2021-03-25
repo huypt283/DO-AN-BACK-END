@@ -6,6 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class StaffInsertDTO {
+
     private String email;
 
     private String pass;
@@ -14,7 +15,7 @@ public class StaffInsertDTO {
 
     private String cardId;
 
-    private String birthday;
+    private long birthday;
 
     private boolean gender;
 

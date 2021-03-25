@@ -11,8 +11,6 @@ import com.phamthehuy.doan.model.entity.Staff;
 import com.phamthehuy.doan.service.AdvertisementService;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +24,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
     final
     AdvertisementRepository adverRepository;
 
+    //tiem nek
     final
     StaffRepository staffRepository;
 
@@ -35,20 +34,26 @@ public class AdvertisementServiceImpl implements AdvertisementService {
     }
 
     @Override
-    public List<AdvertisementOutputDTO> listAdvertisement(Integer page, Integer limit) {
+    public List<AdvertisementOutputDTO> listAdvertisement(String search,
+                                                          Integer page, Integer limit) {
+        List<Advertisement> advertisementList;
+        if(search!=null && !search.equals("")){
+            advertisementList=adverRepository.findByTitleLike("%"+search+"%");
+        }else{
+            advertisementList=adverRepository.findAll();
+        }
+
+        //pageable
+        if(page!=null && limit!=null)
+            advertisementList=pageable(advertisementList,page,limit);
+
+        //convert to AdvertisementOutputDTO
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        List<Advertisement> advertisementList;
-        if (page != null && limit != null) {
-            Page<Advertisement> pages = adverRepository.findByDeletedFalse(PageRequest.of(page, limit));
-            advertisementList = pages.toList();
-        } else
-            advertisementList = adverRepository.findByDeletedFalse();
         List<AdvertisementOutputDTO> advertisementOutputDTOS = new ArrayList<>();
         for (Advertisement advertisement : advertisementList) {
             advertisementOutputDTOS.add(modelMapper.map(advertisement, AdvertisementOutputDTO.class));
         }
-
         return advertisementOutputDTOS;
     }
 
@@ -69,7 +74,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
             return ResponseEntity.ok(new AdvertisementOutputDTO(newAdvertisement));
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.badRequest().body(new Message("Insert failed"));
+            return ResponseEntity.ok(new Message("Insert failed"));
         }
 
     }
@@ -91,20 +96,39 @@ public class AdvertisementServiceImpl implements AdvertisementService {
             return ResponseEntity.ok(new AdvertisementOutputDTO(newAdvertisement));
         }catch (Exception e){
             e.printStackTrace();
-            return ResponseEntity.badRequest().body(new Message("Update failed"));
+            return ResponseEntity.ok(new Message("Update failed"));
         }
     }
 
     @Override
-    public ResponseEntity<String> deleteAdvertisement(Integer id) {
-        Advertisement advertisement = adverRepository.findByAdvertisementIdAndDeletedFalse(id);
-        if (advertisement == null){
-            return ResponseEntity.badRequest().body("Id: " +id+" does not exist");
+    public Message deleteAdvertisement(Integer id) {
+        Optional<Advertisement> optionalAdvertisement = adverRepository.findById(id);
+        if (optionalAdvertisement.isPresent()){
+            adverRepository.delete(optionalAdvertisement.get());
+            return new Message("Delete successfully");
         }else{
-            advertisement.setDeleted(true);
-            adverRepository.save(advertisement);
+            return new Message("Id: " +id+" does not exist");
         }
-        return ResponseEntity.ok("Success full");
     }
 
+    @Override
+    public ResponseEntity<?> findOneAdvertisement(Integer id) {
+        ModelMapper modelMapper = new ModelMapper();
+        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        Optional<Advertisement> advertisementOptional=adverRepository.findById(id);
+        if(advertisementOptional.isPresent())
+            return ResponseEntity.ok(
+                    modelMapper.map(advertisementOptional.get(), AdvertisementOutputDTO.class));
+        else return ResponseEntity.ok(new Message("Advertisement id: "+id+" not found."));
+    }
+
+    private List<Advertisement> pageable(List<Advertisement> users, Integer page, Integer limit) {
+        List<Advertisement> returnList = new ArrayList<>();
+        if (page * limit > users.size() - 1) return returnList;
+        int endIndex = Math.min((page + 1) * limit, users.size());
+        for (int i = page * limit; i < endIndex; i++) {
+            returnList.add(users.get(i));
+        }
+        return returnList;
+    }
 }

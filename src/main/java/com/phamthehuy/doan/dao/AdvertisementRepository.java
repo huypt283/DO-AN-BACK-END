@@ -16,5 +16,6 @@ public interface AdvertisementRepository extends JpaRepository<Advertisement, In
 
     Advertisement findByAdvertisementIdAndDeletedFalse(Integer advertisementId);
 
+    List<Advertisement> findByTitleLike(String title);
 
 }

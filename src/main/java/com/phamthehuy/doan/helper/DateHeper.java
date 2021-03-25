@@ -1,4 +1,4 @@
-package com.phamthehuy.doan.model.entity;
+package com.phamthehuy.doan.helper;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

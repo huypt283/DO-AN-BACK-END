@@ -30,5 +30,4 @@ public interface AdvertisementService{
 //
 //    //xem bài viết
 //    ResponseEntity<?> findOneArticle(Integer id);
-
 }

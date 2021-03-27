@@ -1,5 +1,6 @@
 package com.phamthehuy.doan.service.impl;
 
+import com.phamthehuy.doan.dao.CustomerRepository;
 import com.phamthehuy.doan.dao.StaffRepository;
 import com.phamthehuy.doan.model.dto.input.StaffInsertDTO;
 import com.phamthehuy.doan.model.dto.input.StaffUpdateDTO;
@@ -25,9 +26,13 @@ public class StaffServiceImpl implements StaffService {
     final
     PasswordEncoder passwordEncoder;
 
-    public StaffServiceImpl(StaffRepository staffRepository, PasswordEncoder passwordEncoder) {
+    final
+    CustomerRepository customerRepository;
+
+    public StaffServiceImpl(StaffRepository staffRepository, PasswordEncoder passwordEncoder, CustomerRepository customerRepository) {
         this.staffRepository = staffRepository;
         this.passwordEncoder = passwordEncoder;
+        this.customerRepository = customerRepository;
     }
 
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -75,7 +80,9 @@ public class StaffServiceImpl implements StaffService {
                 .setMatchingStrategy(MatchingStrategies.STRICT);
         List<StaffOutputDTO> staffOutputDTOList = new ArrayList<>();
         for (Staff staff : staffList) {
-            staffOutputDTOList.add(modelMapper.map(staff, StaffOutputDTO.class));
+            StaffOutputDTO staffOutputDTO=modelMapper.map(staff, StaffOutputDTO.class);
+            staffOutputDTO.setDob(staff.getDob().getTime());
+            staffOutputDTOList.add(staffOutputDTO);
         }
         return staffOutputDTOList;
     }
@@ -83,6 +90,8 @@ public class StaffServiceImpl implements StaffService {
     @Override
     public ResponseEntity<?> insertStaff(StaffInsertDTO staffInsertDTO) {
         try {
+            if(customerRepository.findByEmail(staffInsertDTO.getEmail())!=null)
+                return ResponseEntity.ok(new Message("Email is already in use"));
             ModelMapper modelMapper = new ModelMapper();
             modelMapper.getConfiguration()
                     .setMatchingStrategy(MatchingStrategies.STRICT);

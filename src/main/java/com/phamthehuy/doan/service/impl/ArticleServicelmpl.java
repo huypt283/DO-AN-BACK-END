@@ -1,6 +1,6 @@
 package com.phamthehuy.doan.service.impl;
 
-import com.phamthehuy.doan.dao.ArticleReponsitory;
+import com.phamthehuy.doan.dao.ArticleRepository;
 import com.phamthehuy.doan.model.dto.input.ArticleInsertDTO;
 import com.phamthehuy.doan.model.dto.input.ArticleUpdateDTO;
 import com.phamthehuy.doan.model.dto.output.ArticleOutputDTO;
@@ -19,9 +19,9 @@ import java.util.*;
 @Service
 public class ArticleServicelmpl implements ArticleService {
     final
-    ArticleReponsitory articleRepository;
+    ArticleRepository articleRepository;
 
-    public ArticleServicelmpl(ArticleReponsitory articleRepository) {
+    public ArticleServicelmpl(ArticleRepository articleRepository) {
         this.articleRepository = articleRepository;
     }
 

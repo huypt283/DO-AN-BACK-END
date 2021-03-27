@@ -10,13 +10,20 @@ import java.util.List;
 @Repository
 public interface StaffRepository extends JpaRepository<Staff, Integer> {
     List<Staff> findByDeletedFalse(Sort sort);
+
     List<Staff> findByDeletedFalse();
 
     Staff findByStaffIdAndDeletedFalse(Integer staffId);
 
     List<Staff> findByNameLikeAndDeletedFalse(String name);
+
     List<Staff> findByEmailLikeAndDeletedFalse(String name);
+
     List<Staff> findByPhoneLikeAndDeletedFalse(String name);
 
     List<Staff> findByDeletedTrue();
+
+    Staff findByEmail(String email);
+
+    Staff findByToken(String token);
 }

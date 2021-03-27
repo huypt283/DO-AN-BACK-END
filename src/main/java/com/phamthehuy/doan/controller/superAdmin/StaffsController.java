@@ -12,11 +12,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/super-admin")
-public class StaffController {
+public class StaffsController {
     final
     StaffService staffService;
 
-    public StaffController(StaffService staffService) {
+    public StaffsController(StaffService staffService) {
         this.staffService = staffService;
     }
 
@@ -69,5 +69,4 @@ public class StaffController {
     public Message deleteStaffs(){
         return staffService.deleteStaffs();
     }
-
 }

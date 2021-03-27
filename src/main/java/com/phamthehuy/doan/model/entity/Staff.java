@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -50,12 +51,15 @@ public class Staff extends BaseEntity implements Serializable {
     @Column(nullable = false)
     private String image;
 
-    @OneToMany(mappedBy = "staff", fetch = FetchType.EAGER)
+    @Column(nullable = true, unique = true)
+    private String token;
+
+    @OneToMany(mappedBy = "staff", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<Newspaper> news;
 
-    @OneToMany(mappedBy = "staff", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "staff", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<Advertisement> advertisements;
 
-    @OneToMany(mappedBy = "staff", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "staff", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<Article> articles;
 }

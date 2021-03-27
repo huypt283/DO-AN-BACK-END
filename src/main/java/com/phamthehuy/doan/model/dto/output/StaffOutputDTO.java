@@ -1,10 +1,7 @@
 package com.phamthehuy.doan.model.dto.output;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Date;
 
 @Getter
 @Setter
@@ -19,12 +16,11 @@ public class StaffOutputDTO {
 
     private String cardId;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    private Date dob;
+    private Long dob;
 
-    private boolean gender;
+    private Boolean gender;
 
-    private boolean role;
+    private Boolean role;
 
     private String address;
 

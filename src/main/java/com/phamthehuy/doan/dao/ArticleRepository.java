@@ -1,4 +1,3 @@
-
 package com.phamthehuy.doan.dao;
 
 import com.phamthehuy.doan.model.entity.Article;
@@ -11,7 +10,7 @@ import java.util.Date;
 import java.util.List;
 
 @Repository
-public interface ArticleReponsitory extends JpaRepository<Article, Integer> {
+public interface ArticleRepository extends JpaRepository<Article, Integer> {
     // danh sách bài viết có trạng thái được duyệt
     Page<Article> findByDeletedFalse(Pageable pageable);
 
@@ -32,13 +31,16 @@ public interface ArticleReponsitory extends JpaRepository<Article, Integer> {
 
     // tìm kiếm các bài viết có trạng thái chưa được duyệt
     Page<Article> findByDeletedTrue(Pageable pageable);
+
     List<Article> findByDeletedTrue();
 
     /// tìm kiếm bài viết theo thời gian giảm dần
     Page<Article> findByDeletedFalseOrderByPostTimeDesc(Pageable pageable);
+
     List<Article> findByDeletedFalseOrderByPostTimeDesc();
 
     List<Article> findByStatus(Boolean status);
+
     List<Article> findByPostTimeGreaterThanEqualAndPostTimeIsLessThanEqual
             (Date minDate, Date maxDate);
 

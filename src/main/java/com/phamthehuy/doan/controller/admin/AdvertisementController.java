@@ -34,12 +34,10 @@ public class AdvertisementController {
     public ResponseEntity<?> updateAdvertisement(@RequestBody AdvertisementUpdateDTO advertisementUpdateDTO) {
         return advertisementService.updateAdvertisement(advertisementUpdateDTO);
     }
-
     @DeleteMapping("advertisement/{id}")
     public Message deleteAdvertisement(@PathVariable Integer id) {
         return advertisementService.deleteAdvertisement(id);
     }
-
     @GetMapping("advertisement/{id}")
     public ResponseEntity<?> findOneAdvertisement(@PathVariable Integer id) {
         return advertisementService.findOneAdvertisement(id);

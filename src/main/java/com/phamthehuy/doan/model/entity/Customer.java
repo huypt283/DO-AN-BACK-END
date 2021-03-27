@@ -9,6 +9,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Set;
 
+
 @Entity
 @Getter
 @Setter
@@ -31,24 +32,31 @@ public class Customer extends BaseEntity implements Serializable {
     @Column(nullable = false)
     private String pass;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String address;
 
     @Column(nullable = false)
     private String phone;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String cardId;
 
     @Column(nullable = false)
     private int accountBalance;
 
-    @OneToMany(mappedBy = "customer", fetch = FetchType.EAGER)
+    @Column(nullable = false, columnDefinition = "BOOLEAN")
+    private Boolean enabled = false;
+
+    @Column(nullable = true, unique = true)
+    private String token;
+
+    @OneToMany(mappedBy = "customer", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<FavoriteArticle> favoriteArticles;
 
-    @OneToMany(mappedBy = "customer", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "customer", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<Article> articles;
 
-    @OneToMany(mappedBy = "customer", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "customer", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<Transaction> transactions;
+
 }

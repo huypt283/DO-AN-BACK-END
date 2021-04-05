@@ -52,14 +52,13 @@ public class JwtUtil {
     }
 
     //return email from token
-    public String getUsernameFromToken(String token) {
-        Claims claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
-        return claims.getSubject();
+    public String getEmailFromToken(String token) {
+        return getClaims(token).getSubject();
     }
 
     //return authority from token
     public List<SimpleGrantedAuthority> getRolesFromToken(String token) {
-        Claims claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+        Claims claims = getClaims(token);
 
         List<SimpleGrantedAuthority> roles = null;
 
@@ -68,16 +67,43 @@ public class JwtUtil {
         Boolean isCustomer = claims.get("isCustomer", Boolean.class);
 
         if (isAdmin != null && isAdmin) {
-            roles = Arrays.asList(new SimpleGrantedAuthority("ROLE_ADMIN"));
+            roles = Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN"));
         }
 
         if (isSuperAdmin != null && isSuperAdmin) {
-            roles = Arrays.asList(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"));
+            roles = Collections.singletonList(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"));
         }
 
         if (isCustomer != null && isCustomer) {
-            roles = Arrays.asList(new SimpleGrantedAuthority("ROLE_CUSTOMER"));
+            roles = Collections.singletonList(new SimpleGrantedAuthority("ROLE_CUSTOMER"));
         }
         return roles;
+    }
+
+    //return authority from token
+    public String getRoleFromToken(String token) {
+        Claims claims = getClaims(token);
+
+        Boolean isAdmin = claims.get("isAdmin", Boolean.class);
+        Boolean isSuperAdmin = claims.get("isSuperAdmin", Boolean.class);
+        Boolean isCustomer = claims.get("isCustomer", Boolean.class);
+
+        if (isSuperAdmin != null && isSuperAdmin) {
+            return "ROLE_SUPER_ADMIN";
+        }
+
+        if (isAdmin != null && isAdmin) {
+            return "ROLE_ADMIN";
+        }
+
+        if (isCustomer != null && isCustomer) {
+            return "ROLE_CUSTOMER";
+        }
+
+        return "";
+    }
+
+    private Claims getClaims(String token) {
+        return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
     }
 }

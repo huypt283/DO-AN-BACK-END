@@ -10,13 +10,11 @@ public class StaffOutputDTO {
 
     private String email;
 
-    private String pass;
-
     private String name;
 
     private String cardId;
 
-    private Long dob;
+    private Long birthday;
 
     private Boolean gender;
 

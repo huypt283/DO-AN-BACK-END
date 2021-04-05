@@ -1,51 +1,37 @@
 package com.phamthehuy.doan.service;
 
-import com.phamthehuy.doan.model.dto.input.ArticleInsertDTO;
-import com.phamthehuy.doan.model.dto.input.ArticleUpdateDTO;
+import com.phamthehuy.doan.exception.CustomException;
+import com.phamthehuy.doan.model.dto.input.ContactCustomerDTO;
 import com.phamthehuy.doan.model.dto.output.ArticleOutputDTO;
-import org.springframework.http.ResponseEntity;
+import com.phamthehuy.doan.model.dto.output.Message;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 public interface ArticleService {
-//    //danh sách bài viêt Get/admin/articles
-//    List<ArticleOutputDTO> listArticle(Integer page, Integer limit);
+    List<ArticleOutputDTO> listArticle(
+            String sort,
+            Long start, Long end,
+            Integer ward,
+            Integer district,
+            Integer city,
+            Boolean roommate,
+            String status,
+            Boolean vip,
+            String search,
+            Integer minAcreage, Integer maxAcreage,
+            Integer page,
+            Integer limit
+    );
 
-    //thêm bài viết Post/admin/articles
-    // lưa ý các bài viết được thêm vào thì mặc ddinjhj của nó là true có nghĩa là chưa được hiển thị
-    ResponseEntity<?> insertArticle(ArticleInsertDTO articleInsertDTO);
+//    contact với khách hàng (gửi mail cho khách hàng về bài viết này)	/admin/article/contact/{id}
+    Message contactToCustomer(Integer id, ContactCustomerDTO contactCustomerDTO,
+                              HttpServletRequest request) throws CustomException;
+//    duyệt bài đăng (hiện) (gửi mail)	/admin/article/active/{id}
+    Message activeArticle(Integer id, HttpServletRequest request) throws CustomException;
+//    ẩn bài đăng (gửi mail)	/admin/article/block/{id}
+    Message hiddenArticle(Integer id, String reason, HttpServletRequest request) throws CustomException;
 
-    //cập nhật bài viết Put/admin/articles
-    ResponseEntity<?> updateArticle(ArticleUpdateDTO articleUpdateDTO);
-
-    //xóa bài viết Delete/admin/articles/{id}
-    ResponseEntity<String> deleteArticle(Integer id);
-
-    //duyệt bài viết  Get/admin/articles/active/{id}
-    ResponseEntity<String> activeArticle(Integer id);
-
-    //xem bài viết Get/admin/articles/{id}
-    ResponseEntity<?> findOneArticle(Integer id);
-
-//    // tìm kiếm bài viêt theo nội dung Get/admin/articles?seach=?
-//    List<ArticleOutputDTO> findArticleByTitleAndPhone(String search, Integer page, Integer limit);
-//
-//    // tìm kiếm bài viết theo  thời gian tăng dần Get/admin/articles/post-time=desc"//////
-//    List<ArticleOutputDTO> findArticleByPostTimeDESC(Integer page, Integer limit);
-//
-//    //tìm kiếm bào viết theo thời gian giảm dần  Get/admin/articles/post-time=asc//////
-//    List<ArticleOutputDTO> findArticleByPostTimeAsc(Integer page, Integer limit);
-//
-//    // danh sach bài đăng theo trạng thái GET/admin/articles/status-true
-//    List<ArticleOutputDTO> ListAriticleStatusTrue(Integer page, Integer limit);
-
-    // bộ lọc kết hợp
-    List<ArticleOutputDTO> filterArticle(Boolean status,
-                                         Long start, Long end,
-                                         Integer wardId, Integer districtId, Integer cityId,
-                                         String sort,
-                                         Integer page, Integer limit);
-
-    //tìm kiếm theo title hoặc số điện thoại
-    List<ArticleOutputDTO> searchArticle(String search, Integer page, Integer limit);
+    //chi tiết bài đăng
+    ArticleOutputDTO detailArticle(Integer id) throws CustomException;
 }

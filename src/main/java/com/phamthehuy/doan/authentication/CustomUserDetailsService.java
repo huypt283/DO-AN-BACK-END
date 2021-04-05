@@ -30,12 +30,12 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     //load user by email return user
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         List<SimpleGrantedAuthority> roles = null;
         Customer customer = null;
         Staff staff = null;
-        customer = customerRepository.findByEmail(username);
-        if (customer == null) staff = staffRepository.findByEmail(username);
+        customer = customerRepository.findByEmail(email);
+        if (customer == null) staff = staffRepository.findByEmail(email);
         if (staff != null) {
             if (staff.getRole()) {
                 roles = Collections.singletonList(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"));
@@ -47,7 +47,6 @@ public class CustomUserDetailsService implements UserDetailsService {
             roles = Collections.singletonList(new SimpleGrantedAuthority("ROLE_CUSTOMER"));
             return new User(customer.getEmail(), customer.getPass(), roles);
         }
-        throw new UsernameNotFoundException("User not found with the name " + username);
+        throw new UsernameNotFoundException("User not found with the name " + email);
     }
-
 }

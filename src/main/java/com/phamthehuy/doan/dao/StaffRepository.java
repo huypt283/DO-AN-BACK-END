@@ -1,29 +1,40 @@
 package com.phamthehuy.doan.dao;
 
 import com.phamthehuy.doan.model.entity.Staff;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface StaffRepository extends JpaRepository<Staff, Integer> {
-    List<Staff> findByDeletedFalse(Sort sort);
+    Page<Staff> findByNameLikeAndDeletedFalseAndEnabledTrueOrEmailLikeAndDeletedFalseAndEnabledTrueOrPhoneLikeAndDeletedFalseAndEnabledTrue(
+            String name, String email, String phone, Pageable pageable
+    );
 
-    List<Staff> findByDeletedFalse();
+    Page<Staff> findByNameLikeAndDeletedTrueAndEnabledTrueOrEmailLikeAndDeletedTrueAndEnabledTrueOrPhoneLikeAndDeletedTrueAndEnabledTrue(
+            String name, String email, String phone, Pageable pageable
+    );
 
-    Staff findByStaffIdAndDeletedFalse(Integer staffId);
+    Page<Staff> findByNameLikeAndEnabledTrueOrEmailLikeAndEnabledTrueOrPhoneLikeAndEnabledTrue(
+            String name, String email, String phone, Pageable pageable
+    );
 
-    List<Staff> findByNameLikeAndDeletedFalse(String name);
+    Staff findByStaffIdAndDeletedFalseAndEnabledTrue(Integer staffId);
 
-    List<Staff> findByEmailLikeAndDeletedFalse(String name);
-
-    List<Staff> findByPhoneLikeAndDeletedFalse(String name);
-
-    List<Staff> findByDeletedTrue();
+    List<Staff> findByDeletedTrueAndEnabledTrue();
 
     Staff findByEmail(String email);
 
     Staff findByToken(String token);
+
+    List<Staff> findByEnabledFalseAndTimeCreatedLessThanEqual(Date date);
+
+    Staff findByEnabledTrueAndStaffId(Integer id);
+
+    Optional<Staff> findByStaffIdAndEnabledFalse(Integer id);
 }

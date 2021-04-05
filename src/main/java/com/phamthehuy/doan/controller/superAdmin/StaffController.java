@@ -1,5 +1,6 @@
 package com.phamthehuy.doan.controller.superAdmin;
 
+import com.phamthehuy.doan.exception.CustomException;
 import com.phamthehuy.doan.model.dto.input.StaffInsertDTO;
 import com.phamthehuy.doan.model.dto.input.StaffUpdateDTO;
 import com.phamthehuy.doan.model.dto.output.Message;
@@ -8,15 +9,17 @@ import com.phamthehuy.doan.service.StaffService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
 @RequestMapping("/super-admin")
-public class StaffsController {
+public class StaffController {
     final
     StaffService staffService;
 
-    public StaffsController(StaffService staffService) {
+    public StaffController(StaffService staffService) {
         this.staffService = staffService;
     }
 
@@ -28,33 +31,38 @@ public class StaffsController {
     @GetMapping("/staffs")
     public List<StaffOutputDTO> listStaffs
             (@RequestParam(required = false) String search,
+             @RequestParam(required = false) Boolean block,
              @RequestParam(required = false) String sort,
-             @RequestParam(required = false) Integer page,
-             @RequestParam(required = false) Integer limit) {
-        return staffService.listStaff(search, sort, page, limit);
+             @RequestParam Integer page,
+             @RequestParam Integer limit) {
+        return staffService.listStaff(search, block, sort, page, limit);
     }
 
     //    thêm nhân viên	Post/super-admin/staffs
     @PostMapping("/staffs")
-    public ResponseEntity<?> insertStaff(@RequestBody StaffInsertDTO staffInsertDTO) {
-        return staffService.insertStaff(staffInsertDTO);
+    public Message insertStaff(@Valid @RequestBody StaffInsertDTO staffInsertDTO,
+                               HttpServletRequest request)
+            throws Exception {
+        return staffService.insertStaff(staffInsertDTO, request);
     }
 
     //    cập nhật thông tin nhân viên	Put/super-admin/staffs
-    @PutMapping("/staffs")
-    public ResponseEntity<?> updateStaff(@RequestBody StaffUpdateDTO staffUpdateDTO) {
-        return staffService.updateStaff(staffUpdateDTO);
+    @PutMapping("/staffs/{id}")
+    public ResponseEntity<?> updateStaff(@Valid @RequestBody StaffUpdateDTO staffUpdateDTO,
+                                         @PathVariable Integer id)
+    throws CustomException {
+        return staffService.updateStaff(staffUpdateDTO, id);
     }
 
-    //    block nhân viên	GET/super-admin/staffs/block/{id}
-    @DeleteMapping("/staffs/{id}")
-    public Message blockStaff(@PathVariable Integer id) {
+
+    @GetMapping("/staffs/block/{id}")
+    public Message blockStaff(@PathVariable Integer id) throws CustomException{
         return staffService.blockStaff(id);
     }
 
-    //    active nhân viên	DELETE/super-admin/staffs/block/{id}
+
     @GetMapping("/staffs/active/{id}")
-    public Message activeStaff(@PathVariable Integer id) {
+    public Message activeStaff(@PathVariable Integer id) throws CustomException{
         return staffService.activeStaff(id);
     }
 
@@ -65,8 +73,13 @@ public class StaffsController {
     }
 
     // xóa toàn bộ những nhân viên đã bị xóa mềm
-    @GetMapping("/delete")
-    public Message deleteStaffs(){
-        return staffService.deleteStaffs();
+    @DeleteMapping("/staffs")
+    public Message deleteAllStaffs(){
+        return staffService.deleteAllStaffs();
+    }
+
+    @DeleteMapping("/staffs/{id}")
+    public Message deleteStaffs(@PathVariable Integer id) throws CustomException{
+        return staffService.deleteStaffs(id);
     }
 }

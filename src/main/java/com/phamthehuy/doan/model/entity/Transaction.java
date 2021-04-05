@@ -7,7 +7,6 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Date;
 
 @Entity
 @Getter
@@ -24,9 +23,6 @@ public class Transaction extends BaseEntity implements Serializable {
 
     @Column(nullable = false)
     private int amount;
-
-    @Column(nullable = false)
-    private Date time;
 
     @Column(nullable = true)
     private String description;

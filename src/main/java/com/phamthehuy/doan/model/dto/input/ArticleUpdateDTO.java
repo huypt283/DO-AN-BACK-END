@@ -1,24 +1,58 @@
 package com.phamthehuy.doan.model.dto.input;
 
-import com.phamthehuy.doan.helper.DateHeper;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Date;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 @Getter
 @Setter
 public class ArticleUpdateDTO {
-    private Integer articleId;
+    @Size(min = 3, max = 220, message = "Tiêu đề phải có từ 3-220 kí tự")
+    @NotNull(message = "Tiêu đề không được trống")
     private String title;
-    private String content;
-    private String image;
-    private int roomPrice;
-    private String description;
-    private String phone;
-    private Boolean status;
-    private Date postTime= DateHeper.now();
-    private Date expiryDate;
-    private boolean isVip;
 
+    @NotBlank(message = "Ảnh không được trống")
+    private String image;
+
+    @Min(value = 1000, message = "Giá phòng nhỏ nhất là 1000 đồng")
+    @NotNull(message = "Giá phòng không được trống")
+    private Integer roomPrice;
+
+    private String description;
+
+    @NotNull(message = "Vip không được trống")
+    private Boolean vip;
+
+    //numberDate
+
+    @Min(value = 1000, message = "Giá nước nhỏ nhất là 1000 đồng")
+    private Integer waterPrice;
+
+    @Min(value = 1000, message = "Giá điện nhỏ nhất là 1000 đồng")
+    private Integer electricPrice;
+
+    @Min(value = 1000, message = "Giá wifi nhỏ nhất là 1000 đồng")
+    private Integer wifiPrice;
+
+    @NotNull(message = "Diện tích không được null")
+    @Min(value = 5, message = "Diện tích nhỏ nhất là 5 m2")
+    private Integer acreage;
+
+    @NotNull(message = "Địa chỉ không được null")
+    @Size(min = 3, message = "Địa chỉ phải có ít nhất 3 kí tự")
+    private String address;
+
+    private String video;
+
+    //lưu ý
+    private RoommateDTO roommateDTO;
+
+    //token => customer (hoac cho nhap truc tiep)
+
+    @NotNull(message = "Phường không được trống")
+    private Integer wardId;
 }

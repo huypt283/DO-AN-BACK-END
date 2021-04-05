@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Set;
 
 
@@ -32,7 +33,7 @@ public class Customer extends BaseEntity implements Serializable {
     @Column(nullable = false)
     private String pass;
 
-    @Column(nullable = true)
+    @Column(length = 65535, columnDefinition = "text")
     private String address;
 
     @Column(nullable = false)
@@ -40,6 +41,9 @@ public class Customer extends BaseEntity implements Serializable {
 
     @Column(nullable = true)
     private String cardId;
+
+    @Column
+    private Date dob;
 
     @Column(nullable = false)
     private int accountBalance;
@@ -50,13 +54,16 @@ public class Customer extends BaseEntity implements Serializable {
     @Column(nullable = true, unique = true)
     private String token;
 
-    @OneToMany(mappedBy = "customer", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @Column(nullable = true)
+    private String image;
+
+    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<FavoriteArticle> favoriteArticles;
 
-    @OneToMany(mappedBy = "customer", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<Article> articles;
 
-    @OneToMany(mappedBy = "customer", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<Transaction> transactions;
 
 }

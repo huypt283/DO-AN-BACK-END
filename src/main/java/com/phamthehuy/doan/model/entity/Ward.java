@@ -14,7 +14,7 @@ import java.util.Set;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Ward extends BaseEntity implements Serializable {
+public class Ward implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer wardId;
@@ -23,9 +23,9 @@ public class Ward extends BaseEntity implements Serializable {
     private String wardName;
 
     @ManyToOne
-    @JoinColumn(name = "districtId")
+    @JoinColumn(name = "districtId", nullable = false)
     private District district;
 
-    @OneToMany(mappedBy = "ward", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "ward", fetch = FetchType.LAZY)
     private Set<Article> articles;
 }

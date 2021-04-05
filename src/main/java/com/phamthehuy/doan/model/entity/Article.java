@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -24,7 +23,7 @@ public class Article extends BaseEntity implements Serializable {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
+    @Column(length = 65535, columnDefinition = "text", nullable = false)
     private String content;
 
     @Column(nullable = false)
@@ -33,48 +32,51 @@ public class Article extends BaseEntity implements Serializable {
     @Column(nullable = false)
     private int roomPrice;
 
-    @Column(nullable = true)
+    @Column(length = 65535, columnDefinition = "text")
     private String description;
 
     @Column(nullable = false)
-    private String phone;
+    private Date updateTime;
+
+    @Column
+    private Date expTime;
+
+    @Column
+    private Integer number;
+
+    @Column
+    private String type;
 
     @Column(nullable = false, columnDefinition = "BOOLEAN")
-    private Boolean status;
+    private Boolean vip;
 
     @Column(nullable = false)
-    @Temporal(TemporalType.DATE)
-    @DateTimeFormat(pattern = "MM/dd/yyyy")
-    private Date postTime;
+    private Integer acreage;
 
-    @Column(nullable = false)
-    @Temporal(TemporalType.DATE)
-    @DateTimeFormat(pattern = "MM/dd/yyyy")
-    private Date expiryDate;
+    @Column(nullable = false, columnDefinition = "text")
+    private String address;
 
-    @Column(nullable = false, columnDefinition = "BOOLEAN")
-    private Boolean isVip;
+    private String video;
 
-    @OneToOne
-    @JoinColumn(name = "serviceId")
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "serviceId", nullable = false)
     private Service service;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "roommateId")
     private Roommate roommate;
 
     @ManyToOne
-    @JoinColumn(name = "staffId")
-    private Staff staff;
-
-    @ManyToOne
-    @JoinColumn(name = "customerId")
+    @JoinColumn(name = "customerId", nullable = false)
     private Customer customer;
 
     @ManyToOne
-    @JoinColumn(name = "wardId")
+    @JoinColumn(name = "wardId", nullable = false)
     private Ward ward;
 
-    @OneToMany(mappedBy = "article", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "article", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<FavoriteArticle> favoriteArticles;
+
+    @OneToMany(mappedBy = "article", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<StaffArticle> staffArticles;
 }

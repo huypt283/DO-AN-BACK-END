@@ -8,8 +8,9 @@ import java.util.List;
 
 @Repository
 public interface ArticleRepository extends JpaRepository<Article, Integer>, CustomArticleRepository{
-    Article findByDeletedFalseAndArticleId(Integer id);
+    Article findByDeletedTrueAnAndArticleId(Integer id);
+
     Article findByArticleId(Integer id);
 
-    List<Article> findByDeletedTrue();
+    List<Article> findByDeletedFalse();
 }

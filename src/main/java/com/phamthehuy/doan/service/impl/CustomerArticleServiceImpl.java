@@ -1,5 +1,6 @@
 package com.phamthehuy.doan.service.impl;
 
+import com.google.common.primitives.Booleans;
 import com.phamthehuy.doan.dao.*;
 import com.phamthehuy.doan.exception.CustomException;
 import com.phamthehuy.doan.helper.Helper;
@@ -67,13 +68,19 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
         int priceDay = articleInsertDTO.getVip() ? 10000 : 2000;
         int priceWeek = articleInsertDTO.getVip() ? 63000 : 12000;
         int priceMonth = articleInsertDTO.getVip() ? 240000 : 48000;
-        if (articleInsertDTO.getType().equals("day")) {
-            money = articleInsertDTO.getNumber() * priceDay;
-        } else if (articleInsertDTO.getType().equals("week")) {
-            money = articleInsertDTO.getNumber() * priceWeek;
-        } else if (articleInsertDTO.getType().equals("month")) {
-            money = articleInsertDTO.getNumber() * priceMonth;
-        } else throw new CustomException("Type của thời gian không hợp lệ");
+        switch (articleInsertDTO.getType()) {
+            case "day":
+                money = articleInsertDTO.getNumber() * priceDay;
+                break;
+            case "week":
+                money = articleInsertDTO.getNumber() * priceWeek;
+                break;
+            case "month":
+                money = articleInsertDTO.getNumber() * priceMonth;
+                break;
+            default:
+                throw new CustomException("Type của thời gian không hợp lệ");
+        }
         if (customer.getAccountBalance() < money)
             throw new CustomException("Số tiền trong tài khoản không đủ");
         customer.setAccountBalance(customer.getAccountBalance() - money);
@@ -173,7 +180,8 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
             article.setWard(wardOptional.get());
 
             article.setUpdateTime(new Date());
-            if (article.getDeleted() != null && article.getDeleted() == true) article.setDeleted(null);
+            if (article.getDeleted() != null && article.getDeleted())
+                article.setDeleted(null);
 
             return convertToOutputDTO(articleRepository.save(article));
         } catch (CustomException e) {
@@ -192,7 +200,7 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
 
         if (!email.equals(article.getCustomer().getEmail()))
             throw new CustomException("Khách hàng không hợp lệ");
-        article.setDeleted(false);
+        article.setDeleted(true);
 
         article.setExpTime(null);
 
@@ -217,7 +225,7 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
         Article article = articleRepository.findByArticleId(id);
         if (article == null)
             throw new CustomException("Bài đăng với id: " + id + " không tồn tại");
-        else if (article.getDeleted() != true)
+        else if (article.getDeleted())
             throw new CustomException("Gia hạn chỉ áp dụng với bài đăng đã được duyệt");
 
         if (!email.equals(article.getCustomer().getEmail()))
@@ -258,7 +266,7 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
 
     @Override
     public Message postOldArticle(String email, Integer id, Integer days, String type) throws CustomException {
-        Article article = articleRepository.findByDeletedFalseAndArticleId(id);
+        Article article = articleRepository.findByDeletedTrueAnAndArticleId(id);
         if (article == null)
             throw new CustomException("Bài đăng với id: " + id + " không tồn tại, hoặc đang không bị ẩn");
         if (!email.equals(article.getCustomer().getEmail()))
@@ -269,13 +277,19 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
         int priceDay = article.getVip() ? 10000 : 2000;
         int priceWeek = article.getVip() ? 63000 : 12000;
         int priceMonth = article.getVip() ? 240000 : 48000;
-        if (type.equals("day")) {
-            money = days * priceDay;
-        } else if (type.equals("week")) {
-            money = days * priceWeek;
-        } else if (type.equals("month")) {
-            money = days * priceMonth;
-        } else throw new CustomException("Type của thời gian không hợp lệ");
+        switch (type) {
+            case "day":
+                money = days * priceDay;
+                break;
+            case "week":
+                money = days * priceWeek;
+                break;
+            case "month":
+                money = days * priceMonth;
+                break;
+            default:
+                throw new CustomException("Type của thời gian không hợp lệ");
+        }
         Customer customer = article.getCustomer();
         if (customer.getAccountBalance() < money)
             throw new CustomException("Số tiền trong tài khoản không đủ");
@@ -316,8 +330,10 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
         articleOutputDTO.setCreateTime(article.getTimeCreated().getTime());
         articleOutputDTO.setLastUpdateTime(article.getUpdateTime().getTime());
         if (article.getDeleted() != null) {
-            if (article.getDeleted()) articleOutputDTO.setStatus("Đang đăng");
-            else articleOutputDTO.setStatus("Đã ẩn");
+            if (article.getDeleted())
+                articleOutputDTO.setStatus("Đã ẩn");
+            else
+                articleOutputDTO.setStatus("Đang đăng");
         } else articleOutputDTO.setStatus("Chưa duyệt");
 
         StaffArticle staffArticle = staffArticleRepository.
@@ -339,7 +355,7 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
         customer.put("phone", article.getCustomer().getPhone());
         articleOutputDTO.setCustomer(customer);
 
-        if (article.getDeleted() != null && article.getDeleted() == true) {
+        if (article.getDeleted() != null && !article.getDeleted()) {
             articleOutputDTO.
                     setExpDate(article.getExpTime().getTime());
         }

@@ -21,15 +21,14 @@ public class AppSchedule {
         this.articleRepository = articleRepository;
         this.mailSender = mailSender;
     }
-
-
+    
     @Scheduled(cron = "0 0 0 * * *")
     public void AutoArticle() {
-        List<Article> articleList=articleRepository.findByDeletedTrue();
+        List<Article> articleList=articleRepository.findByDeletedFalse();
         if(articleList.size()>0){
             for (Article article: articleList){
                 //ẩn bài đăng hết hạn
-                if(article.getExpTime().before(new Date())) article.setDeleted(false);
+                if(article.getExpTime().before(new Date())) article.setDeleted(true);
 
                 //gửi mail bài đăng sắp hết hạn
                 SimpleDateFormat sdf=new SimpleDateFormat("dd/MM/yyyy");

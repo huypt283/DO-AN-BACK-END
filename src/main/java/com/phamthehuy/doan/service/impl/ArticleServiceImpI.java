@@ -116,7 +116,7 @@ public class ArticleServiceImpI implements ArticleService {
             Article article = articleOptional.get();
             if (article.getDeleted() != null)
                 throw new CustomException("Chỉ được duyệt bài có trạng thái là chưa duyệt");
-            article.setDeleted(true);
+            article.setDeleted(false);
 
             //tạo thời hạn
             Integer days = null;
@@ -201,10 +201,10 @@ public class ArticleServiceImpI implements ArticleService {
             //duyệt bài
             //chuyển deleted thành true
             Article article = articleOptional.get();
-            if (article.getDeleted() == false)
+            if (!article.getDeleted())
                 throw new CustomException("Không thể ẩn bài viết đang ẩn");
 
-            article.setDeleted(false);
+            article.setDeleted(true);
 
             article.setExpTime(null);
 
@@ -269,8 +269,10 @@ public class ArticleServiceImpI implements ArticleService {
         articleOutputDTO.setCreateTime(article.getTimeCreated().getTime());
         articleOutputDTO.setLastUpdateTime(article.getUpdateTime().getTime());
         if (article.getDeleted() != null) {
-            if (article.getDeleted()) articleOutputDTO.setStatus("Đang đăng");
-            else articleOutputDTO.setStatus("Đã ẩn");
+            if (article.getDeleted())
+                articleOutputDTO.setStatus("Đã ẩn");
+            else
+                articleOutputDTO.setStatus("Đang đăng");
         } else articleOutputDTO.setStatus("Chưa duyệt");
 
         StaffArticle staffArticle = staffArticleRepository.
@@ -292,7 +294,7 @@ public class ArticleServiceImpI implements ArticleService {
         customer.put("phone", article.getCustomer().getPhone());
         articleOutputDTO.setCustomer(customer);
 
-        if (article.getDeleted() != null && article.getDeleted() == true) {
+        if (article.getDeleted() != null && !article.getDeleted()) {
             articleOutputDTO.
                     setExpDate(article.getExpTime().getTime());
         }

@@ -1,12 +1,12 @@
 package com.phamthehuy.doan.service.impl;
 
-import com.phamthehuy.doan.dao.CustomerRepository;
-import com.phamthehuy.doan.dao.StaffRepository;
+import com.phamthehuy.doan.repository.CustomerRepository;
+import com.phamthehuy.doan.repository.StaffRepository;
 import com.phamthehuy.doan.exception.CustomException;
-import com.phamthehuy.doan.model.dto.input.CustomerUpdateDTO;
-import com.phamthehuy.doan.model.dto.output.CustomerOutputDTO;
-import com.phamthehuy.doan.model.dto.output.Message;
-import com.phamthehuy.doan.model.entity.Customer;
+import com.phamthehuy.doan.model.request.CustomerUpdateRequest;
+import com.phamthehuy.doan.model.response.CustomerResponse;
+import com.phamthehuy.doan.model.response.MessageResponse;
+import com.phamthehuy.doan.entity.Customer;
 import com.phamthehuy.doan.service.CustomerService;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -43,8 +43,8 @@ public class CustomerServiceImpl implements CustomerService {
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
     @Override
-    public List<CustomerOutputDTO> listCustomer(String search, Boolean deleted, String nameSort,
-                                                String balanceSort, Integer page, Integer limit) {
+    public List<CustomerResponse> listCustomer(String search, Boolean deleted, String nameSort,
+                                               String balanceSort, Integer page, Integer limit) {
         if (search == null || search.trim().equals("")) search = "";
         String sort = null;
         String sortBy = null;
@@ -127,29 +127,29 @@ public class CustomerServiceImpl implements CustomerService {
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration()
                 .setMatchingStrategy(MatchingStrategies.STRICT);
-        List<CustomerOutputDTO> customerOutputDTOList = new ArrayList<>();
+        List<CustomerResponse> customerResponseList = new ArrayList<>();
         for (Customer customer : customerList) {
-            CustomerOutputDTO customerOutputDTO = modelMapper.map(customer, CustomerOutputDTO.class);
-            if (customer.getDob() != null) customerOutputDTO.setBirthday(customer.getDob().getTime());
-            customerOutputDTOList.add(customerOutputDTO);
+            CustomerResponse customerResponse = modelMapper.map(customer, CustomerResponse.class);
+            if (customer.getDob() != null) customerResponse.setBirthday(customer.getDob().getTime());
+            customerResponseList.add(customerResponse);
         }
-        return customerOutputDTOList;
+        return customerResponseList;
     }
 
     @Override
-    public ResponseEntity<?> updateCustomer(CustomerUpdateDTO customerUpdateDTO,
+    public ResponseEntity<?> updateCustomer(CustomerUpdateRequest customerUpdateRequest,
                                             Integer id) throws CustomException {
         //validate
         String matchNumber = "[0-9]+";
-        if (customerUpdateDTO.getCardId() != null && !customerUpdateDTO.getCardId().equals("")) {
-            if (!customerUpdateDTO.getCardId().matches(matchNumber))
+        if (customerUpdateRequest.getCardId() != null && !customerUpdateRequest.getCardId().equals("")) {
+            if (!customerUpdateRequest.getCardId().matches(matchNumber))
                 throw new CustomException("Số CMND phải là số");
-            else if (customerUpdateDTO.getCardId().length() < 9 || customerUpdateDTO.getCardId().length() > 12)
+            else if (customerUpdateRequest.getCardId().length() < 9 || customerUpdateRequest.getCardId().length() > 12)
                 throw new CustomException("Số CMND phải gồm 9-12 số");
         }
-        if (!customerUpdateDTO.getPhone().matches(matchNumber))
+        if (!customerUpdateRequest.getPhone().matches(matchNumber))
             throw new CustomException("Số điện thoại phải là số");
-        if (customerUpdateDTO.getBirthday() >= System.currentTimeMillis())
+        if (customerUpdateRequest.getBirthday() >= System.currentTimeMillis())
             throw new CustomException("Ngày sinh phải trong quá khứ");
 
         //update
@@ -159,17 +159,17 @@ public class CustomerServiceImpl implements CustomerService {
                     .setMatchingStrategy(MatchingStrategies.STRICT);
             Optional<Customer> optionalCustomer = customerRepository.findById(id);
             Customer customer = optionalCustomer.get();
-            customer.setName(customerUpdateDTO.getName());
-            customer.setGender(customerUpdateDTO.isGender());
-            customer.setAddress(customerUpdateDTO.getAddress());
-            customer.setPhone(customerUpdateDTO.getPhone());
-            customer.setCardId(customerUpdateDTO.getCardId());
-            customer.setDob(new Date(customerUpdateDTO.getBirthday()));
-            customer.setImage(customerUpdateDTO.getImage());
+            customer.setName(customerUpdateRequest.getName());
+            customer.setGender(customerUpdateRequest.isGender());
+            customer.setAddress(customerUpdateRequest.getAddress());
+            customer.setPhone(customerUpdateRequest.getPhone());
+            customer.setCardId(customerUpdateRequest.getCardId());
+            customer.setDob(new Date(customerUpdateRequest.getBirthday()));
+            customer.setImage(customerUpdateRequest.getImage());
             Customer newCustomer = customerRepository.save(customer);
-            CustomerOutputDTO customerOutputDTO = modelMapper.map(newCustomer, CustomerOutputDTO.class);
-            if (customer.getDob() != null) customerOutputDTO.setBirthday(newCustomer.getDob().getTime());
-            return ResponseEntity.ok(customerOutputDTO);
+            CustomerResponse customerResponse = modelMapper.map(newCustomer, CustomerResponse.class);
+            if (customer.getDob() != null) customerResponse.setBirthday(newCustomer.getDob().getTime());
+            return ResponseEntity.ok(customerResponse);
         } catch (Exception e) {
             //e.printStackTrace();
             throw new CustomException("Cập nhật khách hàng thất bại");
@@ -177,24 +177,24 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public Message blockCustomer(Integer id) throws CustomException {
+    public MessageResponse blockCustomer(Integer id) throws CustomException {
         Customer customer = customerRepository.findByCustomerIdAndDeletedFalseAndEnabledTrue(id);
         if (customer == null) throw new CustomException("Lỗi: id " + id + " không tồn tại, hoặc đã block rồi");
         else {
             customer.setDeleted(true);
             customerRepository.save(customer);
-            return new Message("Block khách hàng id " + id + " thành công");
+            return new MessageResponse("Block khách hàng id " + id + " thành công");
         }
     }
 
     @Override
-    public Message activeCustomer(Integer id) throws CustomException {
+    public MessageResponse activeCustomer(Integer id) throws CustomException {
         Optional<Customer> optionalCustomer = customerRepository.findById(id);
         if (!optionalCustomer.isPresent()) throw new CustomException("Lỗi: id " + id + " không tồn tại");
         else {
             optionalCustomer.get().setDeleted(false);
             customerRepository.save(optionalCustomer.get());
-            return new Message("Kích hoạt khách hàng id: " + id + " thành công");
+            return new MessageResponse("Kích hoạt khách hàng id: " + id + " thành công");
         }
     }
 
@@ -205,28 +205,28 @@ public class CustomerServiceImpl implements CustomerService {
             modelMapper.getConfiguration()
                     .setMatchingStrategy(MatchingStrategies.STRICT);
             Customer customer = customerRepository.findById(id).get();
-            CustomerOutputDTO customerOutputDTO = modelMapper.map(customer, CustomerOutputDTO.class);
-            if (customer.getDob() != null) customerOutputDTO.setBirthday(customer.getDob().getTime());
-            return ResponseEntity.ok(customerOutputDTO);
+            CustomerResponse customerResponse = modelMapper.map(customer, CustomerResponse.class);
+            if (customer.getDob() != null) customerResponse.setBirthday(customer.getDob().getTime());
+            return ResponseEntity.ok(customerResponse);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new Message("Lỗi: khách hàng id " + id + " không tồn tại"));
+            return ResponseEntity.badRequest().body(new MessageResponse("Lỗi: khách hàng id " + id + " không tồn tại"));
         }
     }
 
     @Override
-    public Message deleteAllCustomers() {
+    public MessageResponse deleteAllCustomers() {
         List<Customer> customerList = customerRepository.findByDeletedTrueAndEnabledTrue();
         for (Customer customer : customerList) {
             customerRepository.delete(customer);
         }
-        return new Message("Xóa tất cả khách hàng bị xóa mềm thành công");
+        return new MessageResponse("Xóa tất cả khách hàng bị xóa mềm thành công");
     }
 
     @Override
-    public Message deleteCustomers(Integer id) throws CustomException {
+    public MessageResponse deleteCustomers(Integer id) throws CustomException {
         Customer customer = customerRepository.findByCustomerIdAndEnabledTrue(id);
         if (customer == null) throw new CustomException("Khách hàng với id " + id + " không tồn tại");
         customerRepository.delete(customer);
-        return new Message("Xóa hách hàng id " + id + " thành công");
+        return new MessageResponse("Xóa hách hàng id " + id + " thành công");
     }
 }

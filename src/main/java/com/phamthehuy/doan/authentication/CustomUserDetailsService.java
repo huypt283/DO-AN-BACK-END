@@ -1,9 +1,9 @@
 package com.phamthehuy.doan.authentication;
 
-import com.phamthehuy.doan.dao.CustomerRepository;
-import com.phamthehuy.doan.dao.StaffRepository;
-import com.phamthehuy.doan.model.entity.Customer;
-import com.phamthehuy.doan.model.entity.Staff;
+import com.phamthehuy.doan.repository.CustomerRepository;
+import com.phamthehuy.doan.repository.StaffRepository;
+import com.phamthehuy.doan.entity.Customer;
+import com.phamthehuy.doan.entity.Staff;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;

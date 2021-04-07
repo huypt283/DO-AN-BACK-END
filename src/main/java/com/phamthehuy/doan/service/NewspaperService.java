@@ -1,31 +1,31 @@
 package com.phamthehuy.doan.service;
 
 import com.phamthehuy.doan.exception.CustomException;
-import com.phamthehuy.doan.model.dto.input.NewspaperInsertDTO;
-import com.phamthehuy.doan.model.dto.input.NewspaperUpdateDTO;
-import com.phamthehuy.doan.model.dto.output.Message;
-import com.phamthehuy.doan.model.dto.output.NewspaperOutputDTO;
+import com.phamthehuy.doan.model.request.NewsInsertRequest;
+import com.phamthehuy.doan.model.request.NewsUpdateRequest;
+import com.phamthehuy.doan.model.response.MessageResponse;
+import com.phamthehuy.doan.model.response.NewsResponse;
 
 import java.util.List;
 
 public interface NewspaperService {
     //list tin tức
-    List<NewspaperOutputDTO> listNewspaper(String sort, Boolean hidden, String title,
-                                           Integer page, Integer limit);
+    List<NewsResponse> listNewspaper(String sort, Boolean hidden, String title,
+                                     Integer page, Integer limit);
 
     //tin tức details
-    NewspaperOutputDTO findOneNewspaper(Integer id) throws CustomException;
+    NewsResponse findOneNewspaper(Integer id) throws CustomException;
 
     //đăng tin tức
-    NewspaperOutputDTO insertNewspaper(NewspaperInsertDTO newspaperInsertDTO) throws CustomException;
+    NewsResponse insertNewspaper(NewsInsertRequest newsInsertRequest) throws CustomException;
 
 //    sửa tin tức
-    NewspaperOutputDTO updateNewspaper(NewspaperUpdateDTO newspaperUpdateDTO,
-                                       Integer id) throws CustomException;
+    NewsResponse updateNewspaper(NewsUpdateRequest newsUpdateRequest,
+                                 Integer id) throws CustomException;
 //    ẩn 1 tin tức
-    Message hiddenNewspaper(Integer id) throws CustomException;
+    MessageResponse hiddenNewspaper(Integer id) throws CustomException;
 //    hiện 1 tin tức
-    Message activeNewspaper(Integer id) throws CustomException;
+    MessageResponse activeNewspaper(Integer id) throws CustomException;
 //    xóa tin tức
-    Message deleteNewspaper(Integer id) throws CustomException;
+    MessageResponse deleteNewspaper(Integer id) throws CustomException;
 }

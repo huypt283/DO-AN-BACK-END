@@ -1,14 +1,14 @@
 package com.phamthehuy.doan.service.impl;
 
-import com.phamthehuy.doan.dao.NewspaperRepository;
-import com.phamthehuy.doan.dao.StaffRepository;
+import com.phamthehuy.doan.repository.NewspaperRepository;
+import com.phamthehuy.doan.repository.StaffRepository;
 import com.phamthehuy.doan.exception.CustomException;
-import com.phamthehuy.doan.model.dto.input.NewspaperInsertDTO;
-import com.phamthehuy.doan.model.dto.input.NewspaperUpdateDTO;
-import com.phamthehuy.doan.model.dto.output.Message;
-import com.phamthehuy.doan.model.dto.output.NewspaperOutputDTO;
-import com.phamthehuy.doan.model.entity.Newspaper;
-import com.phamthehuy.doan.model.entity.Staff;
+import com.phamthehuy.doan.model.request.NewsInsertRequest;
+import com.phamthehuy.doan.model.request.NewsUpdateRequest;
+import com.phamthehuy.doan.model.response.MessageResponse;
+import com.phamthehuy.doan.model.response.NewsResponse;
+import com.phamthehuy.doan.entity.Newspaper;
+import com.phamthehuy.doan.entity.Staff;
 import com.phamthehuy.doan.service.NewspaperService;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -36,8 +36,8 @@ public class NewspaperServiceImpl implements NewspaperService {
     }
 
     @Override
-    public List<NewspaperOutputDTO> listNewspaper(String sort, Boolean hidden, String title,
-                                                  Integer page, Integer limit) {
+    public List<NewsResponse> listNewspaper(String sort, Boolean hidden, String title,
+                                            Integer page, Integer limit) {
         if (title == null) title = "";
         Page<Newspaper> newspaperPage;
         if (hidden != null) {
@@ -64,15 +64,15 @@ public class NewspaperServiceImpl implements NewspaperService {
 
         List<Newspaper> newspaperList = newspaperPage.toList();
 
-        List<NewspaperOutputDTO> newspaperOutputDTOList = new ArrayList<>();
+        List<NewsResponse> newsResponseList = new ArrayList<>();
         for (Newspaper newspaper : newspaperList) {
-            newspaperOutputDTOList.add(convertToOutputDTO(newspaper));
+            newsResponseList.add(convertToOutputDTO(newspaper));
         }
-        return newspaperOutputDTOList;
+        return newsResponseList;
     }
 
     @Override
-    public NewspaperOutputDTO findOneNewspaper(Integer id) throws CustomException {
+    public NewsResponse findOneNewspaper(Integer id) throws CustomException {
         Optional<Newspaper> newspaperOptional = newspaperRepository.findById(id);
         if (newspaperOptional.isPresent()) {
             return convertToOutputDTO(newspaperOptional.get());
@@ -82,16 +82,16 @@ public class NewspaperServiceImpl implements NewspaperService {
     }
 
     @Override
-    public NewspaperOutputDTO insertNewspaper(NewspaperInsertDTO newspaperInsertDTO) throws CustomException {
-        Optional<Staff> staffOptional = staffRepository.findById(newspaperInsertDTO.getStaffId());
+    public NewsResponse insertNewspaper(NewsInsertRequest newsInsertRequest) throws CustomException {
+        Optional<Staff> staffOptional = staffRepository.findById(newsInsertRequest.getStaffId());
         if(!staffOptional.isPresent())
-            throw new CustomException("Nhân viên với id " + newspaperInsertDTO.getStaffId() + " không tồn tại");
+            throw new CustomException("Nhân viên với id " + newsInsertRequest.getStaffId() + " không tồn tại");
 
         try {
             ModelMapper modelMapper = new ModelMapper();
             modelMapper.getConfiguration()
                     .setMatchingStrategy(MatchingStrategies.STRICT);
-            Newspaper newspaper = modelMapper.map(newspaperInsertDTO, Newspaper.class);
+            Newspaper newspaper = modelMapper.map(newsInsertRequest, Newspaper.class);
             newspaper.setStaff(staffOptional.get());
             return convertToOutputDTO(newspaperRepository.save(newspaper));
         } catch (Exception e) {
@@ -100,19 +100,19 @@ public class NewspaperServiceImpl implements NewspaperService {
     }
 
     @Override
-    public NewspaperOutputDTO updateNewspaper(NewspaperUpdateDTO newspaperUpdateDTO,
-                                              Integer id) throws CustomException {
-        Optional<Staff> staffOptional = staffRepository.findById(newspaperUpdateDTO.getStaffId());
+    public NewsResponse updateNewspaper(NewsUpdateRequest newsUpdateRequest,
+                                        Integer id) throws CustomException {
+        Optional<Staff> staffOptional = staffRepository.findById(newsUpdateRequest.getStaffId());
         if (!staffOptional.isPresent())
-            throw new CustomException("Nhân viên với id " + newspaperUpdateDTO.getStaffId() + " không tồn tại");
+            throw new CustomException("Nhân viên với id " + newsUpdateRequest.getStaffId() + " không tồn tại");
         Optional<Newspaper> newspaperOptional = newspaperRepository.findById(id);
         if (!newspaperOptional.isPresent())
             throw new CustomException("Bản tin với id " + id + " không tồn tại");
         try {
                 Newspaper newspaper = newspaperOptional.get();
-                newspaper.setTitle(newspaperUpdateDTO.getTitle());
-                newspaper.setContent(newspaperUpdateDTO.getContent());
-                newspaper.setImage(newspaperUpdateDTO.getImage());
+                newspaper.setTitle(newsUpdateRequest.getTitle());
+                newspaper.setContent(newsUpdateRequest.getContent());
+                newspaper.setImage(newsUpdateRequest.getImage());
                 newspaper.setStaff(staffOptional.get());
                 newspaper.setTimeCreated(new Date());
                 return convertToOutputDTO(newspaperRepository.save(newspaper));
@@ -122,48 +122,48 @@ public class NewspaperServiceImpl implements NewspaperService {
     }
 
     @Override
-    public Message hiddenNewspaper(Integer id) throws CustomException {
+    public MessageResponse hiddenNewspaper(Integer id) throws CustomException {
         Optional<Newspaper> newspaperOptional = newspaperRepository.findById(id);
         if (newspaperOptional.isPresent()) {
             Newspaper newspaper = newspaperOptional.get();
             newspaper.setDeleted(true);
             newspaperRepository.save(newspaper);
-            return new Message("Ẩn bài viết thành công");
+            return new MessageResponse("Ẩn bài viết thành công");
         } else {
             throw new CustomException("Tin tức với id " + id + " không tồn tại");
         }
     }
 
     @Override
-    public Message activeNewspaper(Integer id) throws CustomException {
+    public MessageResponse activeNewspaper(Integer id) throws CustomException {
         Optional<Newspaper> newspaperOptional = newspaperRepository.findById(id);
         if (newspaperOptional.isPresent()) {
             Newspaper newspaper = newspaperOptional.get();
             newspaper.setDeleted(false);
             newspaperRepository.save(newspaper);
-            return new Message("Hiện bài viết thành công");
+            return new MessageResponse("Hiện bài viết thành công");
         } else {
             throw new CustomException("Tin tức với id " + id + " không tồn tại");
         }
     }
 
     @Override
-    public Message deleteNewspaper(Integer id) throws CustomException {
+    public MessageResponse deleteNewspaper(Integer id) throws CustomException {
         try {
             newspaperRepository.deleteById(id);
-            return new Message("Xoá bài viết thành công");
+            return new MessageResponse("Xoá bài viết thành công");
         } catch (Exception e) {
             throw new CustomException("Tin tức với id " + id + " không tồn tại");
         }
     }
 
-    public NewspaperOutputDTO convertToOutputDTO(Newspaper newspaper) {
+    public NewsResponse convertToOutputDTO(Newspaper newspaper) {
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration()
                 .setMatchingStrategy(MatchingStrategies.STRICT);
-        NewspaperOutputDTO newspaperOutputDTO = modelMapper.map(newspaper, NewspaperOutputDTO.class);
-        newspaperOutputDTO.setAuthor(newspaper.getStaff().getName() + " (" + newspaper.getStaff().getEmail() + ")");
-        newspaperOutputDTO.setUpdateTime(newspaper.getTimeCreated().getTime());
-        return newspaperOutputDTO;
+        NewsResponse newsResponse = modelMapper.map(newspaper, NewsResponse.class);
+        newsResponse.setAuthor(newspaper.getStaff().getName() + " (" + newspaper.getStaff().getEmail() + ")");
+        newsResponse.setUpdateTime(newspaper.getTimeCreated().getTime());
+        return newsResponse;
     }
 }

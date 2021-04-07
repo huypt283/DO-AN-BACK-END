@@ -3,15 +3,15 @@ package com.phamthehuy.doan.controller.common;
 import com.paypal.api.payments.Links;
 import com.paypal.api.payments.Payment;
 import com.paypal.base.rest.PayPalRESTException;
-import com.phamthehuy.doan.dao.CustomerRepository;
-import com.phamthehuy.doan.dao.TransactionRepository;
-import com.phamthehuy.doan.enums.PaypalPaymentIntent;
-import com.phamthehuy.doan.enums.PaypalPaymentMethod;
+import com.phamthehuy.doan.repository.CustomerRepository;
+import com.phamthehuy.doan.repository.TransactionRepository;
+import com.phamthehuy.doan.model.enums.PaypalPaymentIntent;
+import com.phamthehuy.doan.model.enums.PaypalPaymentMethod;
 import com.phamthehuy.doan.exception.CustomException;
 import com.phamthehuy.doan.helper.Helper;
-import com.phamthehuy.doan.model.dto.output.Message;
-import com.phamthehuy.doan.model.entity.Customer;
-import com.phamthehuy.doan.model.entity.Transaction;
+import com.phamthehuy.doan.model.response.MessageResponse;
+import com.phamthehuy.doan.entity.Customer;
+import com.phamthehuy.doan.entity.Transaction;
 import com.phamthehuy.doan.service.impl.PaypalService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +38,7 @@ public class PaypalController {
     private String description;
     private Customer customer;
 
-    private Logger log = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     final
     Helper helper;
@@ -64,10 +64,10 @@ public class PaypalController {
     }
 
     @PostMapping("/pay")
-    public Message pay(HttpServletRequest request, //HttpServletResponse response,
-                       @RequestParam("price") double price,
-                       @RequestParam("email") String email,
-                       @RequestParam(required = false) String description)
+    public MessageResponse pay(HttpServletRequest request, //HttpServletResponse response,
+                               @RequestParam("price") double price,
+                               @RequestParam("email") String email,
+                               @RequestParam(required = false) String description)
             throws CustomException {
         String cancelUrl = helper.getBaseURL(request) + "/" + URL_PAYPAL_CANCEL;
         String successUrl = helper.getBaseURL(request) + "/" + URL_PAYPAL_SUCCESS;
@@ -95,12 +95,12 @@ public class PaypalController {
             for (Links links : payment.getLinks()) {
                 if (links.getRel().equals("approval_url")) {
                     //response.sendRedirect(links.getHref());
-                    return new Message(links.getHref());
+                    return new MessageResponse(links.getHref());
                 }
             }
         } catch (PayPalRESTException e) {
             e.printStackTrace();
-            log.error(e.getMessage());
+            logger.error(e.getMessage());
             throw new CustomException("Thanh toán thất bại");
         }
         //return "redirect:/";
@@ -108,12 +108,12 @@ public class PaypalController {
     }
 
     @GetMapping(URL_PAYPAL_CANCEL)
-    public Message cancelPay() {
-        return new Message("Thanh toán bị hủy bỏ");
+    public MessageResponse cancelPay() {
+        return new MessageResponse("Thanh toán bị hủy bỏ");
     }
 
     @GetMapping(URL_PAYPAL_SUCCESS)
-    public Message successPay(@RequestParam("paymentId") String paymentId, @RequestParam("PayerID") String payerId)
+    public MessageResponse successPay(@RequestParam("paymentId") String paymentId, @RequestParam("PayerID") String payerId)
             throws CustomException {
         try {
             Payment payment = paypalService.executePayment(paymentId, payerId);
@@ -122,10 +122,10 @@ public class PaypalController {
                 customer.setAccountBalance(customer.getAccountBalance() + increase);
                 customerRepository.save(customer);
                 creatTransaction(customer, increase);
-                return new Message("Thanh toán thành công, số tiền: " + value + " USD - tức " + increase + " VNĐ");
+                return new MessageResponse("Thanh toán thành công, số tiền: " + value + " USD - tức " + increase + " VNĐ");
             }
         } catch (PayPalRESTException e) {
-            log.error(e.getMessage());
+            logger.error(e.getMessage());
             throw new CustomException("Có lỗi xảy ra");
         }
         //return "redirect:/";

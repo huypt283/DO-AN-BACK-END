@@ -1,17 +1,17 @@
 package com.phamthehuy.doan.service.impl;
 
-import com.phamthehuy.doan.authentication.JwtUtil;
-import com.phamthehuy.doan.dao.ArticleRepository;
-import com.phamthehuy.doan.dao.StaffArticleRepository;
-import com.phamthehuy.doan.dao.StaffRepository;
+import com.phamthehuy.doan.util.auth.JwtUtil;
+import com.phamthehuy.doan.repository.ArticleRepository;
+import com.phamthehuy.doan.repository.StaffArticleRepository;
+import com.phamthehuy.doan.repository.StaffRepository;
 import com.phamthehuy.doan.exception.CustomException;
 import com.phamthehuy.doan.helper.Helper;
-import com.phamthehuy.doan.model.dto.input.ContactCustomerDTO;
-import com.phamthehuy.doan.model.dto.output.ArticleOutputDTO;
-import com.phamthehuy.doan.model.dto.output.Message;
-import com.phamthehuy.doan.model.entity.Article;
-import com.phamthehuy.doan.model.entity.Staff;
-import com.phamthehuy.doan.model.entity.StaffArticle;
+import com.phamthehuy.doan.model.request.ContactCustomerRequest;
+import com.phamthehuy.doan.model.response.ArticleResponse;
+import com.phamthehuy.doan.model.response.MessageResponse;
+import com.phamthehuy.doan.entity.Article;
+import com.phamthehuy.doan.entity.Staff;
+import com.phamthehuy.doan.entity.StaffArticle;
 import com.phamthehuy.doan.service.ArticleService;
 import com.phamthehuy.doan.util.MailSender;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -56,23 +56,23 @@ public class ArticleServiceImpI implements ArticleService {
     }
 
     @Override
-    public List<ArticleOutputDTO> listArticle(String sort, Long start, Long end, Integer ward, Integer district, Integer city, Boolean roommate, String status, Boolean vip, String search, Integer minAcreage, Integer maxAcreage, Integer page, Integer limit) {
-        List<ArticleOutputDTO> articleOutputDTOList = new ArrayList<>();
+    public List<ArticleResponse> listArticle(String sort, Long start, Long end, Integer ward, Integer district, Integer city, Boolean roommate, String status, Boolean vip, String search, Integer minAcreage, Integer maxAcreage, Integer page, Integer limit) {
+        List<ArticleResponse> articleResponseList = new ArrayList<>();
         List<Article> articleList =
                 articleRepository.findCustom(sort, start, end, ward, district, city,
                         roommate, status, vip, search, minAcreage, maxAcreage, page, limit);
         for (Article article : articleList) {
-            articleOutputDTOList.add(convertToOutputDTO(article));
+            articleResponseList.add(convertToOutputDTO(article));
         }
-        return articleOutputDTOList;
+        return articleResponseList;
     }
 
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
     @Override
-    public Message contactToCustomer(Integer id,
-                                     ContactCustomerDTO contactCustomerDTO,
-                                     HttpServletRequest request) throws CustomException {
+    public MessageResponse contactToCustomer(Integer id,
+                                             ContactCustomerRequest contactCustomerRequest,
+                                             HttpServletRequest request) throws CustomException {
         Optional<Article> articleOptional = articleRepository.findById(id);
         if (articleOptional.isPresent()) {
             Staff staff;
@@ -92,13 +92,13 @@ public class ArticleServiceImpI implements ArticleService {
                     + "Email: " + staff.getEmail() + "<br/>"
                     + "Thời gian: " + simpleDateFormat.format(new Date());
 
-            mailSender.send(to, contactCustomerDTO.getTitle(), contactCustomerDTO.getContent(), note);
-            return new Message("Gửi mail thành công");
+            mailSender.send(to, contactCustomerRequest.getTitle(), contactCustomerRequest.getContent(), note);
+            return new MessageResponse("Gửi mail thành công");
         } else throw new CustomException("Bài đăng với id: " + id + " không tồn tại");
     }
 
     @Override
-    public Message activeArticle(Integer id, HttpServletRequest request) throws CustomException {
+    public MessageResponse activeArticle(Integer id, HttpServletRequest request) throws CustomException {
         Optional<Article> articleOptional = articleRepository.findById(id);
         if (articleOptional.isPresent()) {
             Staff staff;
@@ -147,7 +147,7 @@ public class ArticleServiceImpI implements ArticleService {
             staffArticle.setAction(true);
             //lưu
             staffArticleRepository.save(staffArticle);
-            ArticleOutputDTO articleOutputDTO = convertToOutputDTO(articleRepository.save(article));
+            ArticleResponse articleResponse = convertToOutputDTO(articleRepository.save(article));
 
             //gửi thư
             String to = article.getCustomer().getEmail();
@@ -172,7 +172,7 @@ public class ArticleServiceImpI implements ArticleService {
                     "\n" +
                     "<p>Trạng thái: <strong><span style=\"color:#2980b9\">đã được duyệt</span></strong></p>\n" +
                     "\n" +
-                    "<p>Thời gian hết hạn (ước tính): <span style=\"color:#c0392b\">" + simpleDateFormat.format(new Date(articleOutputDTO.getExpDate())) + "</span></p>\n" +
+                    "<p>Thời gian hết hạn (ước tính): <span style=\"color:#c0392b\">" + simpleDateFormat.format(new Date(articleResponse.getExpDate())) + "</span></p>\n" +
                     "\n" +
                     "<p>Bài đăng của bạn đã được nhân viên <em><strong>" + staff.getName() + " </strong></em>(email: <em><strong>" + staff.getEmail() + "</strong></em>) duyệt vào lúc <em><strong>" + simpleDateFormat.format(new Date()) + "</strong></em>.</p>\n" +
                     "\n" +
@@ -180,12 +180,12 @@ public class ArticleServiceImpI implements ArticleService {
                     "\n" +
                     "<p> xxxx </p>\n";
             mailSender.send(to, title, content, note);
-            return new Message("Duyệt bài thành công");
+            return new MessageResponse("Duyệt bài thành công");
         } else throw new CustomException("Bài đăng với id: " + id + " không tồn tại");
     }
 
     @Override
-    public Message hiddenArticle(Integer id, String reason, HttpServletRequest request) throws CustomException {
+    public MessageResponse hiddenArticle(Integer id, String reason, HttpServletRequest request) throws CustomException {
         Optional<Article> articleOptional = articleRepository.findById(id);
         if (articleOptional.isPresent()) {
             Staff staff;
@@ -216,7 +216,7 @@ public class ArticleServiceImpI implements ArticleService {
             staffArticle.setAction(false);
             //lưu
             staffArticleRepository.save(staffArticle);
-            ArticleOutputDTO articleOutputDTO = convertToOutputDTO(articleRepository.save(article));
+            ArticleResponse articleResponse = convertToOutputDTO(articleRepository.save(article));
 
             //gửi thư
             if (reason == null || reason.trim().equals("")) reason = "không có lý do cụ thể";
@@ -248,12 +248,12 @@ public class ArticleServiceImpI implements ArticleService {
                     "\n" +
                     "<p>Chúng tôi rất tiếc về điều này, bạn vui lòng xem lại bài đăng của mình đã phù hợp với nội quy website chưa. Mọi thắc mắc xin liên hệ theo email nhân viên đã duyệt bài.</p>\n";
             mailSender.send(to, title, content, note);
-            return new Message("Ẩn bài thành công");
+            return new MessageResponse("Ẩn bài thành công");
         } else throw new CustomException("Bài đăng với id: " + id + " không tồn tại");
     }
 
     @Override
-    public ArticleOutputDTO detailArticle(Integer id) throws CustomException {
+    public ArticleResponse detailArticle(Integer id) throws CustomException {
         Optional<Article> articleOptional = articleRepository.findById(id);
         if (!articleOptional.isPresent())
             throw new CustomException("Bài đăng với id: " + id + " không tồn tại");
@@ -261,19 +261,19 @@ public class ArticleServiceImpI implements ArticleService {
         return convertToOutputDTO(article);
     }
 
-    public ArticleOutputDTO convertToOutputDTO(Article article) {
+    public ArticleResponse convertToOutputDTO(Article article) {
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration()
                 .setMatchingStrategy(MatchingStrategies.STRICT);
-        ArticleOutputDTO articleOutputDTO = modelMapper.map(article, ArticleOutputDTO.class);
-        articleOutputDTO.setCreateTime(article.getTimeCreated().getTime());
-        articleOutputDTO.setLastUpdateTime(article.getUpdateTime().getTime());
+        ArticleResponse articleResponse = modelMapper.map(article, ArticleResponse.class);
+        articleResponse.setCreateTime(article.getTimeCreated().getTime());
+        articleResponse.setLastUpdateTime(article.getUpdateTime().getTime());
         if (article.getDeleted() != null) {
             if (article.getDeleted())
-                articleOutputDTO.setStatus("Đã ẩn");
+                articleResponse.setStatus("Đã ẩn");
             else
-                articleOutputDTO.setStatus("Đang đăng");
-        } else articleOutputDTO.setStatus("Chưa duyệt");
+                articleResponse.setStatus("Đang đăng");
+        } else articleResponse.setStatus("Chưa duyệt");
 
         StaffArticle staffArticle = staffArticleRepository.
                 findFirstByArticle_ArticleId(article.getArticleId(), Sort.by("time").descending());
@@ -284,7 +284,7 @@ public class ArticleServiceImpI implements ArticleService {
             moderator.put("staffId", staffArticle.getStaff().getStaffId() + "");
             moderator.put("name", staffArticle.getStaff().getName());
             moderator.put("email", staffArticle.getStaff().getEmail());
-            articleOutputDTO.setModerator(moderator);
+            articleResponse.setModerator(moderator);
         }
 
         Map<String, String> customer = new HashMap<>();
@@ -292,10 +292,10 @@ public class ArticleServiceImpI implements ArticleService {
         customer.put("name", article.getCustomer().getName());
         customer.put("email", article.getCustomer().getEmail());
         customer.put("phone", article.getCustomer().getPhone());
-        articleOutputDTO.setCustomer(customer);
+        articleResponse.setCustomer(customer);
 
         if (article.getDeleted() != null && !article.getDeleted()) {
-            articleOutputDTO.
+            articleResponse.
                     setExpDate(article.getExpTime().getTime());
         }
 
@@ -306,9 +306,9 @@ public class ArticleServiceImpI implements ArticleService {
         location.put("districtName", article.getWard().getDistrict().getDistrictName());
         location.put("cityId", article.getWard().getDistrict().getCity().getCityId() + "");
         location.put("cityName", article.getWard().getDistrict().getCity().getCityName());
-        articleOutputDTO.setLocation(location);
+        articleResponse.setLocation(location);
 
-        return articleOutputDTO;
+        return articleResponse;
     }
 
     private Staff findStaffByJWT(HttpServletRequest request) throws Exception {

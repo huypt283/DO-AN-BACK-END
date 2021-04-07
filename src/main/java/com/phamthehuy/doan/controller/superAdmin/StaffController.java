@@ -1,10 +1,10 @@
 package com.phamthehuy.doan.controller.superAdmin;
 
 import com.phamthehuy.doan.exception.CustomException;
-import com.phamthehuy.doan.model.dto.input.StaffInsertDTO;
-import com.phamthehuy.doan.model.dto.input.StaffUpdateDTO;
-import com.phamthehuy.doan.model.dto.output.Message;
-import com.phamthehuy.doan.model.dto.output.StaffOutputDTO;
+import com.phamthehuy.doan.model.request.StaffInsertRequest;
+import com.phamthehuy.doan.model.request.StaffUpdateRequest;
+import com.phamthehuy.doan.model.response.MessageResponse;
+import com.phamthehuy.doan.model.response.StaffResponse;
 import com.phamthehuy.doan.service.StaffService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +29,7 @@ public class StaffController {
     //search theo name or mail or phone ko nhập thì trả về all
     //sort=asc or desc không nhập thì ko xếp
     @GetMapping("/staffs")
-    public List<StaffOutputDTO> listStaffs
+    public List<StaffResponse> listStaffs
             (@RequestParam(required = false) String search,
              @RequestParam(required = false) Boolean block,
              @RequestParam(required = false) String sort,
@@ -40,29 +40,29 @@ public class StaffController {
 
     //    thêm nhân viên	Post/super-admin/staffs
     @PostMapping("/staffs")
-    public Message insertStaff(@Valid @RequestBody StaffInsertDTO staffInsertDTO,
-                               HttpServletRequest request)
+    public MessageResponse insertStaff(@Valid @RequestBody StaffInsertRequest staffInsertRequest,
+                                       HttpServletRequest request)
             throws Exception {
-        return staffService.insertStaff(staffInsertDTO, request);
+        return staffService.insertStaff(staffInsertRequest, request);
     }
 
     //    cập nhật thông tin nhân viên	Put/super-admin/staffs
     @PutMapping("/staffs/{id}")
-    public ResponseEntity<?> updateStaff(@Valid @RequestBody StaffUpdateDTO staffUpdateDTO,
+    public ResponseEntity<?> updateStaff(@Valid @RequestBody StaffUpdateRequest staffUpdateRequest,
                                          @PathVariable Integer id)
     throws CustomException {
-        return staffService.updateStaff(staffUpdateDTO, id);
+        return staffService.updateStaff(staffUpdateRequest, id);
     }
 
 
     @GetMapping("/staffs/block/{id}")
-    public Message blockStaff(@PathVariable Integer id) throws CustomException{
+    public MessageResponse blockStaff(@PathVariable Integer id) throws CustomException{
         return staffService.blockStaff(id);
     }
 
 
     @GetMapping("/staffs/active/{id}")
-    public Message activeStaff(@PathVariable Integer id) throws CustomException{
+    public MessageResponse activeStaff(@PathVariable Integer id) throws CustomException{
         return staffService.activeStaff(id);
     }
 
@@ -74,12 +74,12 @@ public class StaffController {
 
     // xóa toàn bộ những nhân viên đã bị xóa mềm
     @DeleteMapping("/staffs")
-    public Message deleteAllStaffs(){
+    public MessageResponse deleteAllStaffs(){
         return staffService.deleteAllStaffs();
     }
 
     @DeleteMapping("/staffs/{id}")
-    public Message deleteStaffs(@PathVariable Integer id) throws CustomException{
+    public MessageResponse deleteStaffs(@PathVariable Integer id) throws CustomException{
         return staffService.deleteStaffs(id);
     }
 }

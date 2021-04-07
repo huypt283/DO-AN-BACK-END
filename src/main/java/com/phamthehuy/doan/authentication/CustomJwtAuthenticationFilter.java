@@ -1,5 +1,6 @@
 package com.phamthehuy.doan.authentication;
 
+import com.phamthehuy.doan.util.auth.JwtUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -61,7 +62,7 @@ public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
     public String extractJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7, bearerToken.length());
+            return bearerToken.substring(7);
         }
         return null;
     }

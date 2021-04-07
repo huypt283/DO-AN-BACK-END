@@ -1,9 +1,9 @@
 package com.phamthehuy.doan.controller.admin;
 
 import com.phamthehuy.doan.exception.CustomException;
-import com.phamthehuy.doan.model.dto.input.ContactCustomerDTO;
-import com.phamthehuy.doan.model.dto.output.ArticleOutputDTO;
-import com.phamthehuy.doan.model.dto.output.Message;
+import com.phamthehuy.doan.model.request.ContactCustomerRequest;
+import com.phamthehuy.doan.model.response.ArticleResponse;
+import com.phamthehuy.doan.model.response.MessageResponse;
 import com.phamthehuy.doan.service.ArticleService;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,7 +31,7 @@ public class ArticleController {
 //    lọc bài đăng theo isVip	/admin/article?vip={true/false}
 //    tìm kiếm bài đăng theo title/customer-name/customer-phone	/admin/article?search={search}
     @GetMapping("/article")
-    public List<ArticleOutputDTO> listArticle(
+    public List<ArticleResponse> listArticle(
             @RequestParam(required = false) String sort,
             @RequestParam(required = false) Long start, @RequestParam(required = false) Long end,
             @RequestParam(required = false) Integer ward,
@@ -52,30 +52,30 @@ public class ArticleController {
 
     //    contact với khách hàng (gửi mail cho khách hàng về bài viết này)	/admin/article/contact/{id}
     @PostMapping("/article/contact/{id}")
-    public Message contactToCustomer(@PathVariable Integer id,
-                                     @Valid @RequestBody ContactCustomerDTO contactCustomerDTO,
-                                     HttpServletRequest request) throws CustomException {
-        return articleService.contactToCustomer(id, contactCustomerDTO, request);
+    public MessageResponse contactToCustomer(@PathVariable Integer id,
+                                             @Valid @RequestBody ContactCustomerRequest contactCustomerRequest,
+                                             HttpServletRequest request) throws CustomException {
+        return articleService.contactToCustomer(id, contactCustomerRequest, request);
     }
 
     //    duyệt bài đăng (hiện) (gửi mail)	/admin/article/active/{id}
-    @GetMapping("/article/active/{id}")
-    public Message activeArticle(@PathVariable Integer id, HttpServletRequest request)
+    @PostMapping("/article/active/{id}")
+    public MessageResponse activeArticle(@PathVariable Integer id, HttpServletRequest request)
             throws CustomException {
         return articleService.activeArticle(id, request);
     }
 
     //    ẩn bài đăng (gửi mail)	/admin/article/block/{id}
     @PostMapping("/article/hidden/{id}")
-    public Message hiddenArticle(@PathVariable Integer id,
-                                 @RequestParam String mess,
-                                 HttpServletRequest request)
+    public MessageResponse hiddenArticle(@PathVariable Integer id,
+                                         @RequestParam String mess,
+                                         HttpServletRequest request)
             throws CustomException {
         return articleService.hiddenArticle(id, mess, request);
     }
 
     @GetMapping("/article/{id}")
-    public ArticleOutputDTO detailArticle(@PathVariable Integer id) throws CustomException {
+    public ArticleResponse detailArticle(@PathVariable Integer id) throws CustomException {
         return articleService.detailArticle(id);
     }
 }

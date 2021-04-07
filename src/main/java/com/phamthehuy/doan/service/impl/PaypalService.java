@@ -3,8 +3,8 @@ package com.phamthehuy.doan.service.impl;
 import com.paypal.api.payments.*;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
-import com.phamthehuy.doan.enums.PaypalPaymentIntent;
-import com.phamthehuy.doan.enums.PaypalPaymentMethod;
+import com.phamthehuy.doan.model.enums.PaypalPaymentIntent;
+import com.phamthehuy.doan.model.enums.PaypalPaymentMethod;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;

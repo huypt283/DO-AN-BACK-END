@@ -1,15 +1,14 @@
 package com.phamthehuy.doan.service.impl;
 
-import com.google.common.primitives.Booleans;
-import com.phamthehuy.doan.dao.*;
+import com.phamthehuy.doan.repository.*;
 import com.phamthehuy.doan.exception.CustomException;
 import com.phamthehuy.doan.helper.Helper;
-import com.phamthehuy.doan.model.dto.input.ArticleInsertDTO;
-import com.phamthehuy.doan.model.dto.input.ArticleUpdateDTO;
-import com.phamthehuy.doan.model.dto.input.RoommateDTO;
-import com.phamthehuy.doan.model.dto.output.ArticleOutputDTO;
-import com.phamthehuy.doan.model.dto.output.Message;
-import com.phamthehuy.doan.model.entity.*;
+import com.phamthehuy.doan.model.request.ArticleInsertRequest;
+import com.phamthehuy.doan.model.request.ArticleUpdateRequest;
+import com.phamthehuy.doan.model.request.RoommateRequest;
+import com.phamthehuy.doan.model.response.ArticleResponse;
+import com.phamthehuy.doan.model.response.MessageResponse;
+import com.phamthehuy.doan.entity.*;
 import com.phamthehuy.doan.service.CustomerArticleService;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -43,21 +42,21 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
     }
 
     @Override
-    public List<ArticleOutputDTO> listArticle(String email, String sort, Long start, Long end, Integer ward, Integer district, Integer city, Boolean roommate, String status, Boolean vip, String search, Integer minAcreage, Integer maxAcreage, Integer page, Integer limit) {
+    public List<ArticleResponse> listArticle(String email, String sort, Long start, Long end, Integer ward, Integer district, Integer city, Boolean roommate, String status, Boolean vip, String search, Integer minAcreage, Integer maxAcreage, Integer page, Integer limit) {
         List<Article> articleList =
                 articleRepository.findCustomAndEmail(email, sort, start, end, ward, district, city,
                         roommate, status, vip, search, minAcreage, maxAcreage, page, limit);
-        List<ArticleOutputDTO> articleOutputDTOList = new ArrayList<>();
+        List<ArticleResponse> articleResponseList = new ArrayList<>();
         if (articleList.size() > 0) {
             for (Article article : articleList) {
-                articleOutputDTOList.add(convertToOutputDTO(article));
+                articleResponseList.add(convertToOutputDTO(article));
             }
         }
-        return articleOutputDTOList;
+        return articleResponseList;
     }
 
     @Override
-    public ArticleOutputDTO insertArticle(String email, ArticleInsertDTO articleInsertDTO)
+    public ArticleResponse insertArticle(String email, ArticleInsertRequest articleInsertRequest)
             throws CustomException {
         System.out.println("email: " + email);
         Customer customer = customerRepository.findByEmail(email);
@@ -65,18 +64,18 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
 
         //kiểm tra và trừ tiền
         Integer money = null;
-        int priceDay = articleInsertDTO.getVip() ? 10000 : 2000;
-        int priceWeek = articleInsertDTO.getVip() ? 63000 : 12000;
-        int priceMonth = articleInsertDTO.getVip() ? 240000 : 48000;
-        switch (articleInsertDTO.getType()) {
+        int priceDay = articleInsertRequest.getVip() ? 10000 : 2000;
+        int priceWeek = articleInsertRequest.getVip() ? 63000 : 12000;
+        int priceMonth = articleInsertRequest.getVip() ? 240000 : 48000;
+        switch (articleInsertRequest.getType()) {
             case "day":
-                money = articleInsertDTO.getNumber() * priceDay;
+                money = articleInsertRequest.getNumber() * priceDay;
                 break;
             case "week":
-                money = articleInsertDTO.getNumber() * priceWeek;
+                money = articleInsertRequest.getNumber() * priceWeek;
                 break;
             case "month":
-                money = articleInsertDTO.getNumber() * priceMonth;
+                money = articleInsertRequest.getNumber() * priceMonth;
                 break;
             default:
                 throw new CustomException("Type của thời gian không hợp lệ");
@@ -85,27 +84,27 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
             throw new CustomException("Số tiền trong tài khoản không đủ");
         customer.setAccountBalance(customer.getAccountBalance() - money);
 
-        String description = "Thanh toán đăng bài: " + money + " VNĐ cho bài đăng: " + articleInsertDTO.getTitle();
+        String description = "Thanh toán đăng bài: " + money + " VNĐ cho bài đăng: " + articleInsertRequest.getTitle();
 
         try {
             ModelMapper modelMapper = new ModelMapper();
             modelMapper.getConfiguration()
                     .setMatchingStrategy(MatchingStrategies.STRICT);
-            Article article = modelMapper.map(articleInsertDTO, Article.class);
+            Article article = modelMapper.map(articleInsertRequest, Article.class);
 
-            com.phamthehuy.doan.model.entity.Service service = new com.phamthehuy.doan.model.entity.Service();
-            service.setElectricPrice(articleInsertDTO.getElectricPrice());
-            service.setWaterPrice(articleInsertDTO.getWaterPrice());
-            service.setWifiPrice(articleInsertDTO.getWifiPrice());
+            com.phamthehuy.doan.entity.Service service = new com.phamthehuy.doan.entity.Service();
+            service.setElectricPrice(articleInsertRequest.getElectricPrice());
+            service.setWaterPrice(articleInsertRequest.getWaterPrice());
+            service.setWifiPrice(articleInsertRequest.getWifiPrice());
             article.setService(service);
 
-            RoommateDTO roommateDTO = articleInsertDTO.getRoommateDTO();
+            RoommateRequest roommateRequest = articleInsertRequest.getRoommateRequest();
             Roommate roommate = null;
-            if (roommateDTO != null)
-                roommate = modelMapper.map(roommateDTO, Roommate.class);
+            if (roommateRequest != null)
+                roommate = modelMapper.map(roommateRequest, Roommate.class);
             article.setRoommate(roommate);
 
-            Optional<Ward> wardOptional = wardRepository.findById(articleInsertDTO.getWardId());
+            Optional<Ward> wardOptional = wardRepository.findById(articleInsertRequest.getWardId());
             if (!wardOptional.isPresent()) throw new CustomException("Ward Id không hợp lệ");
             article.setWard(wardOptional.get());
 
@@ -135,8 +134,8 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
     }
 
     @Override
-    public ArticleOutputDTO updateArticle(String email, ArticleUpdateDTO articleUpdateDTO,
-                                          Integer id) throws CustomException {
+    public ArticleResponse updateArticle(String email, ArticleUpdateRequest articleUpdateRequest,
+                                         Integer id) throws CustomException {
         Customer customer = customerRepository.findByEmail(email);
         if (customer == null) throw new CustomException("Không tìm thấy khách hàng");
         try {
@@ -149,33 +148,33 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
             if (customer != article.getCustomer())
                 throw new CustomException("Khách hàng không hợp lệ");
 
-            article.setTitle(articleUpdateDTO.getTitle());
-            article.setImage(articleUpdateDTO.getImage());
-            article.setRoomPrice(articleUpdateDTO.getRoomPrice());
-            article.setDescription(articleUpdateDTO.getDescription());
-            article.setVip(articleUpdateDTO.getVip());
+            article.setTitle(articleUpdateRequest.getTitle());
+            article.setImage(articleUpdateRequest.getImage());
+            article.setRoomPrice(articleUpdateRequest.getRoomPrice());
+            article.setDescription(articleUpdateRequest.getDescription());
+            article.setVip(articleUpdateRequest.getVip());
 
-            article.setAddress(articleUpdateDTO.getAddress());
-            article.setAcreage(articleUpdateDTO.getAcreage());
-            article.setVideo(articleUpdateDTO.getVideo());
+            article.setAddress(articleUpdateRequest.getAddress());
+            article.setAcreage(articleUpdateRequest.getAcreage());
+            article.setVideo(articleUpdateRequest.getVideo());
 
-            com.phamthehuy.doan.model.entity.Service service = article.getService();
-            service.setElectricPrice(articleUpdateDTO.getElectricPrice());
-            service.setWaterPrice(articleUpdateDTO.getWaterPrice());
-            service.setWifiPrice(articleUpdateDTO.getWifiPrice());
+            com.phamthehuy.doan.entity.Service service = article.getService();
+            service.setElectricPrice(articleUpdateRequest.getElectricPrice());
+            service.setWaterPrice(articleUpdateRequest.getWaterPrice());
+            service.setWifiPrice(articleUpdateRequest.getWifiPrice());
             article.setService(service);
 
-            RoommateDTO roommateDTO = articleUpdateDTO.getRoommateDTO();
-            if (roommateDTO != null) {
+            RoommateRequest roommateRequest = articleUpdateRequest.getRoommateRequest();
+            if (roommateRequest != null) {
                 Roommate roommate = article.getRoommate();
-                roommate.setDescription(roommateDTO.getDescription());
-                roommate.setGender(roommateDTO.getGender());
-                roommate.setQuantity(roommateDTO.getQuantity());
+                roommate.setDescription(roommateRequest.getDescription());
+                roommate.setGender(roommateRequest.getGender());
+                roommate.setQuantity(roommateRequest.getQuantity());
                 article.setRoommate(roommate);
             } else article.setRoommate(null);
 
 
-            Optional<Ward> wardOptional = wardRepository.findById(articleUpdateDTO.getWardId());
+            Optional<Ward> wardOptional = wardRepository.findById(articleUpdateRequest.getWardId());
             if (!wardOptional.isPresent()) throw new CustomException("Ward Id không hợp lệ");
             article.setWard(wardOptional.get());
 
@@ -193,7 +192,7 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
     }
 
     @Override
-    public Message hiddenArticle(String email, Integer id) throws CustomException {
+    public MessageResponse hiddenArticle(String email, Integer id) throws CustomException {
         Article article = articleRepository.findByArticleId(id);
         if (article == null)
             throw new CustomException("Bài đăng với id: " + id + " không tồn tại");
@@ -205,11 +204,11 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
         article.setExpTime(null);
 
         articleRepository.save(article);
-        return new Message("Ẩn bài đăng id: " + id + " thành công");
+        return new MessageResponse("Ẩn bài đăng id: " + id + " thành công");
     }
 
     @Override
-    public Message deleteArticle(String email, Integer id) throws CustomException {
+    public MessageResponse deleteArticle(String email, Integer id) throws CustomException {
         Article article = articleRepository.findByArticleId(id);
         if (article == null)
             throw new CustomException("Bài đăng với id: " + id + " không tồn tại");
@@ -217,11 +216,11 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
         if (!email.equals(article.getCustomer().getEmail()))
             throw new CustomException("Khách hàng không hợp lệ");
         articleRepository.delete(article);
-        return new Message("Xóa bài đăng id: " + id + " thành công");
+        return new MessageResponse("Xóa bài đăng id: " + id + " thành công");
     }
 
     @Override
-    public Message extensionExp(String email, Integer id, Integer days, String type) throws CustomException {
+    public MessageResponse extensionExp(String email, Integer id, Integer days, String type) throws CustomException {
         Article article = articleRepository.findByArticleId(id);
         if (article == null)
             throw new CustomException("Bài đăng với id: " + id + " không tồn tại");
@@ -261,11 +260,11 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
         Customer newCustomer = customerRepository.save(customer);
         creatTransactionPay(money, newCustomer, description);
         articleRepository.save(article);
-        return new Message("Gia hạn bài đăng id: " + id + " thành công");
+        return new MessageResponse("Gia hạn bài đăng id: " + id + " thành công");
     }
 
     @Override
-    public Message postOldArticle(String email, Integer id, Integer days, String type) throws CustomException {
+    public MessageResponse postOldArticle(String email, Integer id, Integer days, String type) throws CustomException {
         Article article = articleRepository.findByDeletedTrueAnAndArticleId(id);
         if (article == null)
             throw new CustomException("Bài đăng với id: " + id + " không tồn tại, hoặc đang không bị ẩn");
@@ -305,11 +304,11 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
         Customer newCustomer = customerRepository.save(customer);
         creatTransactionPay(money, newCustomer, description);
         articleRepository.save(article);
-        return new Message("Đăng lại bài đăng đã ẩn id: " + id + " thành công");
+        return new MessageResponse("Đăng lại bài đăng đã ẩn id: " + id + " thành công");
     }
 
     @Override
-    public ArticleOutputDTO detailArticle(String email, Integer id) throws CustomException {
+    public ArticleResponse detailArticle(String email, Integer id) throws CustomException {
         Article article = articleRepository.findByArticleId(id);
         if (article == null)
             throw new CustomException("Bài đăng với id: " + id + " không tồn tại");
@@ -322,19 +321,19 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
         return convertToOutputDTO(article);
     }
 
-    public ArticleOutputDTO convertToOutputDTO(Article article) {
+    public ArticleResponse convertToOutputDTO(Article article) {
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration()
                 .setMatchingStrategy(MatchingStrategies.STRICT);
-        ArticleOutputDTO articleOutputDTO = modelMapper.map(article, ArticleOutputDTO.class);
-        articleOutputDTO.setCreateTime(article.getTimeCreated().getTime());
-        articleOutputDTO.setLastUpdateTime(article.getUpdateTime().getTime());
+        ArticleResponse articleResponse = modelMapper.map(article, ArticleResponse.class);
+        articleResponse.setCreateTime(article.getTimeCreated().getTime());
+        articleResponse.setLastUpdateTime(article.getUpdateTime().getTime());
         if (article.getDeleted() != null) {
             if (article.getDeleted())
-                articleOutputDTO.setStatus("Đã ẩn");
+                articleResponse.setStatus("Đã ẩn");
             else
-                articleOutputDTO.setStatus("Đang đăng");
-        } else articleOutputDTO.setStatus("Chưa duyệt");
+                articleResponse.setStatus("Đang đăng");
+        } else articleResponse.setStatus("Chưa duyệt");
 
         StaffArticle staffArticle = staffArticleRepository.
                 findFirstByArticle_ArticleId(article.getArticleId(), Sort.by("time").descending());
@@ -345,7 +344,7 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
             moderator.put("staffId", staffArticle.getStaff().getStaffId() + "");
             moderator.put("name", staffArticle.getStaff().getName());
             moderator.put("email", staffArticle.getStaff().getEmail());
-            articleOutputDTO.setModerator(moderator);
+            articleResponse.setModerator(moderator);
         }
 
         Map<String, String> customer = new HashMap<>();
@@ -353,10 +352,10 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
         customer.put("name", article.getCustomer().getName());
         customer.put("email", article.getCustomer().getEmail());
         customer.put("phone", article.getCustomer().getPhone());
-        articleOutputDTO.setCustomer(customer);
+        articleResponse.setCustomer(customer);
 
         if (article.getDeleted() != null && !article.getDeleted()) {
-            articleOutputDTO.
+            articleResponse.
                     setExpDate(article.getExpTime().getTime());
         }
 
@@ -367,8 +366,8 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
         location.put("districtName", article.getWard().getDistrict().getDistrictName());
         location.put("cityId", article.getWard().getDistrict().getCity().getCityId() + "");
         location.put("cityName", article.getWard().getDistrict().getCity().getCityName());
-        articleOutputDTO.setLocation(location);
+        articleResponse.setLocation(location);
 
-        return articleOutputDTO;
+        return articleResponse;
     }
 }

@@ -18,11 +18,17 @@ import java.util.Map;
 @RestController
 public class CustomHandleException extends ResponseEntityExceptionHandler {
     @ExceptionHandler(CustomException.class)    //bắt loại exception
-    public ResponseEntity<Object> handleAllException(Exception ex, WebRequest request){
-
+    public ResponseEntity<Object> handleCustomException(Exception ex, WebRequest request){
         Map<String, String> map=new HashMap<>();
         map.put("mess", ex.getMessage());
-        return new ResponseEntity<Object>(map, HttpStatus.BAD_REQUEST); //trả về json lỗi và loại lỗi
+        return new ResponseEntity<>(map, HttpStatus.BAD_REQUEST); //trả về json lỗi và loại lỗi
+    }
+
+    @ExceptionHandler(UnauthenticatedException.class)
+    public ResponseEntity<Object> handleUnauthenticatedException(Exception ex, WebRequest request){
+        Map<String, String> map=new HashMap<>();
+        map.put("mess", "Token không hợp lệ");
+        return new ResponseEntity<>(map, HttpStatus.UNAUTHORIZED);
     }
 
     @Override

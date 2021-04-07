@@ -1,10 +1,10 @@
 package com.phamthehuy.doan.controller.customer;
 
 import com.phamthehuy.doan.exception.CustomException;
-import com.phamthehuy.doan.model.dto.input.ArticleInsertDTO;
-import com.phamthehuy.doan.model.dto.input.ArticleUpdateDTO;
-import com.phamthehuy.doan.model.dto.output.ArticleOutputDTO;
-import com.phamthehuy.doan.model.dto.output.Message;
+import com.phamthehuy.doan.model.request.ArticleInsertRequest;
+import com.phamthehuy.doan.model.request.ArticleUpdateRequest;
+import com.phamthehuy.doan.model.response.ArticleResponse;
+import com.phamthehuy.doan.model.response.MessageResponse;
 import com.phamthehuy.doan.service.CustomerArticleService;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,7 +31,7 @@ public class CustomerArticleController {
 //    lọc bài đăng theo isVip	/admin/article?vip={true/false}
 //    tìm kiếm bài đăng theo title	/customer/article?title={title}
     @GetMapping("/article")
-    public List<ArticleOutputDTO> listArticle(
+    public List<ArticleResponse> listArticle(
             @RequestParam(required = false) String sort,
             @RequestParam(required = false) Long start, @RequestParam(required = false) Long end,
             @RequestParam(required = false) Integer ward,
@@ -54,61 +54,61 @@ public class CustomerArticleController {
 
     //    chi tiết bài đăng	/customer/article/{id}
     @GetMapping("/article/{id}")
-    public ArticleOutputDTO detailArticle(@PathVariable Integer id,
-                                          HttpServletRequest request) throws CustomException {
+    public ArticleResponse detailArticle(@PathVariable Integer id,
+                                         HttpServletRequest request) throws CustomException {
         String email = (String) request.getAttribute("email");
         return customerArticleService.detailArticle(email, id);
     }
 
     //    đăng bài	/customer/article
     @PostMapping("/article")
-    public ArticleOutputDTO insertArticle(@Valid @RequestBody ArticleInsertDTO articleInsertDTO,
-                                          HttpServletRequest request) throws CustomException {
+    public ArticleResponse insertArticle(@Valid @RequestBody ArticleInsertRequest articleInsertRequest,
+                                         HttpServletRequest request) throws CustomException {
         String email = (String) request.getAttribute("email");
-        return customerArticleService.insertArticle(email, articleInsertDTO);
+        return customerArticleService.insertArticle(email, articleInsertRequest);
     }
 
     //    sửa bài đăng	/customer/article
     @PutMapping("/article/{id}")
-    public ArticleOutputDTO updateArticle(@Valid @RequestBody ArticleUpdateDTO articleUpdateDTO,
-                                          @PathVariable Integer id,
-                                          HttpServletRequest request) throws CustomException {
+    public ArticleResponse updateArticle(@Valid @RequestBody ArticleUpdateRequest articleUpdateRequest,
+                                         @PathVariable Integer id,
+                                         HttpServletRequest request) throws CustomException {
         String email = (String) request.getAttribute("email");
-        return customerArticleService.updateArticle(email, articleUpdateDTO, id);
+        return customerArticleService.updateArticle(email, articleUpdateRequest, id);
     }
 
     //    ẩn bài đăng	/customer/article/hidden/{id}
     @GetMapping("/article/hidden/{id}")
-    public Message hiddenArticle(@PathVariable Integer id,
-                                 HttpServletRequest request) throws CustomException {
+    public MessageResponse hiddenArticle(@PathVariable Integer id,
+                                         HttpServletRequest request) throws CustomException {
         String email = (String) request.getAttribute("email");
         return customerArticleService.hiddenArticle(email, id);
     }
 
     //    xóa bài đăng	/customer/article/{id}
     @DeleteMapping("/article/{id}")
-    public Message deleteArticle(@PathVariable Integer id,
-                                 HttpServletRequest request) throws CustomException {
+    public MessageResponse deleteArticle(@PathVariable Integer id,
+                                         HttpServletRequest request) throws CustomException {
         String email = (String) request.getAttribute("email");
         return customerArticleService.deleteArticle(email, id);
     }
 
     //    gia hạn bài đăng	/customer/article/extension/{id}?days={int}
     @GetMapping("/article/extension/{id}")
-    public Message extensionExp(@PathVariable Integer id,
-                                @RequestParam Integer number,
-                                @RequestParam String type,
-                                HttpServletRequest request) throws CustomException {
+    public MessageResponse extensionExp(@PathVariable Integer id,
+                                        @RequestParam Integer number,
+                                        @RequestParam String type,
+                                        HttpServletRequest request) throws CustomException {
         String email = (String) request.getAttribute("email");
         return customerArticleService.extensionExp(email, id, number, type);
     }
 
     //    đăng lại bài đăng đã ẩn	/customer/article/post/{id}?days={int}
     @GetMapping("/article/post/{id}")
-    public Message postOldArticle(@PathVariable Integer id,
-                                  @RequestParam Integer number,
-                                  @RequestParam String type,
-                                  HttpServletRequest request) throws CustomException {
+    public MessageResponse postOldArticle(@PathVariable Integer id,
+                                          @RequestParam Integer number,
+                                          @RequestParam String type,
+                                          HttpServletRequest request) throws CustomException {
         String email = (String) request.getAttribute("email");
         return customerArticleService.postOldArticle(email, id, number, type);
     }

@@ -1,17 +1,17 @@
 package com.phamthehuy.doan.service.impl;
 
 import com.phamthehuy.doan.authentication.CustomUserDetailsService;
-import com.phamthehuy.doan.authentication.JwtUtil;
-import com.phamthehuy.doan.dao.CustomerRepository;
-import com.phamthehuy.doan.dao.StaffRepository;
+import com.phamthehuy.doan.util.auth.JwtUtil;
+import com.phamthehuy.doan.model.request.*;
+import com.phamthehuy.doan.repository.CustomerRepository;
+import com.phamthehuy.doan.repository.StaffRepository;
 import com.phamthehuy.doan.exception.CustomException;
 import com.phamthehuy.doan.helper.Helper;
-import com.phamthehuy.doan.model.dto.input.*;
-import com.phamthehuy.doan.model.dto.output.CustomerOutputDTO;
-import com.phamthehuy.doan.model.dto.output.Message;
-import com.phamthehuy.doan.model.dto.output.StaffOutputDTO;
-import com.phamthehuy.doan.model.entity.Customer;
-import com.phamthehuy.doan.model.entity.Staff;
+import com.phamthehuy.doan.model.response.CustomerResponse;
+import com.phamthehuy.doan.model.response.MessageResponse;
+import com.phamthehuy.doan.model.response.StaffResponse;
+import com.phamthehuy.doan.entity.Customer;
+import com.phamthehuy.doan.entity.Staff;
 import com.phamthehuy.doan.service.AccountService;
 import com.phamthehuy.doan.util.MailSender;
 import io.jsonwebtoken.impl.DefaultClaims;
@@ -73,7 +73,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Message customerSignup(SignupDTO signupDTO, HttpServletRequest request) throws CustomException {
+    public MessageResponse customerSignup(SignupRequest signupRequest, HttpServletRequest request) throws CustomException {
         // same as BeanUtils
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration()
@@ -81,10 +81,10 @@ public class AccountServiceImpl implements AccountService {
 
         //validate
         String numberMatcher = "[0-9]+";
-        if (!signupDTO.getPhone().matches(numberMatcher))
+        if (!signupRequest.getPhone().matches(numberMatcher))
             throw new CustomException("Số điện thoại phải là số");
-        if (customerRepository.findByEmail(signupDTO.getEmail()) != null
-                || staffRepository.findByEmail(signupDTO.getEmail()) != null)
+        if (customerRepository.findByEmail(signupRequest.getEmail()) != null
+                || staffRepository.findByEmail(signupRequest.getEmail()) != null)
             throw new CustomException("Email đã được sử dụng");
 
         try {
@@ -92,19 +92,19 @@ public class AccountServiceImpl implements AccountService {
             String token = helper.createToken(30);
 
             //create customer
-            Customer customer = modelMapper.map(signupDTO, Customer.class);
+            Customer customer = modelMapper.map(signupRequest, Customer.class);
             customer.setAccountBalance(10000);
-            customer.setPass(passwordEncoder.encode(signupDTO.getPass()));
+            customer.setPass(passwordEncoder.encode(signupRequest.getPass()));
             customer.setToken(token);
             Customer newCustomer = customerRepository.save(customer);
 
             //send mail
             mailSender.send(
-                    signupDTO.getEmail(),
+                    signupRequest.getEmail(),
                     "Xác nhận địa chỉ email",
                     "Click vào đường link sau để xác nhận email và kích hoạt tài khoản của bạn:<br/>" +
                             helper.getHostUrl(request.getRequestURL().toString(), "/sign-up") + "/confirm?token-customer=" + token
-                            + "&email=" + signupDTO.getEmail(),
+                            + "&email=" + signupRequest.getEmail(),
                     "Thời hạn xác nhận, 10 phút kể từ khi đăng kí"
             );
 
@@ -120,7 +120,7 @@ public class AccountServiceImpl implements AccountService {
             };
             deleteDisabledCustomer.start();
 
-            return new Message("Bạn hãy check mail để xác nhận, trong vòng 10 phút");
+            return new MessageResponse("Bạn hãy check mail để xác nhận, trong vòng 10 phút");
         } catch (Exception e) {
             throw new CustomException("Đăng kí thất bại");
         }
@@ -128,7 +128,7 @@ public class AccountServiceImpl implements AccountService {
 
     //về sau chuyển thành void, return redirect
     @Override
-    public Message confirmEmail(String token, String email) throws CustomException {
+    public MessageResponse confirmEmail(String token, String email) throws CustomException {
         Staff staff = null;
         Customer customer = customerRepository.findByToken(token);
         if (customer == null) staff = staffRepository.findByToken(token);
@@ -139,7 +139,7 @@ public class AccountServiceImpl implements AccountService {
             staffRepository.save(staff);
 
             //nen lam redirect
-            return new Message("Xác nhận email thành công");
+            return new MessageResponse("Xác nhận email thành công");
         } else if (customer != null) {
             if (!customer.getEmail().equals(email)) throw new CustomException("Email không chính xác");
             customer.setEnabled(true);
@@ -147,15 +147,15 @@ public class AccountServiceImpl implements AccountService {
             customerRepository.save(customer);
 
             //nen lam redirect
-            return new Message("Xác nhận email thành công");
+            return new MessageResponse("Xác nhận email thành công");
         } else throw new CustomException("Xác nhận email thất bại");
     }
 
     @Override
-    public Map<String, String> login(LoginDTO loginDTO) throws Exception {
+    public Map<String, String> login(LoginRequest loginRequest) throws Exception {
         Map<String, String> returnMap = new HashMap<>();
-        Customer customer = customerRepository.findByEmail(loginDTO.getEmail());
-        Staff staff = staffRepository.findByEmail(loginDTO.getEmail());
+        Customer customer = customerRepository.findByEmail(loginRequest.getEmail());
+        Staff staff = staffRepository.findByEmail(loginRequest.getEmail());
         //validate
         if (customer == null) {
             if (staff == null) {
@@ -172,14 +172,14 @@ public class AccountServiceImpl implements AccountService {
         //login
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                    loginDTO.getEmail(), loginDTO.getPass()));
+                    loginRequest.getEmail(), loginRequest.getPass()));
         } catch (DisabledException e) {
             throw new Exception("Người dùng vô hiệu", e);
         } catch (BadCredentialsException e) {
             //throw new Exception("Bad credentials", e);
             throw new CustomException("Mật khẩu không đúng");
         }
-        final UserDetails userDetails = userDetailsService.loadUserByUsername(loginDTO.getEmail());
+        final UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getEmail());
 
         final String token = jwtTokenUtil.generateToken(userDetails);
 
@@ -227,7 +227,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Message forgotPassword(String email) throws CustomException {
+    public MessageResponse forgotPassword(String email) throws CustomException {
         Staff staff = null;
         staff = staffRepository.findByEmail(email);
         Customer customer = null;
@@ -261,34 +261,34 @@ public class AccountServiceImpl implements AccountService {
                         + "&email=" + email,
                 "Chúc bạn thành công"
         );
-        return new Message("Thành công, bạn hãy check mail để tiếp tục");
+        return new MessageResponse("Thành công, bạn hãy check mail để tiếp tục");
     }
 
     @Override
-    public Message resetPassword(ResetPasswordDTO resetPasswordDTO) throws CustomException {
+    public MessageResponse resetPassword(ResetPasswordRequest resetPasswordRequest) throws CustomException {
         Staff staff = null;
         Customer customer = null;
-        staff = staffRepository.findByToken(resetPasswordDTO.getToken());
-        if (staff == null) customer = customerRepository.findByToken(resetPasswordDTO.getToken());
+        staff = staffRepository.findByToken(resetPasswordRequest.getToken());
+        if (staff == null) customer = customerRepository.findByToken(resetPasswordRequest.getToken());
         if (staff != null) {
-            if (!staff.getEmail().equals(resetPasswordDTO.getEmail()))
+            if (!staff.getEmail().equals(resetPasswordRequest.getEmail()))
                 throw new CustomException("Email không chính xác");
-            staff.setPass(passwordEncoder.encode(resetPasswordDTO.getPassword()));
+            staff.setPass(passwordEncoder.encode(resetPasswordRequest.getPassword()));
             staff.setToken(null);
             staffRepository.save(staff);
-            return new Message("Làm mới mật khẩu thành công");
+            return new MessageResponse("Làm mới mật khẩu thành công");
         } else if (customer != null) {
-            if (!customer.getEmail().equals(resetPasswordDTO.getEmail()))
+            if (!customer.getEmail().equals(resetPasswordRequest.getEmail()))
                 throw new CustomException("Email không chính xác");
-            customer.setPass(passwordEncoder.encode(resetPasswordDTO.getPassword()));
+            customer.setPass(passwordEncoder.encode(resetPasswordRequest.getPassword()));
             customer.setToken(null);
             customerRepository.save(customer);
-            return new Message("Làm mới mật khẩu thành cồng");
+            return new MessageResponse("Làm mới mật khẩu thành cồng");
         } else throw new CustomException("Làm mới mật khẩu thất bại");
     }
 
     @Override
-    public StaffOutputDTO staffDetail(HttpServletRequest request) throws CustomException {
+    public StaffResponse staffDetail(HttpServletRequest request) throws CustomException {
         try {
             ModelMapper modelMapper = new ModelMapper();
             modelMapper.getConfiguration()
@@ -301,9 +301,9 @@ public class AccountServiceImpl implements AccountService {
             if (newStaff == null)
                 throw new CustomException("Token không hợp lệ");
 
-            StaffOutputDTO staffOutputDTO = modelMapper.map(newStaff, StaffOutputDTO.class);
-            staffOutputDTO.setBirthday(newStaff.getDob().getTime());
-            return staffOutputDTO;
+            StaffResponse staffResponse = modelMapper.map(newStaff, StaffResponse.class);
+            staffResponse.setBirthday(newStaff.getDob().getTime());
+            return staffResponse;
         } catch (CustomException e) {
             throw new CustomException(e.getMessage());
         } catch (Exception e) {
@@ -312,15 +312,15 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public StaffOutputDTO staffUpdateProfile(StaffPersonUpdateDTO staffPersonUpdateDTO,
-                                             HttpServletRequest request) throws CustomException {
+    public StaffResponse staffUpdateProfile(StaffPersonUpdateRequest staffPersonUpdateRequest,
+                                            HttpServletRequest request) throws CustomException {
         //validate
         String matchNumber = "[0-9]+";
-        if (!staffPersonUpdateDTO.getCardId().matches(matchNumber))
+        if (!staffPersonUpdateRequest.getCardId().matches(matchNumber))
             throw new CustomException("Số CMND phải là số");
-        if (!staffPersonUpdateDTO.getPhone().matches(matchNumber))
+        if (!staffPersonUpdateRequest.getPhone().matches(matchNumber))
             throw new CustomException("Số điện thoại phải là số");
-        if (staffPersonUpdateDTO.getBirthday() >= System.currentTimeMillis())
+        if (staffPersonUpdateRequest.getBirthday() >= System.currentTimeMillis())
             throw new CustomException("Ngày sinh phải trong quá khứ");
 
         //update
@@ -330,21 +330,21 @@ public class AccountServiceImpl implements AccountService {
             Staff staff = staffRepository.findByEmail(email);
             if (staff == null) throw new CustomException("Token không hợp lệ");
 
-            staff.setName(staffPersonUpdateDTO.getName());
-            staff.setCardId(staffPersonUpdateDTO.getCardId());
-            staff.setDob(new Date(staffPersonUpdateDTO.getBirthday()));
-            staff.setGender(staffPersonUpdateDTO.isGender());
-            staff.setAddress(staffPersonUpdateDTO.getAddress());
-            staff.setPhone(staffPersonUpdateDTO.getPhone());
-            staff.setImage(staffPersonUpdateDTO.getImage());
+            staff.setName(staffPersonUpdateRequest.getName());
+            staff.setCardId(staffPersonUpdateRequest.getCardId());
+            staff.setDob(new Date(staffPersonUpdateRequest.getBirthday()));
+            staff.setGender(staffPersonUpdateRequest.isGender());
+            staff.setAddress(staffPersonUpdateRequest.getAddress());
+            staff.setPhone(staffPersonUpdateRequest.getPhone());
+            staff.setImage(staffPersonUpdateRequest.getImage());
             Staff newStaff = staffRepository.save(staff);
 
             ModelMapper modelMapper = new ModelMapper();
             modelMapper.getConfiguration()
                     .setMatchingStrategy(MatchingStrategies.STRICT);
-            StaffOutputDTO staffOutputDTO = modelMapper.map(newStaff, StaffOutputDTO.class);
-            staffOutputDTO.setBirthday(newStaff.getDob().getTime());
-            return staffOutputDTO;
+            StaffResponse staffResponse = modelMapper.map(newStaff, StaffResponse.class);
+            staffResponse.setBirthday(newStaff.getDob().getTime());
+            return staffResponse;
         } catch (CustomException e) {
             throw new CustomException(e.getMessage());
         } catch (Exception e) {
@@ -354,7 +354,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public CustomerOutputDTO customerProfile(HttpServletRequest request) throws CustomException {
+    public CustomerResponse customerProfile(HttpServletRequest request) throws CustomException {
         try {
             ModelMapper modelMapper = new ModelMapper();
             modelMapper.getConfiguration()
@@ -368,9 +368,9 @@ public class AccountServiceImpl implements AccountService {
             if (customer == null)
                 throw new CustomException("Token không hợp lệ");
 
-            CustomerOutputDTO customerOutputDTO = modelMapper.map(customer, CustomerOutputDTO.class);
-            if (customer.getDob() != null) customerOutputDTO.setBirthday(customer.getDob().getTime());
-            return customerOutputDTO;
+            CustomerResponse customerResponse = modelMapper.map(customer, CustomerResponse.class);
+            if (customer.getDob() != null) customerResponse.setBirthday(customer.getDob().getTime());
+            return customerResponse;
         } catch (CustomException e) {
             throw new CustomException(e.getMessage());
         } catch (Exception e) {
@@ -379,18 +379,18 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public CustomerOutputDTO customerUpdateProfile(CustomerUpdateDTO customerUpdateDTO, HttpServletRequest request) throws CustomException {
+    public CustomerResponse customerUpdateProfile(CustomerUpdateRequest customerUpdateRequest, HttpServletRequest request) throws CustomException {
         //validate
         String matchNumber = "[0-9]+";
-        if (customerUpdateDTO.getCardId() != null && !customerUpdateDTO.getCardId().equals("")) {
-            if (!customerUpdateDTO.getCardId().matches(matchNumber))
+        if (customerUpdateRequest.getCardId() != null && !customerUpdateRequest.getCardId().equals("")) {
+            if (!customerUpdateRequest.getCardId().matches(matchNumber))
                 throw new CustomException("Số CMND phải là số");
-            else if (customerUpdateDTO.getCardId().length() < 9 || customerUpdateDTO.getCardId().length() > 12)
+            else if (customerUpdateRequest.getCardId().length() < 9 || customerUpdateRequest.getCardId().length() > 12)
                 throw new CustomException("Số CMND phải gồm 9-12 số");
         }
-        if (!customerUpdateDTO.getPhone().matches(matchNumber))
+        if (!customerUpdateRequest.getPhone().matches(matchNumber))
             throw new CustomException("Số điện thoại phải là số");
-        if (customerUpdateDTO.getBirthday() >= System.currentTimeMillis())
+        if (customerUpdateRequest.getBirthday() >= System.currentTimeMillis())
             throw new CustomException("Ngày sinh phải trong quá khứ");
 
         //update
@@ -403,17 +403,17 @@ public class AccountServiceImpl implements AccountService {
             Customer customer = customerRepository.findByEmail(email);
             if (customer == null) throw new CustomException("Token không hợp lệ");
 
-            customer.setName(customerUpdateDTO.getName());
-            customer.setGender(customerUpdateDTO.isGender());
-            customer.setAddress(customerUpdateDTO.getAddress());
-            customer.setPhone(customerUpdateDTO.getPhone());
-            customer.setCardId(customerUpdateDTO.getCardId());
-            customer.setDob(new Date(customerUpdateDTO.getBirthday()));
-            customer.setImage(customerUpdateDTO.getImage());
+            customer.setName(customerUpdateRequest.getName());
+            customer.setGender(customerUpdateRequest.isGender());
+            customer.setAddress(customerUpdateRequest.getAddress());
+            customer.setPhone(customerUpdateRequest.getPhone());
+            customer.setCardId(customerUpdateRequest.getCardId());
+            customer.setDob(new Date(customerUpdateRequest.getBirthday()));
+            customer.setImage(customerUpdateRequest.getImage());
             Customer newCustomer = customerRepository.save(customer);
-            CustomerOutputDTO customerOutputDTO = modelMapper.map(newCustomer, CustomerOutputDTO.class);
-            if (customer.getDob() != null) customerOutputDTO.setBirthday(newCustomer.getDob().getTime());
-            return customerOutputDTO;
+            CustomerResponse customerResponse = modelMapper.map(newCustomer, CustomerResponse.class);
+            if (customer.getDob() != null) customerResponse.setBirthday(newCustomer.getDob().getTime());
+            return customerResponse;
         } catch (CustomException e) {
             throw new CustomException(e.getMessage());
         } catch (Exception e) {
@@ -423,8 +423,8 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Message changePassword(String oldPass, String newPass,
-                                  HttpServletRequest request) throws CustomException {
+    public MessageResponse changePassword(String oldPass, String newPass,
+                                          HttpServletRequest request) throws CustomException {
         try {
             String token = extractJwtFromRequest(request);
             String email = jwtTokenUtil.getEmailFromToken(token);
@@ -439,7 +439,7 @@ public class AccountServiceImpl implements AccountService {
                         throw new CustomException("Mật khẩu cũ không chính xác");
                     staff.setPass(passwordEncoder.encode(newPass));
                     staffRepository.save(staff);
-                    return new Message("Đổi mật khẩu cho nhân viên: " + staff.getEmail() + " thành công");
+                    return new MessageResponse("Đổi mật khẩu cho nhân viên: " + staff.getEmail() + " thành công");
                 } else throw new CustomException("Không tìm thấy nhân viên hợp lệ");
             } else {
                 Customer customer = customerRepository.findByEmail(email);
@@ -448,7 +448,7 @@ public class AccountServiceImpl implements AccountService {
                         throw new CustomException("Mật khẩu cũ không chính xác");
                     customer.setPass(passwordEncoder.encode(newPass));
                     customerRepository.save(customer);
-                    return new Message("Đổi mật khẩu khách hàng: " + customer.getEmail() + " thành công");
+                    return new MessageResponse("Đổi mật khẩu khách hàng: " + customer.getEmail() + " thành công");
                 } else throw new CustomException("Không tìm thấy người dùng hợp lệ");
             }
         } catch (CustomException e) {

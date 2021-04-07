@@ -1,7 +1,7 @@
 package com.phamthehuy.doan.util;
 
-import com.phamthehuy.doan.dao.ArticleRepository;
-import com.phamthehuy.doan.model.entity.Article;
+import com.phamthehuy.doan.repository.ArticleRepository;
+import com.phamthehuy.doan.entity.Article;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 

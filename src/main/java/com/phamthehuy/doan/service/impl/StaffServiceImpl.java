@@ -1,14 +1,14 @@
 package com.phamthehuy.doan.service.impl;
 
-import com.phamthehuy.doan.dao.CustomerRepository;
-import com.phamthehuy.doan.dao.StaffRepository;
+import com.phamthehuy.doan.repository.CustomerRepository;
+import com.phamthehuy.doan.repository.StaffRepository;
 import com.phamthehuy.doan.exception.CustomException;
 import com.phamthehuy.doan.helper.Helper;
-import com.phamthehuy.doan.model.dto.input.StaffInsertDTO;
-import com.phamthehuy.doan.model.dto.input.StaffUpdateDTO;
-import com.phamthehuy.doan.model.dto.output.Message;
-import com.phamthehuy.doan.model.dto.output.StaffOutputDTO;
-import com.phamthehuy.doan.model.entity.Staff;
+import com.phamthehuy.doan.model.request.StaffInsertRequest;
+import com.phamthehuy.doan.model.request.StaffUpdateRequest;
+import com.phamthehuy.doan.model.response.MessageResponse;
+import com.phamthehuy.doan.model.response.StaffResponse;
+import com.phamthehuy.doan.entity.Staff;
 import com.phamthehuy.doan.service.StaffService;
 import com.phamthehuy.doan.util.MailSender;
 import lombok.SneakyThrows;
@@ -53,8 +53,8 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public List<StaffOutputDTO> listStaff(String search, Boolean status, String sort,
-                                          Integer page, Integer limit) {
+    public List<StaffResponse> listStaff(String search, Boolean status, String sort,
+                                         Integer page, Integer limit) {
         if (search == null || search.trim().equals("")) search = "";
         Page<Staff> staffPage;
         if (sort == null || sort.equals("")) {
@@ -128,28 +128,28 @@ public class StaffServiceImpl implements StaffService {
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration()
                 .setMatchingStrategy(MatchingStrategies.STRICT);
-        List<StaffOutputDTO> staffOutputDTOList = new ArrayList<>();
+        List<StaffResponse> staffResponseList = new ArrayList<>();
         for (Staff staff : staffList) {
-            StaffOutputDTO staffOutputDTO = modelMapper.map(staff, StaffOutputDTO.class);
-            staffOutputDTO.setBirthday(staff.getDob().getTime());
-            staffOutputDTOList.add(staffOutputDTO);
+            StaffResponse staffResponse = modelMapper.map(staff, StaffResponse.class);
+            staffResponse.setBirthday(staff.getDob().getTime());
+            staffResponseList.add(staffResponse);
         }
-        return staffOutputDTOList;
+        return staffResponseList;
     }
 
     @Override
-    public Message insertStaff(StaffInsertDTO staffInsertDTO, HttpServletRequest request) throws Exception {
+    public MessageResponse insertStaff(StaffInsertRequest staffInsertRequest, HttpServletRequest request) throws Exception {
         //validation
-        if (customerRepository.findByEmail(staffInsertDTO.getEmail()) != null)
+        if (customerRepository.findByEmail(staffInsertRequest.getEmail()) != null)
             throw new CustomException("Email đã khách hàng sử dụng");
-        if (staffRepository.findByEmail(staffInsertDTO.getEmail()) != null)
+        if (staffRepository.findByEmail(staffInsertRequest.getEmail()) != null)
             throw new CustomException("Email đã được nhân viên sử dụng");
         String matchNumber = "[0-9]+";
-        if (!staffInsertDTO.getCardId().matches(matchNumber))
+        if (!staffInsertRequest.getCardId().matches(matchNumber))
             throw new CustomException("Số CMND phải là số");
-        if (!staffInsertDTO.getPhone().matches(matchNumber))
+        if (!staffInsertRequest.getPhone().matches(matchNumber))
             throw new CustomException("Số điện thoại phải là số");
-        if (staffInsertDTO.getBirthday() >= System.currentTimeMillis())
+        if (staffInsertRequest.getBirthday() >= System.currentTimeMillis())
             throw new CustomException("Ngày sinh phải trong quá khứ");
 
         //create token
@@ -160,9 +160,9 @@ public class StaffServiceImpl implements StaffService {
             ModelMapper modelMapper = new ModelMapper();
             modelMapper.getConfiguration()
                     .setMatchingStrategy(MatchingStrategies.STRICT);
-            Staff staff = modelMapper.map(staffInsertDTO, Staff.class);
-            staff.setDob(new Date((staffInsertDTO.getBirthday())));
-            staff.setPass(passwordEncoder.encode(staffInsertDTO.getPass()));
+            Staff staff = modelMapper.map(staffInsertRequest, Staff.class);
+            staff.setDob(new Date((staffInsertRequest.getBirthday())));
+            staff.setPass(passwordEncoder.encode(staffInsertRequest.getPass()));
             staff.setToken(token);
             Staff newStaff = staffRepository.save(staff);
             //StaffOutputDTO staffOutputDTO = modelMapper.map(newStaff, StaffOutputDTO.class);
@@ -170,11 +170,11 @@ public class StaffServiceImpl implements StaffService {
 
             //send mail
             mailSender.send(
-                    staffInsertDTO.getEmail(),
+                    staffInsertRequest.getEmail(),
                     "Xác nhận địa chỉ email",
                     "Click vào đường link sau để xác nhận email và kích hoạt tài khoản của bạn:<br/>" +
                             helper.getHostUrl(request.getRequestURL().toString(), "/super-admin") + "/confirm?token-customer=" + token
-                            + "&email=" + staffInsertDTO.getEmail(),
+                            + "&email=" + staffInsertRequest.getEmail(),
                     "Thời hạn xác nhận email: 10 phút kể từ khi đăng kí"
             );
 
@@ -191,7 +191,7 @@ public class StaffServiceImpl implements StaffService {
             };
             deleteDisabledStaff.start();
 
-            return new Message("Bạn hãy check mail để xác nhận, thời hạn 10 phút kể từ khi đăng kí");
+            return new MessageResponse("Bạn hãy check mail để xác nhận, thời hạn 10 phút kể từ khi đăng kí");
         } catch (Exception e) {
             //e.printStackTrace();
             throw new CustomException("Thêm mới nhân viên thất bại");
@@ -199,14 +199,14 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public ResponseEntity<?> updateStaff(StaffUpdateDTO staffUpdateDTO, Integer id) throws CustomException {
+    public ResponseEntity<?> updateStaff(StaffUpdateRequest staffUpdateRequest, Integer id) throws CustomException {
         //validate
         String matchNumber = "[0-9]+";
-        if (!staffUpdateDTO.getCardId().matches(matchNumber))
+        if (!staffUpdateRequest.getCardId().matches(matchNumber))
             throw new CustomException("Số CMND phải là số");
-        if (!staffUpdateDTO.getPhone().matches(matchNumber))
+        if (!staffUpdateRequest.getPhone().matches(matchNumber))
             throw new CustomException("Số điện thoại phải là số");
-        if (staffUpdateDTO.getBirthday() >= System.currentTimeMillis())
+        if (staffUpdateRequest.getBirthday() >= System.currentTimeMillis())
             throw new CustomException("Ngày sinh phải trong quá khứ");
 
         //update
@@ -216,18 +216,18 @@ public class StaffServiceImpl implements StaffService {
                     .setMatchingStrategy(MatchingStrategies.STRICT);
             Optional<Staff> optionalStaff = staffRepository.findById(id);
             Staff staff = optionalStaff.get();
-            staff.setName(staffUpdateDTO.getName());
-            staff.setCardId(staffUpdateDTO.getCardId());
-            staff.setDob(new Date(staffUpdateDTO.getBirthday()));
-            staff.setGender(staffUpdateDTO.isGender());
-            staff.setRole(staffUpdateDTO.isRole());
-            staff.setAddress(staffUpdateDTO.getAddress());
-            staff.setPhone(staffUpdateDTO.getPhone());
-            staff.setImage(staffUpdateDTO.getImage());
+            staff.setName(staffUpdateRequest.getName());
+            staff.setCardId(staffUpdateRequest.getCardId());
+            staff.setDob(new Date(staffUpdateRequest.getBirthday()));
+            staff.setGender(staffUpdateRequest.isGender());
+            staff.setRole(staffUpdateRequest.isRole());
+            staff.setAddress(staffUpdateRequest.getAddress());
+            staff.setPhone(staffUpdateRequest.getPhone());
+            staff.setImage(staffUpdateRequest.getImage());
             Staff newStaff = staffRepository.save(staff);
-            StaffOutputDTO staffOutputDTO = modelMapper.map(newStaff, StaffOutputDTO.class);
-            staffOutputDTO.setBirthday(newStaff.getDob().getTime());
-            return ResponseEntity.ok(staffOutputDTO);
+            StaffResponse staffResponse = modelMapper.map(newStaff, StaffResponse.class);
+            staffResponse.setBirthday(newStaff.getDob().getTime());
+            return ResponseEntity.ok(staffResponse);
         } catch (Exception e) {
             //e.printStackTrace();
             throw new CustomException("Cập nhật nhân viên thất bại");
@@ -235,24 +235,24 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public Message blockStaff(Integer id) throws CustomException {
+    public MessageResponse blockStaff(Integer id) throws CustomException {
         Staff staff = staffRepository.findByStaffIdAndDeletedFalseAndEnabledTrue(id);
         if (staff == null) throw new CustomException("Lỗi: id " + id + " không tồn tại");
         else {
             staff.setDeleted(true);
             staffRepository.save(staff);
-            return new Message("Block nhân viên id " + id + " thành công");
+            return new MessageResponse("Block nhân viên id " + id + " thành công");
         }
     }
 
     @Override
-    public Message activeStaff(Integer id) throws CustomException {
+    public MessageResponse activeStaff(Integer id) throws CustomException {
         Optional<Staff> optionalStaff = staffRepository.findById(id);
         if (!optionalStaff.isPresent()) throw new CustomException("Lỗi: id " + id + " không tồn tại");
         else {
             optionalStaff.get().setDeleted(false);
             staffRepository.save(optionalStaff.get());
-            return new Message("Kích hoạt nhân viên id: " + id + " thành công");
+            return new MessageResponse("Kích hoạt nhân viên id: " + id + " thành công");
         }
     }
 
@@ -263,29 +263,29 @@ public class StaffServiceImpl implements StaffService {
             modelMapper.getConfiguration()
                     .setMatchingStrategy(MatchingStrategies.STRICT);
             Staff newStaff = staffRepository.findById(id).get();
-            StaffOutputDTO staffOutputDTO = modelMapper.map(newStaff, StaffOutputDTO.class);
-            staffOutputDTO.setBirthday(newStaff.getDob().getTime());
-            return ResponseEntity.ok(staffOutputDTO);
+            StaffResponse staffResponse = modelMapper.map(newStaff, StaffResponse.class);
+            staffResponse.setBirthday(newStaff.getDob().getTime());
+            return ResponseEntity.ok(staffResponse);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new Message("Lỗi: nhân viên id " + id + " không tồn tại"));
+            return ResponseEntity.badRequest().body(new MessageResponse("Lỗi: nhân viên id " + id + " không tồn tại"));
         }
     }
 
     @Override
-    public Message deleteAllStaffs() {
+    public MessageResponse deleteAllStaffs() {
         List<Staff> staffList = staffRepository.findByDeletedTrueAndEnabledTrue();
         for (Staff staff : staffList) {
             staffRepository.delete(staff);
         }
-        return new Message("Xóa tất cả nhân viên bị xóa mềm thành công");
+        return new MessageResponse("Xóa tất cả nhân viên bị xóa mềm thành công");
     }
 
     @Override
-    public Message deleteStaffs(Integer id) throws CustomException {
+    public MessageResponse deleteStaffs(Integer id) throws CustomException {
         Staff staff=staffRepository.
                 findByEnabledTrueAndStaffId(id);
         if(staff==null) throw new CustomException("Nhân viên id: "+id+" không tồn tại");
         staffRepository.delete(staff);
-        return new Message("Xóa nhân viên "+id+" thành công");
+        return new MessageResponse("Xóa nhân viên "+id+" thành công");
     }
 }

@@ -1,9 +1,9 @@
 package com.phamthehuy.doan.helper;
 
 import com.phamthehuy.doan.authentication.CustomJwtAuthenticationFilter;
-import com.phamthehuy.doan.authentication.JwtUtil;
-import com.phamthehuy.doan.dao.CustomerRepository;
-import com.phamthehuy.doan.dao.StaffRepository;
+import com.phamthehuy.doan.util.auth.JwtUtil;
+import com.phamthehuy.doan.repository.CustomerRepository;
+import com.phamthehuy.doan.repository.StaffRepository;
 import com.phamthehuy.doan.exception.CustomException;
 import org.springframework.stereotype.Service;
 

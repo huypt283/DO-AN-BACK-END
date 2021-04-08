@@ -14,7 +14,7 @@ import javax.validation.constraints.Size;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginRequest {
+public class SigninRequest {
     @Email(message = "Email không đúng định dạng")
     @NotBlank(message = "Email không được trống")
     @NotNull(message = "Email không được null")
@@ -22,5 +22,5 @@ public class LoginRequest {
 
     @Size(min = 6, max = 30, message = "Mật khẩu phải có 6-30 kí tự")
     @NotNull(message = "Mật khẩu không được null")
-    String pass;
+    String password;
 }

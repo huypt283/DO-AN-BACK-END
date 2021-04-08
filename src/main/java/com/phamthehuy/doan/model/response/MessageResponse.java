@@ -6,8 +6,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class MessageResponse {
-    String mess;
-    public MessageResponse(String mess){
-        this.mess=mess;
+    String message;
+
+    public MessageResponse(String mess) {
+        this.message = mess;
     }
 }

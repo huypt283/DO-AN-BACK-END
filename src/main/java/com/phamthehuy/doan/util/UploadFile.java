@@ -1,6 +1,6 @@
 package com.phamthehuy.doan.util;
 
-import com.phamthehuy.doan.exception.CustomException;
+import com.phamthehuy.doan.exception.BadRequestException;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
@@ -18,50 +18,50 @@ import java.util.stream.Stream;
 public class UploadFile {
     private final Path root = Paths.get("src/main/resources/uploads");
     @EventListener
-    public void init(ApplicationReadyEvent event) throws CustomException {
+    public void init(ApplicationReadyEvent event) throws BadRequestException {
         try {
             if(!root.toFile().exists()) Files.createDirectory(root);
         } catch (IOException e) {
-            throw new CustomException("Could not initialize folder for upload!");
+            throw new BadRequestException("Could not initialize folder for upload!");
         }
     }
 
     //upload
-    public void save(MultipartFile file) throws CustomException{
+    public void save(MultipartFile file) throws BadRequestException {
         try {
             Files.copy(file.getInputStream(), this.root.resolve(file.getOriginalFilename()));
         } catch (Exception e) {
-            throw new CustomException("Could not store the file. Error: " + e.getMessage());
+            throw new BadRequestException("Could not store the file. Error: " + e.getMessage());
         }
     }
     // all files
-    public Stream<Path> loadAll() throws CustomException{
+    public Stream<Path> loadAll() throws BadRequestException {
         try {
             return Files.walk(this.root, 1).filter(path -> !path.equals(this.root)).map(this.root::relativize);
         } catch (IOException e) {
-            throw new CustomException("Could not load the files!");
+            throw new BadRequestException("Could not load the files!");
         }
     }
     // one file
-    public File load(String filename) throws CustomException{
+    public File load(String filename) throws BadRequestException {
         try {
             Path path = root.resolve(filename);
             File file= path.toFile();
             if(file.exists()){
                 return file;
             }else{
-                throw new CustomException("Could not read the file!");
+                throw new BadRequestException("Could not read the file!");
             }
         } catch (Exception e) {
-            throw new CustomException("Error: " + e.getMessage());
+            throw new BadRequestException("Error: " + e.getMessage());
         }
     }
     //delete all file
-    public void deleteAll() throws CustomException{
+    public void deleteAll() throws BadRequestException {
         FileSystemUtils.deleteRecursively(root.toFile());
     }
     // delete one file
-    public void deleteOneFile(String filename) throws CustomException{
+    public void deleteOneFile(String filename) throws BadRequestException {
         Path path = root.resolve(filename);
         FileSystemUtils.deleteRecursively(path.toFile());
     }

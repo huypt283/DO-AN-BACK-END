@@ -16,7 +16,7 @@ public class ArticleUpdateRequest {
     private String title;
 
     @NotBlank(message = "Ảnh không được trống")
-    private String image;
+    private String images;
 
     @Min(value = 1000, message = "Giá phòng nhỏ nhất là 1000 đồng")
     @NotNull(message = "Giá phòng không được trống")
@@ -26,8 +26,6 @@ public class ArticleUpdateRequest {
 
     @NotNull(message = "Vip không được trống")
     private Boolean vip;
-
-    //numberDate
 
     @Min(value = 1000, message = "Giá nước nhỏ nhất là 1000 đồng")
     private Integer waterPrice;

@@ -39,22 +39,25 @@ public class Customer extends BaseEntity implements Serializable {
     @Column(nullable = false)
     private String phone;
 
-    @Column(nullable = true)
+    @Column
     private String cardId;
 
     @Column
     private Date dob;
 
     @Column(nullable = false)
-    private int accountBalance;
+    private Integer accountBalance;
 
     @Column(nullable = false, columnDefinition = "BOOLEAN")
     private Boolean enabled = false;
 
-    @Column(nullable = true, unique = true)
+    @Column
     private String token;
 
-    @Column(nullable = true)
+    @Column
+    private String refreshToken;
+
+    @Column
     private String image;
 
     @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY, cascade = CascadeType.ALL)

@@ -10,7 +10,7 @@ public class CustomerResponse {
 
     private String name;
 
-    private boolean gender;
+    private Boolean gender;
 
     private String email;
 
@@ -22,7 +22,7 @@ public class CustomerResponse {
 
     private Long birthday;
 
-    private int accountBalance;
+    private Integer accountBalance;
 
     private String image;
 }

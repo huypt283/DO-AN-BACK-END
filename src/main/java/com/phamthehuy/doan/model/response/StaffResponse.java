@@ -3,6 +3,8 @@ package com.phamthehuy.doan.model.response;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Date;
+
 @Getter
 @Setter
 public class StaffResponse {
@@ -14,7 +16,7 @@ public class StaffResponse {
 
     private String cardId;
 
-    private Long birthday;
+    private Date birthday;
 
     private Boolean gender;
 

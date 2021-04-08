@@ -1,10 +1,11 @@
 package com.phamthehuy.doan.model.response;
 
 import com.phamthehuy.doan.entity.Roommate;
-import com.phamthehuy.doan.entity.Service;
+import com.phamthehuy.doan.entity.RoomService;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Date;
 import java.util.Map;
 
 @Getter
@@ -14,29 +15,35 @@ public class ArticleResponse {
 
     private String title;
 
-    private String image;
+    private String slug;
 
     private Integer roomPrice;
 
     private String description;
 
-    private Long createTime;
+    private Date createTime;
 
-    private Long lastUpdateTime;
+    private Date lastUpdateTime;
 
-    private Long expDate;
+    private Date expDate;
 
     private Boolean vip;
 
     private String status;
 
-    private Service service;
+    private String city;
+
+    private String district;
+
+    private String ward;
+
+    private RoomService roomService;
 
     private Roommate roommate;
 
     private Integer acreage;
 
-    private String address;
+    private String image;
 
     private String video;
 
@@ -45,5 +52,4 @@ public class ArticleResponse {
     private Map<String, String> moderator;
 
     private Map<String, String> location;
-    //private Ward ward;
 }

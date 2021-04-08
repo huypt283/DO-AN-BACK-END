@@ -2,7 +2,7 @@ package com.phamthehuy.doan.service.impl;
 
 import com.phamthehuy.doan.repository.CustomerRepository;
 import com.phamthehuy.doan.repository.StaffRepository;
-import com.phamthehuy.doan.exception.CustomException;
+import com.phamthehuy.doan.exception.BadRequestException;
 import com.phamthehuy.doan.model.request.CustomerUpdateRequest;
 import com.phamthehuy.doan.model.response.CustomerResponse;
 import com.phamthehuy.doan.model.response.MessageResponse;
@@ -138,19 +138,19 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public ResponseEntity<?> updateCustomer(CustomerUpdateRequest customerUpdateRequest,
-                                            Integer id) throws CustomException {
+                                            Integer id) throws BadRequestException {
         //validate
         String matchNumber = "[0-9]+";
         if (customerUpdateRequest.getCardId() != null && !customerUpdateRequest.getCardId().equals("")) {
             if (!customerUpdateRequest.getCardId().matches(matchNumber))
-                throw new CustomException("Số CMND phải là số");
+                throw new BadRequestException("Số CMND phải là số");
             else if (customerUpdateRequest.getCardId().length() < 9 || customerUpdateRequest.getCardId().length() > 12)
-                throw new CustomException("Số CMND phải gồm 9-12 số");
+                throw new BadRequestException("Số CMND phải gồm 9-12 số");
         }
         if (!customerUpdateRequest.getPhone().matches(matchNumber))
-            throw new CustomException("Số điện thoại phải là số");
+            throw new BadRequestException("Số điện thoại phải là số");
         if (customerUpdateRequest.getBirthday() >= System.currentTimeMillis())
-            throw new CustomException("Ngày sinh phải trong quá khứ");
+            throw new BadRequestException("Ngày sinh phải trong quá khứ");
 
         //update
         try {
@@ -172,14 +172,14 @@ public class CustomerServiceImpl implements CustomerService {
             return ResponseEntity.ok(customerResponse);
         } catch (Exception e) {
             //e.printStackTrace();
-            throw new CustomException("Cập nhật khách hàng thất bại");
+            throw new BadRequestException("Cập nhật khách hàng thất bại");
         }
     }
 
     @Override
-    public MessageResponse blockCustomer(Integer id) throws CustomException {
+    public MessageResponse blockCustomer(Integer id) throws BadRequestException {
         Customer customer = customerRepository.findByCustomerIdAndDeletedFalseAndEnabledTrue(id);
-        if (customer == null) throw new CustomException("Lỗi: id " + id + " không tồn tại, hoặc đã block rồi");
+        if (customer == null) throw new BadRequestException("Lỗi: id " + id + " không tồn tại, hoặc đã block rồi");
         else {
             customer.setDeleted(true);
             customerRepository.save(customer);
@@ -188,9 +188,9 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public MessageResponse activeCustomer(Integer id) throws CustomException {
+    public MessageResponse activeCustomer(Integer id) throws BadRequestException {
         Optional<Customer> optionalCustomer = customerRepository.findById(id);
-        if (!optionalCustomer.isPresent()) throw new CustomException("Lỗi: id " + id + " không tồn tại");
+        if (!optionalCustomer.isPresent()) throw new BadRequestException("Lỗi: id " + id + " không tồn tại");
         else {
             optionalCustomer.get().setDeleted(false);
             customerRepository.save(optionalCustomer.get());
@@ -223,9 +223,9 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public MessageResponse deleteCustomers(Integer id) throws CustomException {
+    public MessageResponse deleteCustomers(Integer id) throws BadRequestException {
         Customer customer = customerRepository.findByCustomerIdAndEnabledTrue(id);
-        if (customer == null) throw new CustomException("Khách hàng với id " + id + " không tồn tại");
+        if (customer == null) throw new BadRequestException("Khách hàng với id " + id + " không tồn tại");
         customerRepository.delete(customer);
         return new MessageResponse("Xóa hách hàng id " + id + " thành công");
     }

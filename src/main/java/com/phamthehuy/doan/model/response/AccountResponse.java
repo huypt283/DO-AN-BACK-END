@@ -10,8 +10,13 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AccountResponse {
+    Integer accountId;
+
     String email;
+
     String name;
+
     String image;
+
     String role;
 }

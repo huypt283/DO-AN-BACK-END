@@ -27,40 +27,37 @@ public class Article extends BaseEntity implements Serializable {
     private String content;
 
     @Column(nullable = false)
-    private String images;
-
-    @Column(nullable = false)
-    private int roomPrice;
+    private Integer roomPrice;
 
     @Column(columnDefinition = "text")
     private String description;
 
     @Column
+    private Integer days;
+
+    @Column
     private Date expTime;
-
-    @Column
-    private Integer number;
-
-    @Column
-    private String type;
 
     @Column(nullable = false, columnDefinition = "BOOLEAN")
     private Boolean vip;
 
     @Column(nullable = false)
-    private Integer acreage;
+    private Double acreage;
 
-    @Column(nullable = false, columnDefinition = "text")
+    @Column(nullable = false)
     private String address;
+
+    @Column(nullable = false)
+    private String images;
 
     private String video;
 
     @Column(nullable = false)
-    private Date updateTime;
+    private Date timeUpdated;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "serviceId", nullable = false)
-    private Service service;
+    private RoomService roomService;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "roommateId")

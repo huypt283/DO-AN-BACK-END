@@ -1,6 +1,6 @@
 package com.phamthehuy.doan.controller.admin;
 
-import com.phamthehuy.doan.exception.CustomException;
+import com.phamthehuy.doan.exception.BadRequestException;
 import com.phamthehuy.doan.model.request.CustomerUpdateRequest;
 import com.phamthehuy.doan.model.response.CustomerResponse;
 import com.phamthehuy.doan.model.response.MessageResponse;
@@ -12,18 +12,18 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/admin")
-public class CustomerController {
+@RequestMapping("/admin/customers")
+public class AdminCustomerController {
     final
     CustomerService customerService;
 
-    public CustomerController(CustomerService customerService) {
+    public AdminCustomerController(CustomerService customerService) {
         this.customerService = customerService;
     }
 
 
     //sắp xếp theo name, accountBalance (chỉ chọn 1 trong 2)
-    @GetMapping("/customers")
+    @GetMapping
     public List<CustomerResponse> listCustomers
     (@RequestParam(required = false) String search,
      @RequestParam(required = false) Boolean deleted,
@@ -35,39 +35,33 @@ public class CustomerController {
     }
 
     //cập nhật thông tin nhân viên	POST/admin/customers
-    @PostMapping("/customers/{id}")
+    @PostMapping("/{id}")
     public ResponseEntity<?> updateCustomer(@Valid @RequestBody CustomerUpdateRequest customerUpdateRequest,
                                             @PathVariable Integer id)
-            throws CustomException {
+            throws BadRequestException {
         return customerService.updateCustomer(customerUpdateRequest, id);
     }
 
     //    block nhân viên	GET/admin/customers/block/{id}
-    @GetMapping("/customers/block/{id}")
-    public MessageResponse blockCustomer(@PathVariable Integer id) throws CustomException {
+    @GetMapping("/block/{id}")
+    public MessageResponse blockCustomer(@PathVariable Integer id) throws BadRequestException {
         return customerService.blockCustomer(id);
     }
 
     //    active nhân viên	DELETE/admin/customers/block/{id}
-    @GetMapping("/customers/active/{id}")
-    public MessageResponse activeCustomer(@PathVariable Integer id) throws CustomException {
+    @GetMapping("/active/{id}")
+    public MessageResponse activeCustomer(@PathVariable Integer id) throws BadRequestException {
         return customerService.activeCustomer(id);
     }
 
     //    xem thông tin nhân viên	GET/admin/customers/{id}
-    @GetMapping("/customers/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<?> findOneCustomer(@PathVariable Integer id) {
         return customerService.findOneCustomer(id);
     }
 
-    // xóa toàn bộ những nhân viên đã bị xóa mềm
-    @DeleteMapping("/customer")
-    public MessageResponse deleteAllCustomers() {
-        return customerService.deleteAllCustomers();
-    }
-
-    @DeleteMapping("/customer/{id}")
-    public MessageResponse deleteCustomers(@PathVariable Integer id) throws CustomException {
+    @DeleteMapping("/{id}")
+    public MessageResponse deleteCustomers(@PathVariable Integer id) throws BadRequestException {
         return customerService.deleteCustomers(id);
     }
 }

@@ -2,7 +2,7 @@ package com.phamthehuy.doan.service.impl;
 
 import com.phamthehuy.doan.repository.CustomerRepository;
 import com.phamthehuy.doan.repository.StaffRepository;
-import com.phamthehuy.doan.exception.CustomException;
+import com.phamthehuy.doan.exception.BadRequestException;
 import com.phamthehuy.doan.helper.Helper;
 import com.phamthehuy.doan.model.request.StaffInsertRequest;
 import com.phamthehuy.doan.model.request.StaffUpdateRequest;
@@ -131,7 +131,7 @@ public class StaffServiceImpl implements StaffService {
         List<StaffResponse> staffResponseList = new ArrayList<>();
         for (Staff staff : staffList) {
             StaffResponse staffResponse = modelMapper.map(staff, StaffResponse.class);
-            staffResponse.setBirthday(staff.getDob().getTime());
+            staffResponse.setBirthday(staff.getDob());
             staffResponseList.add(staffResponse);
         }
         return staffResponseList;
@@ -141,16 +141,16 @@ public class StaffServiceImpl implements StaffService {
     public MessageResponse insertStaff(StaffInsertRequest staffInsertRequest, HttpServletRequest request) throws Exception {
         //validation
         if (customerRepository.findByEmail(staffInsertRequest.getEmail()) != null)
-            throw new CustomException("Email đã khách hàng sử dụng");
+            throw new BadRequestException("Email đã khách hàng sử dụng");
         if (staffRepository.findByEmail(staffInsertRequest.getEmail()) != null)
-            throw new CustomException("Email đã được nhân viên sử dụng");
+            throw new BadRequestException("Email đã được nhân viên sử dụng");
         String matchNumber = "[0-9]+";
         if (!staffInsertRequest.getCardId().matches(matchNumber))
-            throw new CustomException("Số CMND phải là số");
+            throw new BadRequestException("Số CMND phải là số");
         if (!staffInsertRequest.getPhone().matches(matchNumber))
-            throw new CustomException("Số điện thoại phải là số");
+            throw new BadRequestException("Số điện thoại phải là số");
         if (staffInsertRequest.getBirthday() >= System.currentTimeMillis())
-            throw new CustomException("Ngày sinh phải trong quá khứ");
+            throw new BadRequestException("Ngày sinh phải trong quá khứ");
 
         //create token
         String token = helper.createToken(30);
@@ -194,20 +194,20 @@ public class StaffServiceImpl implements StaffService {
             return new MessageResponse("Bạn hãy check mail để xác nhận, thời hạn 10 phút kể từ khi đăng kí");
         } catch (Exception e) {
             //e.printStackTrace();
-            throw new CustomException("Thêm mới nhân viên thất bại");
+            throw new BadRequestException("Thêm mới nhân viên thất bại");
         }
     }
 
     @Override
-    public ResponseEntity<?> updateStaff(StaffUpdateRequest staffUpdateRequest, Integer id) throws CustomException {
+    public ResponseEntity<?> updateStaff(StaffUpdateRequest staffUpdateRequest, Integer id) throws BadRequestException {
         //validate
         String matchNumber = "[0-9]+";
         if (!staffUpdateRequest.getCardId().matches(matchNumber))
-            throw new CustomException("Số CMND phải là số");
+            throw new BadRequestException("Số CMND phải là số");
         if (!staffUpdateRequest.getPhone().matches(matchNumber))
-            throw new CustomException("Số điện thoại phải là số");
+            throw new BadRequestException("Số điện thoại phải là số");
         if (staffUpdateRequest.getBirthday() >= System.currentTimeMillis())
-            throw new CustomException("Ngày sinh phải trong quá khứ");
+            throw new BadRequestException("Ngày sinh phải trong quá khứ");
 
         //update
         try {
@@ -226,18 +226,18 @@ public class StaffServiceImpl implements StaffService {
             staff.setImage(staffUpdateRequest.getImage());
             Staff newStaff = staffRepository.save(staff);
             StaffResponse staffResponse = modelMapper.map(newStaff, StaffResponse.class);
-            staffResponse.setBirthday(newStaff.getDob().getTime());
+            staffResponse.setBirthday(newStaff.getDob());
             return ResponseEntity.ok(staffResponse);
         } catch (Exception e) {
             //e.printStackTrace();
-            throw new CustomException("Cập nhật nhân viên thất bại");
+            throw new BadRequestException("Cập nhật nhân viên thất bại");
         }
     }
 
     @Override
-    public MessageResponse blockStaff(Integer id) throws CustomException {
+    public MessageResponse blockStaff(Integer id) throws BadRequestException {
         Staff staff = staffRepository.findByStaffIdAndDeletedFalseAndEnabledTrue(id);
-        if (staff == null) throw new CustomException("Lỗi: id " + id + " không tồn tại");
+        if (staff == null) throw new BadRequestException("Lỗi: id " + id + " không tồn tại");
         else {
             staff.setDeleted(true);
             staffRepository.save(staff);
@@ -246,9 +246,9 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public MessageResponse activeStaff(Integer id) throws CustomException {
+    public MessageResponse activeStaff(Integer id) throws BadRequestException {
         Optional<Staff> optionalStaff = staffRepository.findById(id);
-        if (!optionalStaff.isPresent()) throw new CustomException("Lỗi: id " + id + " không tồn tại");
+        if (!optionalStaff.isPresent()) throw new BadRequestException("Lỗi: id " + id + " không tồn tại");
         else {
             optionalStaff.get().setDeleted(false);
             staffRepository.save(optionalStaff.get());
@@ -264,7 +264,7 @@ public class StaffServiceImpl implements StaffService {
                     .setMatchingStrategy(MatchingStrategies.STRICT);
             Staff newStaff = staffRepository.findById(id).get();
             StaffResponse staffResponse = modelMapper.map(newStaff, StaffResponse.class);
-            staffResponse.setBirthday(newStaff.getDob().getTime());
+            staffResponse.setBirthday(newStaff.getDob());
             return ResponseEntity.ok(staffResponse);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new MessageResponse("Lỗi: nhân viên id " + id + " không tồn tại"));
@@ -281,10 +281,10 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public MessageResponse deleteStaffs(Integer id) throws CustomException {
+    public MessageResponse deleteStaffs(Integer id) throws BadRequestException {
         Staff staff=staffRepository.
                 findByEnabledTrueAndStaffId(id);
-        if(staff==null) throw new CustomException("Nhân viên id: "+id+" không tồn tại");
+        if(staff==null) throw new BadRequestException("Nhân viên id: "+id+" không tồn tại");
         staffRepository.delete(staff);
         return new MessageResponse("Xóa nhân viên "+id+" thành công");
     }

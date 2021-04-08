@@ -2,6 +2,9 @@ package com.phamthehuy.doan.authentication;
 
 import com.phamthehuy.doan.util.auth.JwtUtil;
 import io.jsonwebtoken.ExpiredJwtException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,22 +22,22 @@ import java.io.IOException;
 
 @Component
 public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final JwtUtil jwtTokenUtil;
-
-    public CustomJwtAuthenticationFilter(JwtUtil jwtTokenUtil) {
-        this.jwtTokenUtil = jwtTokenUtil;
-    }
+    @Autowired
+    private JwtUtil jwtTokenUtil;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
         try {
-            // JWT Token is in the form "Bearer token". Remove Bearer word and
-            // get  only the Token
             String jwtToken = extractJwtFromRequest(request);
+//            String path = request.getRequestURI();
+//            boolean isSupperAdminUrl = path.contains("/super-admin");
+//            boolean isAdminUrl = path.contains("/admin");
+//            boolean isCustomerUrl = path.contains("/customer");
 
-            if (StringUtils.hasText(jwtToken) && jwtTokenUtil.validateToken(jwtToken)) {
+            if (StringUtils.hasText(jwtToken) && jwtTokenUtil.validateAccessToken(jwtToken)) {
                 UserDetails userDetails = new User(jwtTokenUtil.getEmailFromToken(jwtToken), "",
                         jwtTokenUtil.getRolesFromToken(jwtToken));
 
@@ -42,17 +45,11 @@ public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
                         userDetails, null, userDetails.getAuthorities());
                 // After setting the Authentication in the context, we specify
                 // that the current user is authenticated. So it passes the
-                // Spring Security Configurations successfully.
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-            }
-        } catch (ExpiredJwtException ex) {
-            String isRefreshToken = request.getHeader("isRefreshToken");
-            String requestURL = request.getRequestURL().toString();
-            // allow for Refresh Token creation if following conditions are true.
-            if (isRefreshToken != null && isRefreshToken.equals("true") && requestURL.contains("refreshtoken")) {
-                allowForRefreshToken(ex, request);
             } else
-                request.setAttribute("exception", ex);
+                throw new BadCredentialsException("INVALID_CREDENTIALS");
+        } catch (ExpiredJwtException ex) {
+            request.setAttribute("exception", "Expire access token");
         } catch (BadCredentialsException ex) {
             request.setAttribute("exception", ex);
         }
@@ -65,20 +62,5 @@ public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
             return bearerToken.substring(7);
         }
         return null;
-    }
-
-    private void allowForRefreshToken(ExpiredJwtException ex, HttpServletRequest request) {
-
-        // create a UsernamePasswordAuthenticationToken with null values.
-        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-                null, null, null);
-        // After setting the Authentication in the context, we specify
-        // that the current user is authenticated. So it passes the
-        // Spring Security Configurations successfully.
-        SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-        // Set the claims so that in controller we will be using it to create
-        // new JWT
-        request.setAttribute("claims", ex.getClaims());
-
     }
 }

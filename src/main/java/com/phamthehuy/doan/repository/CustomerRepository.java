@@ -17,6 +17,8 @@ public interface CustomerRepository extends JpaRepository<Customer, Integer> {
 
     Customer findByToken(String token);
 
+    Customer findByRefreshToken(String refreshToken);
+
     Page<Customer> findByNameLikeAndEnabledTrueAndDeletedTrueOrPhoneLikeAndEnabledTrueAndDeletedTrueOrEmailLikeAndEnabledTrueAndDeletedTrue
             (String name, String phone, String email, Pageable pageable);
 

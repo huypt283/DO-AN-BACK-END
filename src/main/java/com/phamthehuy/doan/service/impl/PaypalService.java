@@ -29,7 +29,7 @@ public class PaypalService {
             String successUrl) throws PayPalRESTException {
         Amount amount = new Amount();
         amount.setCurrency(currency);
-        amount.setTotal(String.format("%.2f", total).replaceAll(",", "."));
+        amount.setTotal(String.format("%f", total).replaceAll(",", "."));
 
         Transaction transaction = new Transaction();
         transaction.setDescription(description);

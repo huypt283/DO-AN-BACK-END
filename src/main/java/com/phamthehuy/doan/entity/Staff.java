@@ -4,14 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
-@EnableAutoConfiguration
 @Entity
 @Getter
 @Setter
@@ -58,8 +56,11 @@ public class Staff extends BaseEntity implements Serializable {
     @Column(nullable = true, unique = true)
     private String token;
 
+    @Column
+    private String refreshToken;
+
     @OneToMany(mappedBy = "staff", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<Newspaper> news;
+    private Set<News> news;
 
     @OneToMany(mappedBy = "staff", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<StaffArticle> staffArticles;

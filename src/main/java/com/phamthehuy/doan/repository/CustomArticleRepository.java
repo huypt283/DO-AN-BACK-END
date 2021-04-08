@@ -9,10 +9,14 @@ public interface CustomArticleRepository {
                              Integer ward, Integer district, Integer city,
                              Boolean roommate,
                              String status, Boolean vip, String search,
-                             Integer minAcreage, Integer maxAcreage,
-                             Integer page, Integer limit);
+                             Integer minAcreage, Integer maxAcreage);
 
-    List<Article> findCustomAndEmail(String email, String sort, Long start, Long end,
+    List<Article> findCustomNotHidden(Long start, Long end,
+                             Integer ward, Integer district, Integer city,
+                             Boolean roommate, Boolean vip, String search,
+                             Integer minAcreage, Integer maxAcreage);
+
+    List<Article> findCustomByEmail(String email, String sort, Long start, Long end,
                                      Integer ward, Integer district, Integer city,
                                      Boolean roommate,
                                      String status, Boolean vip, String search,

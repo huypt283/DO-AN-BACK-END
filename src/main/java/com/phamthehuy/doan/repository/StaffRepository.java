@@ -32,6 +32,8 @@ public interface StaffRepository extends JpaRepository<Staff, Integer> {
 
     Staff findByToken(String token);
 
+    Staff findByRefreshToken(String refreshToken);
+
     List<Staff> findByEnabledFalseAndTimeCreatedLessThanEqual(Date date);
 
     Staff findByEnabledTrueAndStaffId(Integer id);

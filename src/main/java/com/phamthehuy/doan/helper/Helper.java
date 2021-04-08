@@ -4,7 +4,7 @@ import com.phamthehuy.doan.authentication.CustomJwtAuthenticationFilter;
 import com.phamthehuy.doan.util.auth.JwtUtil;
 import com.phamthehuy.doan.repository.CustomerRepository;
 import com.phamthehuy.doan.repository.StaffRepository;
-import com.phamthehuy.doan.exception.CustomException;
+import com.phamthehuy.doan.exception.BadRequestException;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -50,12 +50,12 @@ public class Helper {
         return url.toString();
     }
 
-    public String getEmailFromRequest(HttpServletRequest request) throws CustomException {
+    public String getEmailFromRequest(HttpServletRequest request) throws BadRequestException {
         try {
             String token = customJwtAuthenticationFilter.extractJwtFromRequest(request);
             return jwtUtil.getEmailFromToken(token);
         } catch (Exception e) {
-            throw new CustomException("Token bị thiếu, hoặc không hợp lệ");
+            throw new BadRequestException("Token bị thiếu, hoặc không hợp lệ");
         }
     }
 
@@ -120,7 +120,8 @@ public class Helper {
             end.setTime(starTime);
             end.add(Calendar.MONTH, number);
             millisecond = end.getTime().getTime() - start.getTime().getTime();
-        } else return null;
+        } else
+            return 0;
         return (int) (millisecond / (24 * 3600 * 1000));
     }
 

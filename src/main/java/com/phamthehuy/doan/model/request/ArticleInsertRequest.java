@@ -27,11 +27,11 @@ public class ArticleInsertRequest {
 
     @Min(value = 1, message = "Số ngày đăng nhỏ nhất là 1")
     @NotNull(message = "Số ngày/tuần/tháng đăng không được trống")
-    private Integer number;
+    private Integer days;
 
     @NotNull(message = "type không được null")
     @NotBlank(message = "type không được trống")
-    private String type;
+    private String timeType;
 
     @NotNull(message = "Vip không được trống")
     private Boolean vip;

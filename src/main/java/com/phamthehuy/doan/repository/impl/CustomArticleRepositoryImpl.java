@@ -21,10 +21,8 @@ public class CustomArticleRepositoryImpl implements CustomArticleRepository {
     @Override
     public List<Article> findCustom(String sort, Long start, Long end,
                                     Integer ward, Integer district, Integer city,
-                                    Boolean roommate,
-                                    String status, Boolean vip, String search,
-                                    Integer minAcreage, Integer maxAcreage,
-                                    Integer page, Integer limit) {
+                                    Boolean roommate, String status, Boolean vip, String search,
+                                    Integer minAcreage, Integer maxAcreage) {
         if (search == null || search.trim().equals("")) search = "";
 
         //tạo builder
@@ -48,11 +46,11 @@ public class CustomArticleRepositoryImpl implements CustomArticleRepository {
 
         //tìm khoảng thời gian
         if (start != null) {
-            Predicate findByGreaterTime = builder.greaterThanOrEqualTo(root.get("updateTime"), new Date(start));
+            Predicate findByGreaterTime = builder.greaterThanOrEqualTo(root.get("timeUpdated"), new Date(start));
             searchByTitle = builder.and(searchByTitle, findByGreaterTime);
         }
         if (end != null) {
-            Predicate findByLessTime = builder.lessThanOrEqualTo(root.get("updateTime"), new Date(end));
+            Predicate findByLessTime = builder.lessThanOrEqualTo(root.get("timeUpdated"), new Date(end));
             searchByTitle = builder.and(searchByTitle, findByLessTime);
         }
 
@@ -115,16 +113,103 @@ public class CustomArticleRepositoryImpl implements CustomArticleRepository {
 
         query.where(searchByTitle);
 
-        if (sort != null && !sort.trim().equals("")) {
-            if (sort.equals("desc")) query.orderBy(builder.desc(root.get("updateTime")));
-            else query.orderBy(builder.asc(root.get("updateTime")));
+        if (sort != null) {
+            if (sort.equals("asc"))
+                query.orderBy(builder.asc(root.get("timeUpdated")));
+            else
+                query.orderBy(builder.desc(root.get("timeUpdated")));
         }
 
-        return em.createQuery(query).setFirstResult(page * limit).setMaxResults(limit).getResultList();
+        return em.createQuery(query).getResultList();
     }
 
     @Override
-    public List<Article> findCustomAndEmail(String email, String sort, Long start, Long end, Integer ward, Integer district, Integer city, Boolean roommate, String status, Boolean vip, String search, Integer minAcreage, Integer maxAcreage, Integer page, Integer limit) {
+    public List<Article> findCustomNotHidden(Long start, Long end,
+                                           Integer ward, Integer district, Integer city,
+                                           Boolean roommate, Boolean vip, String search,
+                                           Integer minAcreage, Integer maxAcreage) {
+        if (search == null || search.trim().equals("")) search = "";
+
+        //tạo builder
+        CriteriaBuilder builder = em.getCriteriaBuilder();
+
+        //tạo query
+        CriteriaQuery<Article> query = builder.createQuery(Article.class);
+
+        //xác định chủ thể cần truy vấn (=FROM Article)
+        Root<Article> root = query.from(Article.class);
+
+        //xác định cột trả về
+        query.select(root);
+
+        //search
+        Predicate searchByName = builder.like(root.get("customer").get("name"), "%" + search + "%");
+        Predicate searchByPhone = builder.like(root.get("customer").get("phone"), "%" + search + "%");
+        Predicate searchByEmail = builder.like(root.get("customer").get("email"), "%" + search + "%");
+        Predicate searchByTitle = builder.like(root.get("title"), "%" + search + "%");
+        searchByTitle = builder.or(searchByTitle, searchByEmail, searchByPhone, searchByName);
+
+        //tìm khoảng thời gian
+        if (start != null) {
+            Predicate findByGreaterTime = builder.greaterThanOrEqualTo(root.get("timeUpdated"), new Date(start));
+            searchByTitle = builder.and(searchByTitle, findByGreaterTime);
+        }
+        if (end != null) {
+            Predicate findByLessTime = builder.lessThanOrEqualTo(root.get("timeUpdated"), new Date(end));
+            searchByTitle = builder.and(searchByTitle, findByLessTime);
+        }
+
+        //lọc theo diện tích
+        if (minAcreage != null) {
+            Predicate findByGreaterAcreage = builder.greaterThanOrEqualTo(root.get("acreage"), minAcreage);
+            searchByTitle = builder.and(searchByTitle, findByGreaterAcreage);
+        }
+        if (maxAcreage != null) {
+            Predicate findByLessAcreage = builder.lessThanOrEqualTo(root.get("acreage"), maxAcreage);
+            searchByTitle = builder.and(searchByTitle, findByLessAcreage);
+        }
+
+        //tìm theo xã, huyện, tỉnh
+        if (ward != null) {
+            Predicate findByWard = builder.equal(root.get("ward").get("wardId"), ward);
+            searchByTitle = builder.and(searchByTitle, findByWard);
+        } else if (district != null) {
+            Predicate findByDistrict = builder.equal(root.get("ward").get("district").get("districtId"), district);
+            searchByTitle = builder.and(searchByTitle, findByDistrict);
+        } else if (city != null) {
+            Predicate findByCity = builder.equal(root.get("ward").get("district").get("city").get("cityId"), city);
+            searchByTitle = builder.and(searchByTitle, findByCity);
+        }
+
+        //tìm theo roommate
+        if (roommate != null) {
+            if (roommate) {
+                Predicate findByRoommateNotNull = builder.isNotNull(root.get("roommate"));
+                searchByTitle = builder.and(searchByTitle, findByRoommateNotNull);
+            } else {
+                Predicate findByRoommateNull = builder.isNull(root.get("roommate"));
+                searchByTitle = builder.and(searchByTitle, findByRoommateNull);
+            }
+        }
+
+        Predicate findByStatusTrue = builder.isFalse(root.get("deleted"));
+        searchByTitle = builder.and(searchByTitle, findByStatusTrue);
+
+        //tìm theo vip
+        if (vip != null) {
+            Predicate findByVip = builder.equal(root.get("vip"), vip);
+            searchByTitle = builder.and(searchByTitle, findByVip);
+        }
+
+        query.where(searchByTitle);
+
+        query.orderBy(builder.desc(root.get("timeUpdated")));
+
+        return em.createQuery(query).getResultList();
+    }
+
+    @Override
+    public List<Article> findCustomByEmail(String email, String sort, Long start, Long end, Integer ward, Integer district, Integer city, Boolean roommate, String status, Boolean vip, String search, Integer minAcreage, Integer maxAcreage, Integer page, Integer limit) {
         if (search == null || search.trim().equals("")) search = "";
 
         //tạo builder
@@ -149,11 +234,11 @@ public class CustomArticleRepositoryImpl implements CustomArticleRepository {
 
         //tìm khoảng thời gian
         if (start != null) {
-            Predicate findByGreaterTime = builder.greaterThanOrEqualTo(root.<Date>get("updateTime"), new Date(start));
+            Predicate findByGreaterTime = builder.greaterThanOrEqualTo(root.<Date>get("timeUpdated"), new Date(start));
             searchByTitle = builder.and(searchByTitle, findByGreaterTime);
         }
         if (end != null) {
-            Predicate findByLessTime = builder.lessThanOrEqualTo(root.<Date>get("updateTime"), new Date(end));
+            Predicate findByLessTime = builder.lessThanOrEqualTo(root.<Date>get("timeUpdated"), new Date(end));
             searchByTitle = builder.and(searchByTitle, findByLessTime);
         }
 
@@ -217,8 +302,8 @@ public class CustomArticleRepositoryImpl implements CustomArticleRepository {
         query.where(searchByTitle);
 
         if (sort != null && !sort.trim().equals("")) {
-            if (sort.equals("desc")) query.orderBy(builder.desc(root.get("updateTime")));
-            else query.orderBy(builder.asc(root.get("updateTime")));
+            if (sort.equals("desc")) query.orderBy(builder.desc(root.get("timeUpdated")));
+            else query.orderBy(builder.asc(root.get("timeUpdated")));
         }
 
         return em.createQuery(query).setFirstResult(page * limit).setMaxResults(limit).getResultList();

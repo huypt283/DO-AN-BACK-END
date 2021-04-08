@@ -13,7 +13,7 @@ import java.util.Date;
 @Getter
 @Setter
 public abstract class BaseEntity {
-    @Column(nullable = false, columnDefinition = "BOOLEAN")
+    @Column(columnDefinition = "BOOLEAN")
     private Boolean deleted = false;
 
     @Temporal(TemporalType.DATE)

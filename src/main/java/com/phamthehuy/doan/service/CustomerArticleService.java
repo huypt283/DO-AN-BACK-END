@@ -1,6 +1,6 @@
 package com.phamthehuy.doan.service;
 
-import com.phamthehuy.doan.exception.CustomException;
+import com.phamthehuy.doan.exception.BadRequestException;
 import com.phamthehuy.doan.model.request.ArticleInsertRequest;
 import com.phamthehuy.doan.model.request.ArticleUpdateRequest;
 import com.phamthehuy.doan.model.response.ArticleResponse;
@@ -9,10 +9,15 @@ import com.phamthehuy.doan.model.response.MessageResponse;
 import java.util.List;
 
 public interface CustomerArticleService {
+    List<ArticleResponse> listArticleNotHidden(Long start, Long end,
+                                                      Integer ward, Integer district, Integer city,
+                                                      Boolean roommate, Boolean vip, String search,
+                                                      Integer minAcreage, Integer maxAcreage) throws Exception;
+
     //    list bài đăng cá nhân	/customer/article
     //    lọc bài đăng theo trạng thái: chưa duyệt, đang đăng, đã ẩn	/customer/article?status={uncheck/active/hidden}
     //    tìm kiếm bài đăng theo title	/customer/article?title={title}
-    List<ArticleResponse> listArticle(String email, String sort, Long start, Long end,
+    List<ArticleResponse> listArticleByEmail(String email, String sort, Long start, Long end,
                                       Integer ward, Integer district, Integer city,
                                       Boolean roommate,
                                       String status, Boolean vip, String search,
@@ -21,25 +26,27 @@ public interface CustomerArticleService {
 
     //    đăng bài	/customer/article
     ArticleResponse insertArticle(String email, ArticleInsertRequest articleInsertRequest)
-            throws CustomException;
+            throws BadRequestException;
 
     //    sửa bài đăng	/customer/article
     ArticleResponse updateArticle(String email, ArticleUpdateRequest articleUpdateRequest,
                                   Integer id)
-            throws CustomException;
+            throws BadRequestException;
 
-    //    ẩn bài đăng	/customer/article/hidden/{id}
-    MessageResponse hiddenArticle(String email, Integer id) throws CustomException;
+
 
     //    xóa bài đăng	/customer/article/{id}
-    MessageResponse deleteArticle(String email, Integer id) throws CustomException;
+    MessageResponse deleteArticle(String email, Integer id) throws BadRequestException;
 
     //    gia hạn bài đăng	/customer/article/extension/{id}?date={int}
-    MessageResponse extensionExp(String email, Integer id, Integer date, String type) throws CustomException;
+    MessageResponse extensionExp(String email, Integer id, Integer date, String type) throws BadRequestException;
+
+    //    ẩn bài đăng  /customer/article/hidden/{id}
+    MessageResponse hideArticle(String email, Integer id) throws BadRequestException;
 
     //đăng lại bài đăng đã ẩn	/customer/article/post/{id}?days={int}
-    MessageResponse postOldArticle(String email, Integer Id, Integer date, String type) throws CustomException;
+    MessageResponse showArticle(String email, Integer Id) throws BadRequestException;
 
     //chi tiết bài đăng	/customer/article/{id}
-    ArticleResponse detailArticle(String email, Integer id) throws CustomException;
+    ArticleResponse detailArticle(String email, Integer id) throws BadRequestException;
 }

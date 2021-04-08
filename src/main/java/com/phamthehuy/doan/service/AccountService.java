@@ -1,38 +1,37 @@
 package com.phamthehuy.doan.service;
 
-import com.phamthehuy.doan.exception.CustomException;
 import com.phamthehuy.doan.model.request.*;
 import com.phamthehuy.doan.model.response.CustomerResponse;
 import com.phamthehuy.doan.model.response.MessageResponse;
 import com.phamthehuy.doan.model.response.StaffResponse;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 public interface AccountService {
-    MessageResponse customerSignup(SignupRequest signupRequest, HttpServletRequest request) throws CustomException;
+    MessageResponse customerSignup(SignupRequest signupRequest, HttpServletRequest request) throws Exception;
 
-    //sau nay chuyen sang void
-    MessageResponse confirmEmail(String token, String email) throws CustomException;
+    MessageResponse confirmEmail(String token, String email) throws Exception;
 
-    Map<String, String> login(LoginRequest loginRequest) throws Exception;
+    Map<String, String> signIn(SigninRequest signinRequest) throws Exception;
 
-    Map<String, String> refreshtoken(HttpServletRequest request) throws CustomException;
+    Map<String, String> refreshAccessToken(HttpServletRequest request) throws Exception;
 
-    MessageResponse forgotPassword(String email) throws CustomException;
+    MessageResponse forgotPassword(String email) throws Exception;
 
-    MessageResponse resetPassword(ResetPasswordRequest resetPasswordRequest) throws CustomException;
+    MessageResponse resetPassword(ResetPasswordRequest resetPasswordRequest) throws Exception;
 
-    StaffResponse staffDetail(HttpServletRequest request) throws CustomException;
+    StaffResponse staffProfile(UsernamePasswordAuthenticationToken currentUser) throws Exception;
 
     StaffResponse staffUpdateProfile(StaffPersonUpdateRequest staffPersonUpdateRequest,
-                                     HttpServletRequest request) throws CustomException;
+                                     HttpServletRequest request) throws Exception;
 
-    CustomerResponse customerProfile(HttpServletRequest request) throws CustomException;
+    CustomerResponse customerProfile(HttpServletRequest request) throws Exception;
 
     CustomerResponse customerUpdateProfile(CustomerUpdateRequest customerUpdateRequest,
-                                           HttpServletRequest request) throws CustomException;
+                                           HttpServletRequest request) throws Exception;
 
     MessageResponse changePassword(String oldPass, String newPass,
-                                   HttpServletRequest request) throws CustomException;
+                                   HttpServletRequest request) throws Exception;
 }

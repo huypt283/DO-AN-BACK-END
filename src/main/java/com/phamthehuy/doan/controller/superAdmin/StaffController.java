@@ -1,6 +1,6 @@
 package com.phamthehuy.doan.controller.superAdmin;
 
-import com.phamthehuy.doan.exception.CustomException;
+import com.phamthehuy.doan.exception.BadRequestException;
 import com.phamthehuy.doan.model.request.StaffInsertRequest;
 import com.phamthehuy.doan.model.request.StaffUpdateRequest;
 import com.phamthehuy.doan.model.response.MessageResponse;
@@ -50,19 +50,19 @@ public class StaffController {
     @PutMapping("/staffs/{id}")
     public ResponseEntity<?> updateStaff(@Valid @RequestBody StaffUpdateRequest staffUpdateRequest,
                                          @PathVariable Integer id)
-    throws CustomException {
+    throws BadRequestException {
         return staffService.updateStaff(staffUpdateRequest, id);
     }
 
 
     @GetMapping("/staffs/block/{id}")
-    public MessageResponse blockStaff(@PathVariable Integer id) throws CustomException{
+    public MessageResponse blockStaff(@PathVariable Integer id) throws BadRequestException {
         return staffService.blockStaff(id);
     }
 
 
     @GetMapping("/staffs/active/{id}")
-    public MessageResponse activeStaff(@PathVariable Integer id) throws CustomException{
+    public MessageResponse activeStaff(@PathVariable Integer id) throws BadRequestException {
         return staffService.activeStaff(id);
     }
 
@@ -79,7 +79,7 @@ public class StaffController {
     }
 
     @DeleteMapping("/staffs/{id}")
-    public MessageResponse deleteStaffs(@PathVariable Integer id) throws CustomException{
+    public MessageResponse deleteStaffs(@PathVariable Integer id) throws BadRequestException {
         return staffService.deleteStaffs(id);
     }
 }

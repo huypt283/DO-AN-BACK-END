@@ -1,6 +1,6 @@
 package com.phamthehuy.doan.service;
 
-import com.phamthehuy.doan.exception.CustomException;
+import com.phamthehuy.doan.exception.BadRequestException;
 import com.phamthehuy.doan.model.request.StaffInsertRequest;
 import com.phamthehuy.doan.model.request.StaffUpdateRequest;
 import com.phamthehuy.doan.model.response.MessageResponse;
@@ -25,13 +25,13 @@ public interface StaffService {
     MessageResponse insertStaff(StaffInsertRequest staffInsertRequest, HttpServletRequest request) throws Exception;
 
     //    cập nhật thông tin nhân viên	Put/super-admin/staffs
-    ResponseEntity<?> updateStaff(StaffUpdateRequest staffUpdateRequest, Integer id) throws CustomException;
+    ResponseEntity<?> updateStaff(StaffUpdateRequest staffUpdateRequest, Integer id) throws BadRequestException;
 
     //    block nhân viên	DELETE/super-admin/staffs/{id}
-    MessageResponse blockStaff(Integer id) throws CustomException;
+    MessageResponse blockStaff(Integer id) throws BadRequestException;
 
     //    active nhân viên
-    MessageResponse activeStaff(Integer id) throws CustomException;
+    MessageResponse activeStaff(Integer id) throws BadRequestException;
 
     //    xem thông tin nhân viên	GET/super-admin/staffs/{id}
     ResponseEntity<?> findOneStaff(Integer id);
@@ -40,5 +40,5 @@ public interface StaffService {
     MessageResponse deleteAllStaffs();
 
     //xóa cứng 1 list (mảng Integer Id) nhân viên bị xóa mềm
-    MessageResponse deleteStaffs(Integer id) throws CustomException;
+    MessageResponse deleteStaffs(Integer id) throws BadRequestException;
 }

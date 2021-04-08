@@ -22,9 +22,9 @@ public class Transaction extends BaseEntity implements Serializable {
     private Boolean type;
 
     @Column(nullable = false)
-    private int amount;
+    private Integer amount;
 
-    @Column(nullable = true)
+    @Column
     private String description;
 
     @ManyToOne

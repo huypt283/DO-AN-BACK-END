@@ -3,6 +3,8 @@ package com.phamthehuy.doan.model.response;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Date;
+
 @Getter
 @Setter
 public class NewsResponse {
@@ -16,5 +18,5 @@ public class NewsResponse {
 
     private String author;
 
-    private Long updateTime;
+    private Date lastUpdatedTime;
 }

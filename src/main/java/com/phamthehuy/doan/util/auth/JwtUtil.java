@@ -19,35 +19,73 @@ public class JwtUtil {
     @Value("${auth.expire}")
     private int jwtExpirationInMs;
 
-    // generate token for user
-    public String generateToken(UserDetails userDetails) {
+    @Value("${auth.rfsecret}")
+    private String rf_secret;
+
+    @Value("${auth.rfexpire}")
+    private int rf_jwtExpirationInMs;
+
+    public String generateToken(UserDetails userDetails, boolean isRfToken) {
         Map<String, Object> claims = new HashMap<>();
         Collection<? extends GrantedAuthority> roles = userDetails.getAuthorities();
         if (roles.contains(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"))) {
             claims.put("isSuperAdmin", true);
-        }
-        if (roles.contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+        } else if (roles.contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
             claims.put("isAdmin", true);
-        }
-        if (roles.contains(new SimpleGrantedAuthority("ROLE_CUSTOMER"))) {
+        } else if (roles.contains(new SimpleGrantedAuthority("ROLE_CUSTOMER"))) {
             claims.put("isCustomer", true);
         }
-        return doGenerateToken(claims, userDetails.getUsername());
+        return doGenerateToken(claims, userDetails.getUsername(), isRfToken);
     }
 
-    public String doGenerateToken(Map<String, Object> claims, String subject) {
-        return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationInMs)).signWith(SignatureAlgorithm.HS512, secret).compact();
+    public String refreshAccessToken(String email, String role) {
+        Map<String, Object> claims = new HashMap<>();
+        switch (role) {
+            case "ROLE_SUPER_ADMIN":
+                claims.put("isSuperAdmin", true);
+                break;
+            case "ROLE_ADMIN":
+                claims.put("isAdmin", true);
+                break;
+            case "ROLE_CUSTOMER":
+                claims.put("isCustomer", true);
+                break;
+        }
+        return doGenerateToken(claims, email, false);
     }
 
-    public boolean validateToken(String authToken) {
+    public String doGenerateToken(Map<String, Object> claims, String subject, boolean isRfToken) {
+        return Jwts.builder().setClaims(claims)
+                .setSubject(subject)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + (isRfToken ? jwtExpirationInMs : rf_jwtExpirationInMs)))
+                .signWith(SignatureAlgorithm.HS512, isRfToken ? secret : rf_secret)
+                .compact();
+    }
+
+    public boolean validateAccessToken(String authToken) {
         try {
-            Jws<Claims> claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(authToken);
+//            Jwts.parser().setSigningKey(secret).parseClaimsJws(authToken)
+            String role = getRoleFromToken(authToken);
+//            return ((!isSupperAdminUrl || "ROLE_SUPER_ADMIN".equals(role))
+//                    && (!isAdminUrl || "ROLE_SUPER_ADMIN".equals(role) || "ROLE_ADMIN".equals(role))
+//                    && (!isCustomerUrl || "ROLE_CUSTOMER".equals(role)));
+            return !"".equals(role);
+        } catch (SignatureException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException ex) {
+            throw new BadCredentialsException("INVALID_CREDENTIALS", ex);
+        } catch (ExpiredJwtException ex) {
+            throw new UnauthenticatedException("Token hết hạn sử dụng");
+        }
+    }
+
+    public boolean validateRefreshToken(String refreshToken) {
+        try {
+            Jwts.parser().setSigningKey(rf_secret).parseClaimsJws(refreshToken);
             return true;
         } catch (SignatureException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException ex) {
             throw new BadCredentialsException("INVALID_CREDENTIALS", ex);
         } catch (ExpiredJwtException ex) {
-            throw new UnauthenticatedException();
+            throw new UnauthenticatedException("Token hết hạn sử dụng");
         }
     }
 
@@ -62,16 +100,16 @@ public class JwtUtil {
 
         List<SimpleGrantedAuthority> roles = null;
 
-        Boolean isAdmin = claims.get("isAdmin", Boolean.class);
         Boolean isSuperAdmin = claims.get("isSuperAdmin", Boolean.class);
+        Boolean isAdmin = claims.get("isAdmin", Boolean.class);
         Boolean isCustomer = claims.get("isCustomer", Boolean.class);
-
-        if (isAdmin != null && isAdmin) {
-            roles = Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN"));
-        }
 
         if (isSuperAdmin != null && isSuperAdmin) {
             roles = Collections.singletonList(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"));
+        }
+
+        if (isAdmin != null && isAdmin) {
+            roles = Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN"));
         }
 
         if (isCustomer != null && isCustomer) {
@@ -80,7 +118,6 @@ public class JwtUtil {
         return roles;
     }
 
-    //return authority from token
     public String getRoleFromToken(String token) {
         Claims claims = getClaims(token);
 

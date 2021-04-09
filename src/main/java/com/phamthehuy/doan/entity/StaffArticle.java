@@ -2,6 +2,7 @@ package com.phamthehuy.doan.entity;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -24,7 +25,8 @@ public class StaffArticle implements Serializable {
     private Article article;
 
     @Column(nullable = false)
-    private Date time =new Date();
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date time = new Date();
 
     @Column(nullable = false)
     private Boolean action;

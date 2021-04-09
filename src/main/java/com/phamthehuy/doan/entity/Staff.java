@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -33,6 +34,7 @@ public class Staff extends BaseEntity implements Serializable {
     private String cardId;
 
     @Column(nullable = false)
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date dob;
 
     @Column(nullable = false, columnDefinition = "BOOLEAN")
@@ -51,7 +53,7 @@ public class Staff extends BaseEntity implements Serializable {
     private String image;
 
     @Column(nullable = false, columnDefinition = "BOOLEAN")
-    private Boolean enabled=false;
+    private Boolean enabled = false;
 
     @Column(nullable = true, unique = true)
     private String token;

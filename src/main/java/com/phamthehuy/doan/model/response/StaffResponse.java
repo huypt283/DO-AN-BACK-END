@@ -14,17 +14,17 @@ public class StaffResponse {
 
     private String name;
 
-    private String cardId;
-
-    private Date birthday;
-
     private Boolean gender;
 
-    private String role;
+    private String cardId;
+
+    private String phone;
 
     private String address;
 
-    private String phone;
+    private Date birthday;
+
+    private String role;
 
     private String image;
 

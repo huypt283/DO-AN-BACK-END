@@ -1,10 +1,9 @@
 package com.phamthehuy.doan.service;
 
 import com.phamthehuy.doan.model.request.*;
+import com.phamthehuy.doan.model.response.AccountResponse;
 import com.phamthehuy.doan.model.response.CustomerResponse;
 import com.phamthehuy.doan.model.response.MessageResponse;
-import com.phamthehuy.doan.model.response.StaffResponse;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.servlet.http.HttpServletRequest;
@@ -23,10 +22,10 @@ public interface AccountService {
 
     MessageResponse resetPassword(ResetPasswordRequest resetPasswordRequest) throws Exception;
 
-    StaffResponse staffProfile(UserDetails currentUser) throws Exception;
+    AccountResponse getProfile(UserDetails currentUser) throws Exception;
 
-    StaffResponse staffUpdateProfile(StaffPersonUpdateRequest staffPersonUpdateRequest,
-                                     UserDetails currentUser) throws Exception;
+    AccountResponse updateProfile(AccountUpdateRequest accountUpdateRequest,
+                                  UserDetails currentUser) throws Exception;
 
     CustomerResponse customerProfile(UserDetails currentUser) throws Exception;
 

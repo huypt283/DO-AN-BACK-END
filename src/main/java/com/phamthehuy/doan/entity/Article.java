@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -36,6 +37,7 @@ public class Article extends BaseEntity implements Serializable {
     private Integer days;
 
     @Column
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date expTime;
 
     @Column(nullable = false, columnDefinition = "BOOLEAN")
@@ -53,6 +55,7 @@ public class Article extends BaseEntity implements Serializable {
     private String video;
 
     @Column(nullable = false)
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date timeUpdated;
 
     @OneToOne(cascade = CascadeType.ALL)

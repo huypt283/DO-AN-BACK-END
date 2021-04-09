@@ -29,6 +29,9 @@ public class JwtUtil {
     public String generateToken(UserDetails userDetails, boolean isRfToken) {
         Map<String, Object> claims = new HashMap<>();
         Collection<? extends GrantedAuthority> roles = userDetails.getAuthorities();
+        if (!isRfToken) {
+            claims.put("authorized", true);
+        }
         if (roles.contains(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"))) {
             claims.put("isSuperAdmin", true);
         } else if (roles.contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
@@ -52,6 +55,7 @@ public class JwtUtil {
                 claims.put("isCustomer", true);
                 break;
         }
+        claims.put("authorized", true);
         return doGenerateToken(claims, email, false);
     }
 
@@ -67,7 +71,8 @@ public class JwtUtil {
     public boolean validateAccess(Claims claims) {
         try {
             String role = getRoleFromClaims(claims);
-            return !"".equals(role);
+            Boolean authorized = claims.get("authorized", Boolean.class);
+            return !"".equals(role) && authorized != null && authorized;
         } catch (SignatureException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException ex) {
             throw new BadCredentialsException("INVALID_CREDENTIALS", ex);
         } catch (ExpiredJwtException ex) {

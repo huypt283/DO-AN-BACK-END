@@ -53,6 +53,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/super-admin/**").hasRole("SUPER_ADMIN")
                 .antMatchers("/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                 .antMatchers("/customer/**").hasRole("CUSTOMER")
+                .antMatchers("/profile").authenticated()
                 .antMatchers("/sign-in", "sign-up", "/forgot-password", "/refresh-token").permitAll()
                 .antMatchers(HttpMethod.POST,"/**").authenticated()
                 .antMatchers(HttpMethod.PUT,"/**").authenticated()

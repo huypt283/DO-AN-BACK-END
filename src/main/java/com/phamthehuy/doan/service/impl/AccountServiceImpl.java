@@ -6,6 +6,7 @@ import com.phamthehuy.doan.entity.Staff;
 import com.phamthehuy.doan.exception.*;
 import com.phamthehuy.doan.helper.Helper;
 import com.phamthehuy.doan.model.request.*;
+import com.phamthehuy.doan.model.response.AccountResponse;
 import com.phamthehuy.doan.model.response.CustomerResponse;
 import com.phamthehuy.doan.model.response.MessageResponse;
 import com.phamthehuy.doan.model.response.StaffResponse;
@@ -278,48 +279,95 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public StaffResponse staffProfile(UserDetails currentUser) throws Exception {
-        Staff staff = staffRepository.findByEmail(currentUser.getUsername());
+    public AccountResponse getProfile(UserDetails currentUser) throws Exception {
+        String email = currentUser.getUsername();
+        String role = getRoleFromAuthority(currentUser.getAuthorities());
 
-        if (staff == null)
-            throw new NotFoundException("Không tìm thấy tài khoản");
+        if (email == null || email.trim().equals(""))
+            throw new UnauthenticatedException("Token không hợp lệ");
 
-        StaffResponse staffResponse = new StaffResponse();
-        BeanUtils.copyProperties(staff, staffResponse);
-        staffResponse.setBirthday(staff.getDob());
-        staffResponse.setRole(staff.getRole() ? "SUPER_ADMIN" : "ADMIN");
+        if (role.equals("SUPER_ADMIN") || role.equals("ADMIN")) {
+            Staff staff = staffRepository.findByEmail(currentUser.getUsername());
 
-        return staffResponse;
+            if (staff == null)
+                throw new NotFoundException("Không tìm thấy tài khoản");
+
+            AccountResponse staffResponse = new AccountResponse();
+            BeanUtils.copyProperties(staff, staffResponse);
+            staffResponse.setAccountId(staff.getStaffId());
+            staffResponse.setBirthday(staff.getDob());
+            staffResponse.setRole(staff.getRole() ? "SUPER_ADMIN" : "ADMIN");
+
+            return staffResponse;
+        } else {
+            Customer customer = customerRepository.findByEmail(currentUser.getUsername());
+
+            if (customer == null)
+                throw new BadRequestException("Không tìm thấy tài khoản");
+
+            AccountResponse customerResponse = new AccountResponse();
+            BeanUtils.copyProperties(customer, customerResponse);
+            customerResponse.setAccountId(customer.getCustomerId());
+            customerResponse.setBirthday(customer.getDob());
+            customerResponse.setRole("CUSTOMER");
+
+            return customerResponse;
+        }
     }
 
     @Override
-    public StaffResponse staffUpdateProfile(StaffPersonUpdateRequest staffPersonUpdateRequest,
-                                            UserDetails currentUser) throws Exception {
+    public AccountResponse updateProfile(AccountUpdateRequest accountUpdateRequest,
+                                         UserDetails currentUser) throws Exception {
         //validate
-        if (!staffPersonUpdateRequest.getCardId().matches("[0-9]+"))
+        if (!accountUpdateRequest.getCardId().matches("[0-9]+"))
             throw new BadRequestException("Số CMND phải là số");
 
-        if (!staffPersonUpdateRequest.getPhone().matches("[0-9]+"))
+        if (!accountUpdateRequest.getPhone().matches("[0-9]+"))
             throw new BadRequestException("Số điện thoại phải là số");
 
-        if (staffPersonUpdateRequest.getBirthday().after(new Date()))
+        if (accountUpdateRequest.getBirthday().after(new Date()))
             throw new BadRequestException("Ngày sinh không hợp lệ");
 
         //update
-        Staff staff = staffRepository.findByEmail(currentUser.getUsername());
-        if (staff == null)
-            throw new NotFoundException("Không tìm thấy tài khoản");
+        String email = currentUser.getUsername();
+        String role = getRoleFromAuthority(currentUser.getAuthorities());
+
+        if (email == null || email.trim().equals(""))
+            throw new UnauthenticatedException("Token không hợp lệ");
         try {
-            BeanUtils.copyProperties(staffPersonUpdateRequest, staff);
-            staff.setDob(staffPersonUpdateRequest.getBirthday());
+            if (role.equals("SUPER_ADMIN") || role.equals("ADMIN")) {
+                Staff staff = staffRepository.findByEmail(currentUser.getUsername());
+                if (staff == null)
+                    throw new NotFoundException("Không tìm thấy tài khoản");
 
-            staff = staffRepository.save(staff);
+                BeanUtils.copyProperties(accountUpdateRequest, staff);
+                staff.setDob(accountUpdateRequest.getBirthday());
 
-            StaffResponse staffResponse = new StaffResponse();
-            BeanUtils.copyProperties(staff, staffResponse);
-            staffResponse.setBirthday(staff.getDob());
+                staff = staffRepository.save(staff);
 
-            return staffResponse;
+                AccountResponse staffResponse = new AccountResponse();
+                BeanUtils.copyProperties(staff, staffResponse);
+                staffResponse.setAccountId(staff.getStaffId());
+                staffResponse.setBirthday(staff.getDob());
+
+                return staffResponse;
+            } else {
+                Customer customer = customerRepository.findByEmail(currentUser.getUsername());
+                if (customer == null)
+                    throw new NotFoundException("Không tìm thấy tài khoản");
+
+                BeanUtils.copyProperties(accountUpdateRequest, customer);
+                customer.setDob(accountUpdateRequest.getBirthday());
+
+                customer = customerRepository.save(customer);
+
+                AccountResponse customerResponse = new AccountResponse();
+                BeanUtils.copyProperties(customer, customerResponse);
+                customerResponse.setAccountId(customer.getCustomerId());
+                customerResponse.setBirthday(customer.getDob());
+
+                return customerResponse;
+            }
         } catch (Exception e) {
             throw new InternalServerError("Cập nhật thông tin cá nhân thất bại");
         }
@@ -380,7 +428,7 @@ public class AccountServiceImpl implements AccountService {
             if (email == null || email.trim().equals(""))
                 throw new UnauthenticatedException("Token không hợp lệ");
 
-            if (role.equals("ROLE_ADMIN") || role.equals("ROLE_SUPER_ADMIN")) {
+            if (role.equals("SUPER_ADMIN") || role.equals("ADMIN")) {
                 Staff staff = staffRepository.findByEmail(email);
                 if (staff != null) {
                     if (!passwordEncoder.matches(changePassRequest.getOldPass(), staff.getPass()))

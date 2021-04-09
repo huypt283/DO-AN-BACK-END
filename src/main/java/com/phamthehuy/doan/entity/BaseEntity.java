@@ -2,6 +2,7 @@ package com.phamthehuy.doan.entity;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
@@ -16,7 +17,6 @@ public abstract class BaseEntity {
     @Column(columnDefinition = "BOOLEAN")
     private Boolean deleted = false;
 
-    @Temporal(TemporalType.DATE)
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date timeCreated = new Date();
-
 }

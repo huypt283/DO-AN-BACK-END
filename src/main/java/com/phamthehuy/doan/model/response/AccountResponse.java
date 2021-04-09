@@ -7,8 +7,8 @@ import java.util.Date;
 
 @Getter
 @Setter
-public class CustomerResponse {
-    private Integer customerId;
+public class AccountResponse {
+    private Integer accountId;
 
     private String email;
 
@@ -24,9 +24,9 @@ public class CustomerResponse {
 
     private Date birthday;
 
-    private String role = "CUSTOMER";
+    private String role;
 
-    private Integer accountBalance;
+    private Integer accountBalance = 0;
 
     private String image;
 

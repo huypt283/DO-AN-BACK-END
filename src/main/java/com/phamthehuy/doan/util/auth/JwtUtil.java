@@ -59,8 +59,8 @@ public class JwtUtil {
         return Jwts.builder().setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + (isRfToken ? jwtExpirationInMs : rf_jwtExpirationInMs)))
-                .signWith(SignatureAlgorithm.HS512, isRfToken ? secret : rf_secret)
+                .setExpiration(new Date(System.currentTimeMillis() + (isRfToken ? rf_jwtExpirationInMs : jwtExpirationInMs)))
+                .signWith(SignatureAlgorithm.HS512, isRfToken ? rf_secret : secret)
                 .compact();
     }
 

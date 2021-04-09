@@ -14,12 +14,12 @@ import com.phamthehuy.doan.repository.StaffRepository;
 import com.phamthehuy.doan.service.AccountService;
 import com.phamthehuy.doan.util.MailSender;
 import com.phamthehuy.doan.util.auth.JwtUtil;
-import io.jsonwebtoken.impl.DefaultClaims;
 import lombok.SneakyThrows;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -37,28 +37,24 @@ import java.util.*;
 @Service
 public class AccountServiceImpl implements AccountService {
     @Autowired
-    PasswordEncoder passwordEncoder;
-
+    private PasswordEncoder passwordEncoder;
     @Autowired
-    CustomerRepository customerRepository;
-
+    private CustomerRepository customerRepository;
     @Autowired
-    MailSender mailSender;
-
+    private MailSender mailSender;
     @Autowired
-    StaffRepository staffRepository;
-
+    private StaffRepository staffRepository;
     @Autowired
-    AuthenticationManager authenticationManager;
-
+    private AuthenticationManager authenticationManager;
     @Autowired
-    CustomUserDetailsService userDetailsService;
-
+    private CustomUserDetailsService userDetailsService;
     @Autowired
-    JwtUtil jwtTokenUtil;
-
+    private JwtUtil jwtTokenUtil;
     @Autowired
-    Helper helper;
+    private Helper helper;
+
+    @Value("${client.url")
+    private String clientUrl;
 
     @Override
     public MessageResponse customerSignup(SignupRequest signupRequest, HttpServletRequest request) {
@@ -87,7 +83,7 @@ public class AccountServiceImpl implements AccountService {
                     signupRequest.getEmail(),
                     "Xác nhận địa chỉ email",
                     "Click vào đường link sau để xác nhận email và kích hoạt tài khoản của bạn:<br/>" +
-                            helper.getHostUrl(request.getRequestURL().toString(), "/sign-up") + "/confirm?token=" + token
+                            this.clientUrl + "/confirm?token=" + token
                             + "&email=" + signupRequest.getEmail(),
                     "Thời hạn xác nhận, 10 phút kể từ khi đăng kí"
             );
@@ -233,36 +229,37 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public MessageResponse forgotPassword(String email) throws Exception {
-        Staff staff = null;
-        staff = staffRepository.findByEmail(email);
-        Customer customer = null;
-        if (staff == null) customer = customerRepository.findByEmail(email);
-
+        Staff staff = staffRepository.findByEmail(email);
         String token;
 
         if (staff != null) {
-            if (!staff.getEnabled()) throw new BadRequestException("Email chưa được xác nhận");
+            if (!staff.getEnabled())
+                throw new AccessDeniedException("Email chưa được xác nhận");
             if (staff.getToken() != null)
-                throw new BadRequestException("Email đổi mật khẩu đã được gửi, bạn hãy check lại mail");
+                throw new AccessDeniedException("Email đổi mật khẩu đã được gửi, bạn hãy check lại mail");
             token = helper.createToken(31);
             staff.setToken(token);
             staffRepository.save(staff);
-        } else if (customer != null) {
-            if (!customer.getEnabled()) throw new BadRequestException("Email chưa được xác nhận");
-            if (customer.getToken() != null)
-                throw new BadRequestException("Email đổi mật khẩu đã được gửi, bạn hãy check lại mail");
-            token = helper.createToken(31);
-            customer.setToken(token);
-            customerRepository.save(customer);
         } else {
-            throw new BadRequestException("Email không tồn tại");
+            Customer customer = customerRepository.findByEmail(email);
+            if (customer != null) {
+                if (!customer.getEnabled())
+                    throw new AccessDeniedException("Email chưa được xác nhận");
+                if (customer.getToken() != null)
+                    throw new AccessDeniedException("Email đổi mật khẩu đã được gửi, bạn hãy check lại mail");
+                token = helper.createToken(31);
+                customer.setToken(token);
+                customerRepository.save(customer);
+            } else {
+                throw new BadRequestException("Email không tồn tại");
+            }
         }
         //send mail
         mailSender.send(
                 email,
                 "Quên mật khẩu",
                 "Click vào đường link sau để tạo mới mật khẩu của bạn:<br/>" +
-                        "dia chi frontend" + "/renew-password?token=" + token
+                        this.clientUrl + "/renew-password?token=" + token
                         + "&email=" + email,
                 "Chúc bạn thành công"
         );

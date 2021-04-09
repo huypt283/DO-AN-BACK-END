@@ -10,11 +10,14 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${max.sec}")
     private long MAX_AGE_SECS;
 
+    @Value("${client.url")
+    private String clientUrl;
+
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-
         registry.addMapping("/**")
                 .allowedOrigins("*")
+                .allowedHeaders("*")
                 .allowedMethods("HEAD", "OPTIONS", "GET", "POST", "PUT", "PATCH", "DELETE")
                 .maxAge(MAX_AGE_SECS);
     }

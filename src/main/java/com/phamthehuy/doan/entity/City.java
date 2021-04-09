@@ -16,12 +16,8 @@ import java.util.Set;
 @NoArgsConstructor
 public class City implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer cityId;
 
     @Column(nullable = false)
     private String cityName;
-
-    @OneToMany(mappedBy = "city", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private Set<District> districts;
 }

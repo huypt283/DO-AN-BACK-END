@@ -24,6 +24,9 @@ public class Article extends BaseEntity implements Serializable {
     @Column(nullable = false)
     private String title;
 
+    @Column(nullable = false, unique = true)
+    private String slug;
+
     @Column(columnDefinition = "text", nullable = false)
     private String content;
 

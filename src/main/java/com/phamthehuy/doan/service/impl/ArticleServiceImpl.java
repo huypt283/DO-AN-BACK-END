@@ -4,7 +4,7 @@ import com.phamthehuy.doan.entity.Article;
 import com.phamthehuy.doan.entity.StaffArticle;
 import com.phamthehuy.doan.model.response.ArticleResponse;
 import com.phamthehuy.doan.repository.StaffArticleRepository;
-import com.phamthehuy.doan.util.Slug;
+import com.phamthehuy.doan.util.SlugUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -22,7 +22,7 @@ public class ArticleServiceImpl {
         ArticleResponse articleResponse = new ArticleResponse();
         BeanUtils.copyProperties(article, articleResponse);
 
-        articleResponse.setSlug(Slug.makeSlug(article.getTitle()));
+        articleResponse.setSlug(SlugUtil.makeSlug(article.getTitle()));
         articleResponse.setCreateTime(article.getTimeCreated());
         articleResponse.setLastUpdateTime(article.getTimeUpdated());
         if (article.getDeleted() != null) {

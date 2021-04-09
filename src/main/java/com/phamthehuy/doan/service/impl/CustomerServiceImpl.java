@@ -149,8 +149,8 @@ public class CustomerServiceImpl implements CustomerService {
         }
         if (!customerUpdateRequest.getPhone().matches(matchNumber))
             throw new BadRequestException("Số điện thoại phải là số");
-        if (customerUpdateRequest.getBirthday() >= System.currentTimeMillis())
-            throw new BadRequestException("Ngày sinh phải trong quá khứ");
+        if (customerUpdateRequest.getBirthday().after(new Date()))
+            throw new BadRequestException("Ngày sinh không hợp lệ");
 
         //update
         try {
@@ -160,12 +160,11 @@ public class CustomerServiceImpl implements CustomerService {
             Optional<Customer> optionalCustomer = customerRepository.findById(id);
             Customer customer = optionalCustomer.get();
             customer.setName(customerUpdateRequest.getName());
-            customer.setGender(customerUpdateRequest.isGender());
+            customer.setGender(customerUpdateRequest.getGender());
             customer.setAddress(customerUpdateRequest.getAddress());
             customer.setPhone(customerUpdateRequest.getPhone());
             customer.setCardId(customerUpdateRequest.getCardId());
-            customer.setDob(new Date(customerUpdateRequest.getBirthday()));
-            customer.setImage(customerUpdateRequest.getImage());
+            customer.setDob(customerUpdateRequest.getBirthday());
             Customer newCustomer = customerRepository.save(customer);
             CustomerResponse customerResponse = modelMapper.map(newCustomer, CustomerResponse.class);
             customerResponse.setBirthday(newCustomer.getDob());

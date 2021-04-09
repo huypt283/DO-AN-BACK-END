@@ -29,4 +29,6 @@ public class CustomerResponse {
     private Integer accountBalance;
 
     private String image;
+
+    private Boolean deleted;
 }

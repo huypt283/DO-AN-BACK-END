@@ -52,4 +52,6 @@ public class ArticleResponse {
     private Map<String, String> moderator;
 
     private Map<String, String> location;
+
+    private Boolean deleted;
 }

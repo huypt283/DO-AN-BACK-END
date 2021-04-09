@@ -34,7 +34,7 @@ public class AccountController {
 
     @GetMapping("/confirm")
     public ResponseEntity<?> confirmEmail(@RequestParam(value = "token") String token,
-                                        @RequestParam String email) throws Exception {
+                                          @RequestParam String email) throws Exception {
         return new ResponseEntity<>(accountService.confirmEmail(token, email), HttpStatus.OK);
     }
 
@@ -61,9 +61,9 @@ public class AccountController {
 
     @PostMapping("/admin/update-profile")
     public ResponseEntity<?> staffUpdateProfile(@Valid @RequestBody StaffPersonUpdateRequest staffPersonUpdateRequest,
-                                            HttpServletRequest request)
+                                                @AuthenticationPrincipal UserDetails currentUser)
             throws Exception {
-        return new ResponseEntity<>(accountService.staffUpdateProfile(staffPersonUpdateRequest, request), HttpStatus.OK);
+        return new ResponseEntity<>(accountService.staffUpdateProfile(staffPersonUpdateRequest, currentUser), HttpStatus.OK);
     }
 
     @GetMapping("/customer/profile")
@@ -74,16 +74,15 @@ public class AccountController {
 
     @PostMapping("/customer/update-profile")
     public ResponseEntity<?> customerUpdateProfile(@Valid @RequestBody CustomerUpdateRequest customerUpdateRequest,
-                                                  HttpServletRequest request)
+                                                   @AuthenticationPrincipal UserDetails currentUser)
             throws Exception {
-        return new ResponseEntity<>(accountService.customerUpdateProfile(customerUpdateRequest, request), HttpStatus.OK);
+        return new ResponseEntity<>(accountService.customerUpdateProfile(customerUpdateRequest, currentUser), HttpStatus.OK);
     }
 
     @PostMapping("/change-password")
     public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePassRequest changePassRequest,
-                                          HttpServletRequest request)
+                                            @AuthenticationPrincipal UserDetails currentUser)
             throws Exception {
-        return new ResponseEntity<>(accountService.changePassword(changePassRequest.getOldPass(),
-                changePassRequest.getNewPass(), request), HttpStatus.OK);
+        return new ResponseEntity<>(accountService.changePassword(changePassRequest, currentUser), HttpStatus.OK);
     }
 }

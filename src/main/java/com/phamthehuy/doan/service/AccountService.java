@@ -26,13 +26,13 @@ public interface AccountService {
     StaffResponse staffProfile(UserDetails currentUser) throws Exception;
 
     StaffResponse staffUpdateProfile(StaffPersonUpdateRequest staffPersonUpdateRequest,
-                                     HttpServletRequest request) throws Exception;
+                                     UserDetails currentUser) throws Exception;
 
     CustomerResponse customerProfile(UserDetails currentUser) throws Exception;
 
     CustomerResponse customerUpdateProfile(CustomerUpdateRequest customerUpdateRequest,
-                                           HttpServletRequest request) throws Exception;
+                                           UserDetails currentUser) throws Exception;
 
-    MessageResponse changePassword(String oldPass, String newPass,
-                                   HttpServletRequest request) throws Exception;
+    MessageResponse changePassword(ChangePassRequest changePassRequest,
+                                   UserDetails currentUser) throws Exception;
 }

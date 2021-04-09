@@ -15,9 +15,6 @@ public class ArticleUpdateRequest {
     @NotNull(message = "Tiêu đề không được trống")
     private String title;
 
-    @NotBlank(message = "Ảnh không được trống")
-    private String images;
-
     @Min(value = 1000, message = "Giá phòng nhỏ nhất là 1000 đồng")
     @NotNull(message = "Giá phòng không được trống")
     private Integer roomPrice;
@@ -44,12 +41,12 @@ public class ArticleUpdateRequest {
     @Size(min = 3, message = "Địa chỉ phải có ít nhất 3 kí tự")
     private String address;
 
+    @NotBlank(message = "Ảnh không được trống")
+    private String images;
+
     private String video;
 
-    //lưu ý
     private RoommateRequest roommateRequest;
-
-    //token => customer (hoac cho nhap truc tiep)
 
     @NotNull(message = "Phường không được trống")
     private Integer wardId;

@@ -31,7 +31,7 @@ public class CustomerArticleController {
     //    lọc bài đăng theo isVip	/articles?vip={true/false}
     //    tìm kiếm bài đăng theo title	/articles?title={title}
     @GetMapping
-    public List<ArticleResponse> listMyArticle(
+    public List<ArticleResponse> listArticle(
             @RequestParam(required = false) String sort,
             @RequestParam(required = false) Long start,
             @RequestParam(required = false) Long end,

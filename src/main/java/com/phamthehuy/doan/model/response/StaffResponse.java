@@ -27,4 +27,6 @@ public class StaffResponse {
     private String phone;
 
     private String image;
+
+    private Boolean deleted;
 }

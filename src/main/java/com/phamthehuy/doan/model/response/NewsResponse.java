@@ -19,4 +19,6 @@ public class NewsResponse {
     private String author;
 
     private Date lastUpdatedTime;
+
+    private Boolean deleted;
 }

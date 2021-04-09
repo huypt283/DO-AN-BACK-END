@@ -15,6 +15,7 @@ import javax.validation.constraints.Size;
 public class ResetPasswordRequest {
     @NotNull(message = "Token không được null")
     String token;
+
     @NotNull(message = "Email không được null")
     String email;
 

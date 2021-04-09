@@ -9,6 +9,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 @Service
@@ -63,13 +64,9 @@ public class JwtUtil {
                 .compact();
     }
 
-    public boolean validateAccessToken(String authToken) {
+    public boolean validateAccess(Claims claims) {
         try {
-//            Jwts.parser().setSigningKey(secret).parseClaimsJws(authToken)
-            String role = getRoleFromToken(authToken);
-//            return ((!isSupperAdminUrl || "ROLE_SUPER_ADMIN".equals(role))
-//                    && (!isAdminUrl || "ROLE_SUPER_ADMIN".equals(role) || "ROLE_ADMIN".equals(role))
-//                    && (!isCustomerUrl || "ROLE_CUSTOMER".equals(role)));
+            String role = getRoleFromClaims(claims);
             return !"".equals(role);
         } catch (SignatureException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException ex) {
             throw new BadCredentialsException("INVALID_CREDENTIALS", ex);
@@ -94,10 +91,12 @@ public class JwtUtil {
         return getClaims(token).getSubject();
     }
 
-    //return authority from token
-    public List<SimpleGrantedAuthority> getRolesFromToken(String token) {
-        Claims claims = getClaims(token);
+    public String getEmailFromClaims(Claims claims) {
+        return claims.getSubject();
+    }
 
+    //return authority from token
+    public List<SimpleGrantedAuthority> getRolesFromClaims(Claims claims) {
         List<SimpleGrantedAuthority> roles = null;
 
         Boolean isSuperAdmin = claims.get("isSuperAdmin", Boolean.class);
@@ -118,9 +117,7 @@ public class JwtUtil {
         return roles;
     }
 
-    public String getRoleFromToken(String token) {
-        Claims claims = getClaims(token);
-
+    public String getRoleFromClaims(Claims claims) {
         Boolean isAdmin = claims.get("isAdmin", Boolean.class);
         Boolean isSuperAdmin = claims.get("isSuperAdmin", Boolean.class);
         Boolean isCustomer = claims.get("isCustomer", Boolean.class);
@@ -140,7 +137,7 @@ public class JwtUtil {
         return "";
     }
 
-    private Claims getClaims(String token) {
-        return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+    public Claims getClaims(String jwtToken) {
+        return Jwts.parser().setSigningKey(secret).parseClaimsJws(jwtToken).getBody();
     }
 }

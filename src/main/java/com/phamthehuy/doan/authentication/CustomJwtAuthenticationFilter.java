@@ -1,6 +1,7 @@
 package com.phamthehuy.doan.authentication;
 
 import com.phamthehuy.doan.util.auth.JwtUtil;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,25 +33,22 @@ public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         try {
             String jwtToken = extractJwtFromRequest(request);
-//            String path = request.getRequestURI();
-//            boolean isSupperAdminUrl = path.contains("/super-admin");
-//            boolean isAdminUrl = path.contains("/admin");
-//            boolean isCustomerUrl = path.contains("/customer");
+            if (StringUtils.hasText(jwtToken)) {
+                Claims claims = jwtTokenUtil.getClaims(jwtToken);
+                if (jwtTokenUtil.validateAccess(claims)) {
+                    UserDetails userDetails = new User(jwtTokenUtil.getEmailFromClaims(claims),
+                            "", jwtTokenUtil.getRolesFromClaims(claims));
 
-            if (StringUtils.hasText(jwtToken) && jwtTokenUtil.validateAccessToken(jwtToken)) {
-                UserDetails userDetails = new User(jwtTokenUtil.getEmailFromToken(jwtToken), "",
-                        jwtTokenUtil.getRolesFromToken(jwtToken));
-
-                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                // After setting the Authentication in the context, we specify
-                // that the current user is authenticated. So it passes the
-                SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                    // After setting the Authentication in the context, we specify
+                    // that the current user is authenticated. So it passes the
+                    SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                } else
+                    throw new BadCredentialsException("INVALID_CREDENTIALS");
             } else
                 throw new BadCredentialsException("INVALID_CREDENTIALS");
-        } catch (ExpiredJwtException ex) {
-            request.setAttribute("exception", "Expire access token");
-        } catch (BadCredentialsException ex) {
+        } catch (ExpiredJwtException | BadCredentialsException ex) {
             request.setAttribute("exception", ex);
         }
         chain.doFilter(request, response);

@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -27,62 +28,62 @@ public class AccountController {
     }
 
     @PostMapping("/sign-up")
-    public MessageResponse customerSignup(@Valid @RequestBody SignupRequest signupRequest, HttpServletRequest request) throws Exception {
-        return accountService.customerSignup(signupRequest, request);
+    public ResponseEntity<?> customerSignup(@Valid @RequestBody SignupRequest signupRequest, HttpServletRequest request) throws Exception {
+        return new ResponseEntity<>(accountService.customerSignup(signupRequest, request), HttpStatus.OK);
     }
 
     @GetMapping("/confirm")
-    public MessageResponse confirmEmail(@RequestParam(value = "token") String token,
+    public ResponseEntity<?> confirmEmail(@RequestParam(value = "token") String token,
                                         @RequestParam String email) throws Exception {
-        return accountService.confirmEmail(token, email);
+        return new ResponseEntity<>(accountService.confirmEmail(token, email), HttpStatus.OK);
     }
 
     @GetMapping("/refresh-token")
-    public Map<String, String> refreshAccessToken(HttpServletRequest request) throws Exception {
-        return accountService.refreshAccessToken(request);
+    public ResponseEntity<?> refreshAccessToken(HttpServletRequest request) throws Exception {
+        return new ResponseEntity<>(accountService.refreshAccessToken(request), HttpStatus.OK);
     }
 
     @PostMapping("/forgot-password")
-    public MessageResponse forgotPassword(@RequestParam String email) throws Exception {
-        return accountService.forgotPassword(email);
+    public ResponseEntity<?> forgotPassword(@RequestParam String email) throws Exception {
+        return new ResponseEntity<>(accountService.forgotPassword(email), HttpStatus.OK);
     }
 
     @PostMapping("/reset-password")
-    public MessageResponse resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest) throws Exception {
-        return accountService.resetPassword(resetPasswordRequest);
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest) throws Exception {
+        return new ResponseEntity<>(accountService.resetPassword(resetPasswordRequest), HttpStatus.OK);
     }
 
     @GetMapping("/admin/profile")
-    public StaffResponse staffProfile(@AuthenticationPrincipal UsernamePasswordAuthenticationToken currentUser)
+    public ResponseEntity<?> staffProfile(@AuthenticationPrincipal UserDetails currentUser)
             throws Exception {
-        return accountService.staffProfile(currentUser);
+        return new ResponseEntity<>(accountService.staffProfile(currentUser), HttpStatus.OK);
     }
 
     @PostMapping("/admin/update-profile")
-    public StaffResponse staffUpdateProfile(@Valid @RequestBody StaffPersonUpdateRequest staffPersonUpdateRequest,
+    public ResponseEntity<?> staffUpdateProfile(@Valid @RequestBody StaffPersonUpdateRequest staffPersonUpdateRequest,
                                             HttpServletRequest request)
             throws Exception {
-        return accountService.staffUpdateProfile(staffPersonUpdateRequest, request);
+        return new ResponseEntity<>(accountService.staffUpdateProfile(staffPersonUpdateRequest, request), HttpStatus.OK);
     }
 
     @GetMapping("/customer/profile")
-    public CustomerResponse customerProfile(HttpServletRequest request)
+    public ResponseEntity<?> customerProfile(@AuthenticationPrincipal UserDetails currentUser)
             throws Exception {
-        return accountService.customerProfile(request);
+        return new ResponseEntity<>(accountService.customerProfile(currentUser), HttpStatus.OK);
     }
 
     @PostMapping("/customer/update-profile")
-    public CustomerResponse customerUpdateProfile(@Valid @RequestBody CustomerUpdateRequest customerUpdateRequest,
+    public ResponseEntity<?> customerUpdateProfile(@Valid @RequestBody CustomerUpdateRequest customerUpdateRequest,
                                                   HttpServletRequest request)
             throws Exception {
-        return accountService.customerUpdateProfile(customerUpdateRequest, request);
+        return new ResponseEntity<>(accountService.customerUpdateProfile(customerUpdateRequest, request), HttpStatus.OK);
     }
 
     @PostMapping("/change-password")
-    public MessageResponse changePassword(@Valid @RequestBody ChangePassRequest changePassRequest,
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePassRequest changePassRequest,
                                           HttpServletRequest request)
             throws Exception {
-        return accountService.changePassword(changePassRequest.getOldPass(),
-                changePassRequest.getNewPass(), request);
+        return new ResponseEntity<>(accountService.changePassword(changePassRequest.getOldPass(),
+                changePassRequest.getNewPass(), request), HttpStatus.OK);
     }
 }

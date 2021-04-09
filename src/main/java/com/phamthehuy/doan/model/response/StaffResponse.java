@@ -20,7 +20,7 @@ public class StaffResponse {
 
     private Boolean gender;
 
-    private Boolean role;
+    private String role;
 
     private String address;
 

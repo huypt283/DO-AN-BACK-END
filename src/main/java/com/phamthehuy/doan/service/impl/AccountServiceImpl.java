@@ -32,9 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
-import java.sql.SQLException;
 import java.util.*;
-import java.util.Map.Entry;
 
 @Service
 public class AccountServiceImpl implements AccountService {
@@ -295,24 +293,17 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public StaffResponse staffProfile(UsernamePasswordAuthenticationToken currentUser) throws Exception {
-        try {
-//            String jwt = extractJwtFromRequest(request);
-//            String email = jwtTokenUtil.getEmailFromToken(jwt);
-            Staff staff = staffRepository.findByEmail(currentUser.getPrincipal().toString());
+    public StaffResponse staffProfile(UserDetails currentUser) throws Exception {
+        Staff staff = staffRepository.findByEmail(currentUser.getUsername());
 
-//            if (staff == null)
-//                throw new BadRequestException("Token không hợp lệ");
+        if (staff == null)
+            throw new NotFoundException("Không tìm thấy người dùng");
 
-            StaffResponse staffResponse = new StaffResponse();
-            BeanUtils.copyProperties(staff, staffResponse);
-            staffResponse.setBirthday(staff.getDob());
-            return staffResponse;
-        } catch (BadRequestException e) {
-            throw new BadRequestException(e.getMessage());
-        } catch (Exception ex) {
-            throw new InternalServerError(ex.getMessage());
-        }
+        StaffResponse staffResponse = new StaffResponse();
+        BeanUtils.copyProperties(staff, staffResponse);
+        staffResponse.setBirthday(staff.getDob());
+        staffResponse.setRole(staff.getRole() ? "SUPER_ADMIN" : "ADMIN");
+        return staffResponse;
     }
 
     @Override
@@ -358,22 +349,18 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public CustomerResponse customerProfile(HttpServletRequest request) throws Exception {
+    public CustomerResponse customerProfile(UserDetails currentUser) throws Exception {
         try {
-            ModelMapper modelMapper = new ModelMapper();
-            modelMapper.getConfiguration()
-                    .setMatchingStrategy(MatchingStrategies.STRICT);
-
-            String jwt = extractJwtFromRequest(request);
-            String email = jwtTokenUtil.getEmailFromToken(jwt);
-            Customer customer = customerRepository.findByEmail(email);
-
+            Customer customer = customerRepository.findByEmail(currentUser.getUsername());
 
             if (customer == null)
                 throw new BadRequestException("Token không hợp lệ");
 
-            CustomerResponse customerResponse = modelMapper.map(customer, CustomerResponse.class);
-            if (customer.getDob() != null) customerResponse.setBirthday(customer.getDob().getTime());
+            CustomerResponse customerResponse = new CustomerResponse();
+            BeanUtils.copyProperties(customer, customerResponse);
+
+            customerResponse.setBirthday(customer.getDob());
+
             return customerResponse;
         } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
@@ -416,7 +403,7 @@ public class AccountServiceImpl implements AccountService {
             customer.setImage(customerUpdateRequest.getImage());
             Customer newCustomer = customerRepository.save(customer);
             CustomerResponse customerResponse = modelMapper.map(newCustomer, CustomerResponse.class);
-            if (customer.getDob() != null) customerResponse.setBirthday(newCustomer.getDob().getTime());
+            customerResponse.setBirthday(newCustomer.getDob());
             return customerResponse;
         } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
@@ -430,32 +417,33 @@ public class AccountServiceImpl implements AccountService {
     public MessageResponse changePassword(String oldPass, String newPass,
                                           HttpServletRequest request) throws Exception {
         try {
-            String token = extractJwtFromRequest(request);
-            String email = jwtTokenUtil.getEmailFromToken(token);
-            String role = jwtTokenUtil.getRoleFromToken(token);
-
-            if (email == null || email.trim().equals(""))
-                throw new BadRequestException("Token không hợp lệ");
-
-            if (role.equals("ROLE_ADMIN") || role.equals("ROLE_SUPER_ADMIN")) {
-                Staff staff = staffRepository.findByEmail(email);
-                if (staff != null) {
-                    if (!passwordEncoder.matches(oldPass, staff.getPass()))
-                        throw new BadRequestException("Mật khẩu cũ không chính xác");
-                    staff.setPass(passwordEncoder.encode(newPass));
-                    staffRepository.save(staff);
-                    return new MessageResponse("Đổi mật khẩu cho nhân viên: " + staff.getEmail() + " thành công");
-                } else throw new BadRequestException("Không tìm thấy nhân viên hợp lệ");
-            } else {
-                Customer customer = customerRepository.findByEmail(email);
-                if (customer != null) {
-                    if (!passwordEncoder.matches(oldPass, customer.getPass()))
-                        throw new BadRequestException("Mật khẩu cũ không chính xác");
-                    customer.setPass(passwordEncoder.encode(newPass));
-                    customerRepository.save(customer);
-                    return new MessageResponse("Đổi mật khẩu khách hàng: " + customer.getEmail() + " thành công");
-                } else throw new BadRequestException("Không tìm thấy người dùng hợp lệ");
-            }
+//            String token = extractJwtFromRequest(request);
+//            String email = jwtTokenUtil.getEmailFromToken(token);
+//            String role = jwtTokenUtil.getRoleFromToken(token);
+//
+//            if (email == null || email.trim().equals(""))
+//                throw new BadRequestException("Token không hợp lệ");
+//
+//            if (role.equals("ROLE_ADMIN") || role.equals("ROLE_SUPER_ADMIN")) {
+//                Staff staff = staffRepository.findByEmail(email);
+//                if (staff != null) {
+//                    if (!passwordEncoder.matches(oldPass, staff.getPass()))
+//                        throw new BadRequestException("Mật khẩu cũ không chính xác");
+//                    staff.setPass(passwordEncoder.encode(newPass));
+//                    staffRepository.save(staff);
+//                    return new MessageResponse("Đổi mật khẩu cho nhân viên: " + staff.getEmail() + " thành công");
+//                } else throw new BadRequestException("Không tìm thấy nhân viên hợp lệ");
+//            } else {
+//                Customer customer = customerRepository.findByEmail(email);
+//                if (customer != null) {
+//                    if (!passwordEncoder.matches(oldPass, customer.getPass()))
+//                        throw new BadRequestException("Mật khẩu cũ không chính xác");
+//                    customer.setPass(passwordEncoder.encode(newPass));
+//                    customerRepository.save(customer);
+//                    return new MessageResponse("Đổi mật khẩu khách hàng: " + customer.getEmail() + " thành công");
+//                } else throw new BadRequestException("Không tìm thấy người dùng hợp lệ");
+//            }
+            return null;
         } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
         } catch (Exception e) {

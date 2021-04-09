@@ -130,7 +130,7 @@ public class CustomerServiceImpl implements CustomerService {
         List<CustomerResponse> customerResponseList = new ArrayList<>();
         for (Customer customer : customerList) {
             CustomerResponse customerResponse = modelMapper.map(customer, CustomerResponse.class);
-            if (customer.getDob() != null) customerResponse.setBirthday(customer.getDob().getTime());
+            customerResponse.setBirthday(customer.getDob());
             customerResponseList.add(customerResponse);
         }
         return customerResponseList;
@@ -168,7 +168,7 @@ public class CustomerServiceImpl implements CustomerService {
             customer.setImage(customerUpdateRequest.getImage());
             Customer newCustomer = customerRepository.save(customer);
             CustomerResponse customerResponse = modelMapper.map(newCustomer, CustomerResponse.class);
-            if (customer.getDob() != null) customerResponse.setBirthday(newCustomer.getDob().getTime());
+            customerResponse.setBirthday(newCustomer.getDob());
             return ResponseEntity.ok(customerResponse);
         } catch (Exception e) {
             //e.printStackTrace();
@@ -206,7 +206,7 @@ public class CustomerServiceImpl implements CustomerService {
                     .setMatchingStrategy(MatchingStrategies.STRICT);
             Customer customer = customerRepository.findById(id).get();
             CustomerResponse customerResponse = modelMapper.map(customer, CustomerResponse.class);
-            if (customer.getDob() != null) customerResponse.setBirthday(customer.getDob().getTime());
+            customerResponse.setBirthday(customer.getDob());
             return ResponseEntity.ok(customerResponse);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new MessageResponse("Lỗi: khách hàng id " + id + " không tồn tại"));

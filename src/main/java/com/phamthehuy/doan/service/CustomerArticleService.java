@@ -5,6 +5,7 @@ import com.phamthehuy.doan.model.request.ArticleInsertRequest;
 import com.phamthehuy.doan.model.request.ArticleUpdateRequest;
 import com.phamthehuy.doan.model.response.ArticleResponse;
 import com.phamthehuy.doan.model.response.MessageResponse;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
 
@@ -25,8 +26,8 @@ public interface CustomerArticleService {
                                       Integer page, Integer limit);
 
     //    đăng bài	/customer/article
-    ArticleResponse insertArticle(String email, ArticleInsertRequest articleInsertRequest)
-            throws BadRequestException;
+    ArticleResponse insertArticle(UserDetails currentUser, ArticleInsertRequest articleInsertRequest)
+            throws Exception;
 
     //    sửa bài đăng	/customer/article
     ArticleResponse updateArticle(String email, ArticleUpdateRequest articleUpdateRequest,

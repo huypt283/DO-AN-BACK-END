@@ -59,7 +59,7 @@ public class Customer extends BaseEntity implements Serializable {
     @Column
     private String refreshToken;
 
-    @Column
+    @Column(columnDefinition = "text", length = 2000)
     private String image;
 
     @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY, cascade = CascadeType.ALL)

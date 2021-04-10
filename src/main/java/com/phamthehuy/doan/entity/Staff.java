@@ -49,7 +49,7 @@ public class Staff extends BaseEntity implements Serializable {
     @Column(nullable = false)
     private String phone;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "text", length = 2000)
     private String image;
 
     @Column(nullable = false, columnDefinition = "BOOLEAN")

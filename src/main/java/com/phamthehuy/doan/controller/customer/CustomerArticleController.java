@@ -6,6 +6,8 @@ import com.phamthehuy.doan.model.request.ArticleUpdateRequest;
 import com.phamthehuy.doan.model.response.ArticleResponse;
 import com.phamthehuy.doan.model.response.MessageResponse;
 import com.phamthehuy.doan.service.CustomerArticleService;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -64,9 +66,8 @@ public class CustomerArticleController {
     //    đăng bài
     @PostMapping
     public ArticleResponse insertArticle(@Valid @RequestBody ArticleInsertRequest articleInsertRequest,
-                                         HttpServletRequest request) throws BadRequestException {
-        String email = (String) request.getAttribute("email");
-        return customerArticleService.insertArticle(email, articleInsertRequest);
+                                         @AuthenticationPrincipal UserDetails currentUser) throws Exception {
+        return customerArticleService.insertArticle(currentUser, articleInsertRequest);
     }
 
     //    sửa bài đăng
@@ -77,8 +78,6 @@ public class CustomerArticleController {
         String email = (String) request.getAttribute("email");
         return customerArticleService.updateArticle(email, articleUpdateRequest, id);
     }
-
-
 
     //    xóa bài đăng	/customer/article/{id}
     @DeleteMapping("/{id}")

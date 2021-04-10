@@ -10,7 +10,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${max.sec}")
     private long MAX_AGE_SECS;
 
-    @Value("${client.url")
+    @Value("${client.url}")
     private String clientUrl;
 
     @Override
@@ -23,8 +23,18 @@ public class WebConfig implements WebMvcConfigurer {
     }
 
 //    @Override
-//    public void addInterceptors(InterceptorRegistry registry) {
-//        registry.addInterceptor(new CustomerInterceptor())//
-//                .addPathPatterns("/customer/article/**");
+//    public void addFormatters(FormatterRegistry registry) {
+//        registry.addConverter(new StringToEnumConverter());
+//    }
+//
+//    public static class StringToEnumConverter implements Converter<String, RoomType> {
+//        @Override
+//        public RoomType convert(String source) {
+//            try {
+//                return RoomType.valueOf(source.toUpperCase());
+//            } catch (IllegalArgumentException e) {
+//                throw new BadRequestException("Loại phòng không hợp lệ");
+//            }
+//        }
 //    }
 }

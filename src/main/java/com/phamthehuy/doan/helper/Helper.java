@@ -106,19 +106,19 @@ public class Helper {
         return Arrays.asList(arr);
     }
 
-    public Integer calculateDays(int number, String type, Date starTime) {
+    public Integer calculateDays(int times, String type, Date starTime) {
         Calendar start = Calendar.getInstance();
         start.setTime(starTime);
         long millisecond;
         if (type.trim().equals("week")) {
             Calendar end = Calendar.getInstance();
             end.setTime(starTime);
-            end.add(Calendar.WEEK_OF_YEAR, number);
+            end.add(Calendar.WEEK_OF_YEAR, times);
             millisecond = end.getTime().getTime() - start.getTime().getTime();
         } else if (type.trim().equals("month")) {
             Calendar end = Calendar.getInstance();
             end.setTime(starTime);
-            end.add(Calendar.MONTH, number);
+            end.add(Calendar.MONTH, times);
             millisecond = end.getTime().getTime() - start.getTime().getTime();
         } else
             return 0;

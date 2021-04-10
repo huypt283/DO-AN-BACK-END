@@ -18,10 +18,10 @@ public class RoomService implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer serviceId;
 
-    @Column
+    @Column(nullable = false)
     private Integer waterPrice;
 
-    @Column
+    @Column(nullable = false)
     private Integer electricPrice;
 
     @Column

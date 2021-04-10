@@ -9,7 +9,6 @@ import com.phamthehuy.doan.model.request.*;
 import com.phamthehuy.doan.model.response.AccountResponse;
 import com.phamthehuy.doan.model.response.CustomerResponse;
 import com.phamthehuy.doan.model.response.MessageResponse;
-import com.phamthehuy.doan.model.response.StaffResponse;
 import com.phamthehuy.doan.repository.CustomerRepository;
 import com.phamthehuy.doan.repository.StaffRepository;
 import com.phamthehuy.doan.service.AccountService;
@@ -52,7 +51,7 @@ public class AccountServiceImpl implements AccountService {
     @Autowired
     private Helper helper;
 
-    @Value("${client.url")
+    @Value("${client.url}")
     private String clientUrl;
 
     @Override
@@ -63,7 +62,7 @@ public class AccountServiceImpl implements AccountService {
 
         if (customerRepository.findByEmail(signupRequest.getEmail()) != null
                 || staffRepository.findByEmail(signupRequest.getEmail()) != null)
-            throw new DuplicatedException("Email này đã được sử dụng");
+            throw new ConflictException("Email này đã được sử dụng");
 
         try {
             //create token

@@ -27,9 +27,6 @@ public class Article extends BaseEntity implements Serializable {
     @Column(nullable = false, unique = true)
     private String slug;
 
-    @Column(columnDefinition = "text", nullable = false)
-    private String content;
-
     @Column(nullable = false)
     private Integer roomPrice;
 
@@ -38,6 +35,9 @@ public class Article extends BaseEntity implements Serializable {
 
     @Column
     private Integer days;
+
+    @Column
+    private String roomType;
 
     @Column
     @DateTimeFormat(pattern = "yyyy-MM-dd")
@@ -52,12 +52,11 @@ public class Article extends BaseEntity implements Serializable {
     @Column(nullable = false)
     private String address;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "text")
     private String images;
 
     private String video;
 
-    @Column(nullable = false)
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date timeUpdated;
 

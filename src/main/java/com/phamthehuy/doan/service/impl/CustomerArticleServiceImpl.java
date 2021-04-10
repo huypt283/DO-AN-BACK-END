@@ -1,7 +1,7 @@
 package com.phamthehuy.doan.service.impl;
 
 import com.phamthehuy.doan.entity.*;
-import com.phamthehuy.doan.exception.BadRequestException;
+import com.phamthehuy.doan.exception.*;
 import com.phamthehuy.doan.helper.Helper;
 import com.phamthehuy.doan.model.request.ArticleInsertRequest;
 import com.phamthehuy.doan.model.request.ArticleUpdateRequest;
@@ -13,11 +13,14 @@ import com.phamthehuy.doan.repository.CustomerRepository;
 import com.phamthehuy.doan.repository.TransactionRepository;
 import com.phamthehuy.doan.repository.WardRepository;
 import com.phamthehuy.doan.service.CustomerArticleService;
+import com.phamthehuy.doan.util.SlugUtil;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -58,67 +61,79 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
         return articles.stream().map(articleService::convertToOutputDTO).collect(Collectors.toList());
     }
 
+    @Transactional
     @Override
-    public ArticleResponse insertArticle(String email, ArticleInsertRequest articleInsertRequest)
-            throws BadRequestException {
-        System.out.println("email: " + email);
-        Customer customer = customerRepository.findByEmail(email);
-        if (customer == null) throw new BadRequestException("Khách hàng đăng bài không hợp lệ");
+    public ArticleResponse insertArticle(UserDetails currentUser, ArticleInsertRequest articleInsertRequest)
+            throws Exception {
+        Customer customer = customerRepository.findByEmail(currentUser.getUsername());
+        if (customer == null)
+            throw new NotFoundException("Không tìm thấy tài khoản");
+        else if (!customer.getEnabled())
+            throw new AccessDeniedException("Tài khoản này chưa được kích hoạt");
+        else if (customer.getDeleted())
+            throw new AccessDeniedException("Tài khoản này đang bị khoá");
 
         //kiểm tra và trừ tiền
-        Integer money = null;
+        Integer money = 0;
         int priceDay = articleInsertRequest.getVip() ? 10000 : 2000;
         int priceWeek = articleInsertRequest.getVip() ? 60000 : 12000;
         int priceMonth = articleInsertRequest.getVip() ? 200000 : 40000;
 
-        Integer days = articleInsertRequest.getDays();
-        switch (articleInsertRequest.getTimeType()) {
+        Integer times = articleInsertRequest.getTimes();
+        Integer days = 0;
+        String timeType = articleInsertRequest.getTimeType();
+        switch (timeType) {
             case "day":
-                money = days * priceDay;
+                days = times;
+                money = times * priceDay;
                 break;
             case "week":
-                money = days * priceWeek;
+                days = helper.calculateDays(times, timeType, new Date());
+                money = times * priceWeek;
                 break;
             case "month":
-                money = days * priceMonth;
+                days = helper.calculateDays(times, timeType, new Date());
+                money = times * priceMonth;
                 break;
             default:
                 throw new BadRequestException("Loại thời gian không hợp lệ");
         }
         if (customer.getAccountBalance() < money)
-            throw new BadRequestException("Số tiền trong tài khoản không đủ");
+            throw new ConflictException("Số dư trong tài khoản không đủ");
+
         customer.setAccountBalance(customer.getAccountBalance() - money);
 
-        String description = "Thanh toán đăng bài: " + money + " VNĐ cho bài đăng: " + articleInsertRequest.getTitle();
+        String description = "Thanh toán " + money + " VNĐ cho bài đăng: " + articleInsertRequest.getTitle();
 
         try {
-            ModelMapper modelMapper = new ModelMapper();
-            modelMapper.getConfiguration()
-                    .setMatchingStrategy(MatchingStrategies.STRICT);
-            Article article = modelMapper.map(articleInsertRequest, Article.class);
+            Article article = new Article();
+            BeanUtils.copyProperties(articleInsertRequest, article);
+            article.setDays(days);
+            article.setRoomType(articleInsertRequest.getRoomType().toString());
 
             RoomService roomService = new RoomService();
-            roomService.setElectricPrice(articleInsertRequest.getElectricPrice());
-            roomService.setWaterPrice(articleInsertRequest.getWaterPrice());
-            roomService.setWifiPrice(articleInsertRequest.getWifiPrice());
+            BeanUtils.copyProperties(articleInsertRequest, roomService);
             article.setRoomService(roomService);
+            article.setSlug(SlugUtil.makeSlug(article.getTitle()) + System.currentTimeMillis());
 
             RoommateRequest roommateRequest = articleInsertRequest.getRoommateRequest();
-            Roommate roommate = null;
-            if (roommateRequest != null)
-                roommate = modelMapper.map(roommateRequest, Roommate.class);
-            article.setRoommate(roommate);
+            Roommate roommate = new Roommate();
+            if (roommateRequest != null) {
+                BeanUtils.copyProperties(roommateRequest, roommate);
+                article.setRoommate(roommate);
+            }
 
-            Optional<Ward> wardOptional = wardRepository.findById(articleInsertRequest.getWardId());
-            if (!wardOptional.isPresent()) throw new BadRequestException("Ward id không hợp lệ");
-            article.setWard(wardOptional.get());
+            Optional<Ward> ward = wardRepository.findById(articleInsertRequest.getWardId());
+            if (!ward.isPresent())
+                throw new BadRequestException("Mã phường/xã không hợp lệ");
+            article.setWard(ward.get());
 
             article.setTimeCreated(new Date());
             article.setDeleted(null);
 
-            Customer newCustomer = customerRepository.save(customer);
-            article.setCustomer(newCustomer);
-            createTransactionPay(money, newCustomer, description);
+            customer = customerRepository.save(customer);
+            article.setCustomer(customer);
+            createTransactionPay(money, customer, description);
 
             article = articleRepository.save(article);
 
@@ -126,8 +141,7 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
         } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new BadRequestException("Đăng bài thất bại");
+            throw new InternalServerError("Đăng bài thất bại");
         }
     }
 
@@ -316,7 +330,6 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
         Transaction transaction = new Transaction();
         transaction.setType(false);
         transaction.setAmount(amount);
-        transaction.setTimeCreated(new Date());
         transaction.setCustomer(customer);
         transaction.setDescription(description);
         transactionRepository.save(transaction);

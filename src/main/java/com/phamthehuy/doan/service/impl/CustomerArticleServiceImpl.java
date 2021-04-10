@@ -5,6 +5,7 @@ import com.phamthehuy.doan.exception.*;
 import com.phamthehuy.doan.helper.Helper;
 import com.phamthehuy.doan.model.request.ArticleInsertRequest;
 import com.phamthehuy.doan.model.request.ArticleUpdateRequest;
+import com.phamthehuy.doan.model.request.OffsetBasedPageRequest;
 import com.phamthehuy.doan.model.request.RoommateRequest;
 import com.phamthehuy.doan.model.response.ArticleResponse;
 import com.phamthehuy.doan.model.response.MessageResponse;
@@ -14,10 +15,9 @@ import com.phamthehuy.doan.repository.TransactionRepository;
 import com.phamthehuy.doan.repository.WardRepository;
 import com.phamthehuy.doan.service.CustomerArticleService;
 import com.phamthehuy.doan.util.SlugUtil;
-import org.modelmapper.ModelMapper;
-import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,16 +46,28 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
     @Override
     public List<ArticleResponse> listArticleNotHidden(String roomType, String search,
                                                       Integer ward, Integer district, Integer city,
+                                                      Integer minPrice, Integer maxPrice,
                                                       Integer minAcreage, Integer maxAcreage) throws Exception {
-        List<Article> articles = articleRepository.findCustomNotHidden(roomType, search, ward, district, city, minAcreage, maxAcreage);
-
+        List<Article> articles = articleRepository.findCustomNotHidden(roomType, search, ward, district, city, minPrice, maxPrice, minAcreage, maxAcreage);
         return articles.stream().map(articleService::convertToOutputDTO).collect(Collectors.toList());
     }
 
     @Override
     public ArticleResponse getArticleBySlug(String slug) throws Exception {
         Article article = articleRepository.findBySlug(slug);
-        return article == null ? null : articleService.convertToOutputDTO(article);
+        if (article == null) {
+            throw new NotFoundException("Bài viết không tồn tại");
+        }
+        if (article.getDeleted() == null || article.getDeleted()) {
+            throw new NotFoundException("Bài viết bị ẩn hoặc chưa được duyệt");
+        }
+        return articleService.convertToOutputDTO(article);
+    }
+
+    @Override
+    public List<ArticleResponse> getListNewArticle(Integer page, Integer limit) throws Exception {
+        OffsetBasedPageRequest pageable = new OffsetBasedPageRequest((page - 1) * limit, limit, Sort.by("timeUpdated").descending().and(Sort.by("timeCreated").descending()));
+        return articleRepository.findByDeletedFalse(pageable).stream().map(articleService::convertToOutputDTO).collect(Collectors.toList());
     }
 
     @Override

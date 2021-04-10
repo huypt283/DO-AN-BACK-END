@@ -12,9 +12,12 @@ import java.util.List;
 public interface CustomerArticleService {
     List<ArticleResponse> listArticleNotHidden(String roomType, String search,
                                                Integer ward, Integer district, Integer city,
+                                               Integer minPrice, Integer maxPrice,
                                                Integer minAcreage, Integer maxAcreage) throws Exception;
 
     ArticleResponse getArticleBySlug(String slug) throws Exception;
+
+    List<ArticleResponse> getListNewArticle(Integer page, Integer limit) throws Exception;
 
     //    list bài đăng cá nhân	/customer/article
     //    lọc bài đăng theo trạng thái: chưa duyệt, đang đăng, đã ẩn	/customer/article?status={uncheck/active/hidden}

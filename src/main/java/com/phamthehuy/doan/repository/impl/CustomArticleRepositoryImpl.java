@@ -126,6 +126,7 @@ public class CustomArticleRepositoryImpl implements CustomArticleRepository {
     @Override
     public List<Article> findCustomNotHidden(String roomType, String search,
                                              Integer ward, Integer district, Integer city,
+                                             Integer minPrice, Integer maxPrice,
                                              Integer minAcreage, Integer maxAcreage) {
         if (search == null || search.trim().equals(""))
             search = "";
@@ -145,6 +146,16 @@ public class CustomArticleRepositoryImpl implements CustomArticleRepository {
         //search
         Predicate predicate = builder.like(root.get("title"), "%" + search + "%");
         predicate = builder.and(predicate);
+
+        //lọc theo khoảng giá
+        if (minPrice != null) {
+            Predicate findByGreaterPrice = builder.greaterThanOrEqualTo(root.get("roomPrice"), minPrice);
+            predicate = builder.and(predicate, findByGreaterPrice);
+        }
+        if (maxPrice != null) {
+            Predicate findByLessPrice = builder.lessThanOrEqualTo(root.get("roomPrice"), maxPrice);
+            predicate = builder.and(predicate, findByLessPrice);
+        }
 
         //lọc theo diện tích
         if (minAcreage != null) {
@@ -180,6 +191,7 @@ public class CustomArticleRepositoryImpl implements CustomArticleRepository {
         query.where(predicate);
 
         query.orderBy(builder.desc(root.get("timeUpdated")));
+        query.orderBy(builder.desc(root.get("timeCreated")));
 
         return em.createQuery(query).getResultList();
     }

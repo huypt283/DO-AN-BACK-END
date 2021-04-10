@@ -18,20 +18,27 @@ public class ArticleController {
     private CustomerArticleService articleService;
 
     @GetMapping
-    public ResponseEntity<?> listArticle(@RequestParam(required = false) RoomType roomType,
-                                         @RequestParam(required = false) Integer ward,
-                                         @RequestParam(required = false) Integer district,
-                                         @RequestParam(required = false) Integer city,
-                                         @RequestParam(required = false) String search,
-                                         @RequestParam(required = false) Integer minAcreage,
-                                         @RequestParam(required = false) Integer maxAcreage) throws Exception {
+    public ResponseEntity<?> getListArticle(@RequestParam(required = false) RoomType roomType,
+                                            @RequestParam(required = false) String search,
+                                            @RequestParam(required = false) Integer ward,
+                                            @RequestParam(required = false) Integer district,
+                                            @RequestParam(required = false) Integer city,
+                                            @RequestParam(required = false) Integer minPrice,
+                                            @RequestParam(required = false) Integer maxPrice,
+                                            @RequestParam(required = false) Integer minAcreage,
+                                            @RequestParam(required = false) Integer maxAcreage) throws Exception {
         return new ResponseEntity<>(articleService.listArticleNotHidden(roomType != null ? roomType.toString() : null, search,
-                ward, district, city, minAcreage, maxAcreage), HttpStatus.OK);
+                ward, district, city, minPrice, maxPrice, minAcreage, maxAcreage), HttpStatus.OK);
     }
 
     @GetMapping("/{slug}")
     public ResponseEntity<?> getArticleBySlug(@PathVariable String slug) throws Exception {
-        return new ResponseEntity<>(
-                articleService.getArticleBySlug(slug), HttpStatus.OK);
+        return new ResponseEntity<>(articleService.getArticleBySlug(slug), HttpStatus.OK);
+    }
+
+    @GetMapping("/new")
+    public ResponseEntity<?> getListNewArticle(@RequestParam(value = "page", defaultValue = "1") Integer page,
+                                               @RequestParam(value = "limit", defaultValue = "6") Integer limit) throws Exception {
+        return new ResponseEntity<>(articleService.getListNewArticle(page, limit), HttpStatus.OK);
     }
 }

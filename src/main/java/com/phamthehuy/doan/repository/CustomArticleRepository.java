@@ -13,6 +13,7 @@ public interface CustomArticleRepository {
 
     List<Article> findCustomNotHidden(String roomType, String search,
                                       Integer ward, Integer district, Integer city,
+                                      Integer minPrice, Integer maxPrice,
                                       Integer minAcreage, Integer maxAcreage);
 
     List<Article> findCustomByEmail(String email, String sort, Long start, Long end,

@@ -5,6 +5,8 @@ import com.phamthehuy.doan.model.request.CustomerUpdateRequest;
 import com.phamthehuy.doan.model.response.CustomerResponse;
 import com.phamthehuy.doan.model.response.MessageResponse;
 import com.phamthehuy.doan.service.CustomerService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,24 +16,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin/customers")
 public class AdminCustomerController {
-    final
-    CustomerService customerService;
+    @Autowired
+    private CustomerService customerService;
 
-    public AdminCustomerController(CustomerService customerService) {
-        this.customerService = customerService;
-    }
-
-
-    //sắp xếp theo name, accountBalance (chỉ chọn 1 trong 2)
     @GetMapping
-    public List<CustomerResponse> listCustomers
-    (@RequestParam(required = false) String search,
-     @RequestParam(required = false) Boolean deleted,
-     @RequestParam(value = "name-sort", required = false) String nameSort,
-     @RequestParam(value = "balance-sort", required = false) String balanceSort,
-     @RequestParam Integer page,
-     @RequestParam Integer limit) {
-        return customerService.listCustomer(search, deleted, nameSort, balanceSort, page, limit);
+    public ResponseEntity<?> listCustomers(@RequestParam(required = false, defaultValue = "1") Integer page,
+                                                @RequestParam(required = false, defaultValue = "10") Integer limit) throws Exception {
+        return new ResponseEntity<>(customerService.listCustomer(page, limit), HttpStatus.OK);
     }
 
     //cập nhật thông tin nhân viên	POST/admin/customers

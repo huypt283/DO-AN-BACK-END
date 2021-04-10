@@ -19,7 +19,7 @@ public class ArticleServiceImpl {
     @Autowired
     private StaffArticleRepository staffArticleRepository;
 
-    public ArticleResponse convertToOutputDTO(Article article) {
+    public ArticleResponse convertToArticleResponse(Article article) {
         ArticleResponse articleResponse = new ArticleResponse();
         BeanUtils.copyProperties(article, articleResponse);
 

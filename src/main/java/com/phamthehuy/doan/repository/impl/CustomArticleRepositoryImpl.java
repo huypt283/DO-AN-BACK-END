@@ -1,7 +1,8 @@
 package com.phamthehuy.doan.repository.impl;
 
-import com.phamthehuy.doan.repository.CustomArticleRepository;
 import com.phamthehuy.doan.entity.Article;
+import com.phamthehuy.doan.repository.CustomArticleRepository;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
@@ -124,12 +125,14 @@ public class CustomArticleRepositoryImpl implements CustomArticleRepository {
     }
 
     @Override
-    public List<Article> findCustomNotHidden(String roomType, String search,
+    public List<Article> findCustomNotHidden(String roomType, String title,
                                              Integer ward, Integer district, Integer city,
                                              Integer minPrice, Integer maxPrice,
                                              Integer minAcreage, Integer maxAcreage) {
-        if (search == null || search.trim().equals(""))
-            search = "";
+        if (title == null || title.trim().equals(""))
+            title = "%%";
+        else
+            title = "%" + title + "%";
 
         //tạo builder
         CriteriaBuilder builder = em.getCriteriaBuilder();
@@ -143,8 +146,7 @@ public class CustomArticleRepositoryImpl implements CustomArticleRepository {
         //xác định cột trả về
         query.select(root);
 
-        //search
-        Predicate predicate = builder.like(root.get("title"), "%" + search + "%");
+        Predicate predicate = builder.like(root.get("title"), title);
         predicate = builder.and(predicate);
 
         //lọc theo khoảng giá
@@ -197,8 +199,15 @@ public class CustomArticleRepositoryImpl implements CustomArticleRepository {
     }
 
     @Override
-    public List<Article> findCustomByEmail(String email, String sort, Long start, Long end, Integer ward, Integer district, Integer city, Boolean roommate, String status, Boolean vip, String search, Integer minAcreage, Integer maxAcreage, Integer page, Integer limit) {
-        if (search == null || search.trim().equals("")) search = "";
+    public List<Article> findCustomByEmail(Long start, Long end, String roomType,
+                                           Integer ward, Integer district, Integer city,
+                                           String status, Boolean vip, String title,
+                                           Integer minAcreage, Integer maxAcreage,
+                                           UserDetails currentUser) {
+        if (title == null || title.trim().equals(""))
+            title = "%%";
+        else
+            title = "%" + title + "%";
 
         //tạo builder
         CriteriaBuilder builder = em.getCriteriaBuilder();
@@ -212,71 +221,59 @@ public class CustomArticleRepositoryImpl implements CustomArticleRepository {
         //xác định cột trả về
         query.select(root);
 
-        //search
-        Predicate searchByTitle = builder.like(root.get("title"), "%" + search + "%");
+        Predicate predicate = builder.like(root.get("title"), title);
 
-        //phải đúng email
-        Predicate findByEmail = builder.like(root.get("customer").get("email"), email);
-        searchByTitle = builder.and(searchByTitle, findByEmail);
+        //phải đúng email người dùng
+        Predicate findByEmail = builder.like(root.get("customer").get("email"), currentUser.getUsername());
+        predicate = builder.and(predicate, findByEmail);
 
 
         //tìm khoảng thời gian
         if (start != null) {
             Predicate findByGreaterTime = builder.greaterThanOrEqualTo(root.<Date>get("timeUpdated"), new Date(start));
-            searchByTitle = builder.and(searchByTitle, findByGreaterTime);
+            predicate = builder.and(predicate, findByGreaterTime);
         }
         if (end != null) {
             Predicate findByLessTime = builder.lessThanOrEqualTo(root.<Date>get("timeUpdated"), new Date(end));
-            searchByTitle = builder.and(searchByTitle, findByLessTime);
+            predicate = builder.and(predicate, findByLessTime);
         }
 
         //lọc theo diện tích
         if (minAcreage != null) {
             Predicate findByGreaterAcreage = builder.greaterThanOrEqualTo(root.get("acreage"), minAcreage);
-            searchByTitle = builder.and(searchByTitle, findByGreaterAcreage);
+            predicate = builder.and(predicate, findByGreaterAcreage);
         }
         if (maxAcreage != null) {
             Predicate findByLessAcreage = builder.lessThanOrEqualTo(root.get("acreage"), maxAcreage);
-            searchByTitle = builder.and(searchByTitle, findByLessAcreage);
+            predicate = builder.and(predicate, findByLessAcreage);
         }
 
         //tìm theo xã, huyện, tỉnh
         if (ward != null) {
             Predicate findByWard = builder.equal(root.get("ward").get("wardId"), ward);
-            searchByTitle = builder.and(searchByTitle, findByWard);
+            predicate = builder.and(predicate, findByWard);
         } else if (district != null) {
             Predicate findByDistrict = builder.equal(root.get("ward").get("district").get("districtId"), district);
-            searchByTitle = builder.and(searchByTitle, findByDistrict);
+            predicate = builder.and(predicate, findByDistrict);
         } else if (city != null) {
             Predicate findByCity = builder.equal(root.get("ward").get("district").get("city").get("cityId"), city);
-            searchByTitle = builder.and(searchByTitle, findByCity);
-        }
-
-        //tìm theo roommate
-        if (roommate != null) {
-            if (roommate) {
-                Predicate findByRoommateNotNull = builder.isNotNull(root.get("roommate"));
-                searchByTitle = builder.and(searchByTitle, findByRoommateNotNull);
-            } else {
-                Predicate findByRoommateNull = builder.isNull(root.get("roommate"));
-                searchByTitle = builder.and(searchByTitle, findByRoommateNull);
-            }
+            predicate = builder.and(predicate, findByCity);
         }
 
         //tìm theo status
         if (status != null && !status.trim().equals("")) {
             switch (status) {
-                case "uncheck":
+                case "unconfirmed":
                     Predicate findByStatusNull = builder.isNull(root.get("deleted"));
-                    searchByTitle = builder.and(searchByTitle, findByStatusNull);
+                    predicate = builder.and(predicate, findByStatusNull);
                     break;
                 case "active":
                     Predicate findByStatusTrue = builder.isFalse(root.get("deleted"));
-                    searchByTitle = builder.and(searchByTitle, findByStatusTrue);
+                    predicate = builder.and(predicate, findByStatusTrue);
                     break;
                 case "hidden":
                     Predicate findByStatusFalse = builder.isTrue(root.get("deleted"));
-                    searchByTitle = builder.and(searchByTitle, findByStatusFalse);
+                    predicate = builder.and(predicate, findByStatusFalse);
                     break;
             }
         }
@@ -284,16 +281,11 @@ public class CustomArticleRepositoryImpl implements CustomArticleRepository {
         //tìm theo vip
         if (vip != null) {
             Predicate findByVip = builder.equal(root.get("vip"), vip);
-            searchByTitle = builder.and(searchByTitle, findByVip);
+            predicate = builder.and(predicate, findByVip);
         }
 
-        query.where(searchByTitle);
+        query.where(predicate);
 
-        if (sort != null && !sort.trim().equals("")) {
-            if (sort.equals("desc")) query.orderBy(builder.desc(root.get("timeUpdated")));
-            else query.orderBy(builder.asc(root.get("timeUpdated")));
-        }
-
-        return em.createQuery(query).setFirstResult(page * limit).setMaxResults(limit).getResultList();
+        return em.createQuery(query).getResultList();
     }
 }

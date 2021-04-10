@@ -54,7 +54,7 @@ public class AdminArticleServiceImpI implements AdminArticleService {
     @Override
     public List<ArticleResponse> listAllArticle() {
         List<Article> articles = articleRepository.findAll();
-        return articles.stream().map(articleService::convertToOutputDTO).collect(Collectors.toList());
+        return articles.stream().map(articleService::convertToArticleResponse).collect(Collectors.toList());
     }
 
     @Override
@@ -62,7 +62,7 @@ public class AdminArticleServiceImpI implements AdminArticleService {
         List<Article> articles = articleRepository.findCustom(sort, start, end, ward, district, city,
                         roommate, status, vip, search, minAcreage, maxAcreage);
 
-        return articles.stream().map(articleService::convertToOutputDTO).collect(Collectors.toList());
+        return articles.stream().map(articleService::convertToArticleResponse).collect(Collectors.toList());
     }
 
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
@@ -125,7 +125,7 @@ public class AdminArticleServiceImpI implements AdminArticleService {
             staffArticleRepository.save(staffArticle);
 
             article = articleRepository.save(article);
-            ArticleResponse articleResponse = articleService.convertToOutputDTO(article);
+            ArticleResponse articleResponse = articleService.convertToArticleResponse(article);
 
             //gửi thư
             String to = article.getCustomer().getEmail();
@@ -196,7 +196,7 @@ public class AdminArticleServiceImpI implements AdminArticleService {
             staffArticleRepository.save(staffArticle);
 
             article = articleRepository.save(article);
-            ArticleResponse articleResponse = articleService.convertToOutputDTO(article);
+            ArticleResponse articleResponse = articleService.convertToArticleResponse(article);
 
             //gửi thư
             if (reason == null || reason.trim().equals("")) reason = "không có lý do cụ thể";
@@ -238,7 +238,7 @@ public class AdminArticleServiceImpI implements AdminArticleService {
         if (!articleOptional.isPresent())
             throw new BadRequestException("Bài đăng với id: " + id + " không tồn tại");
         Article article = articleOptional.get();
-        return articleService.convertToOutputDTO(article);
+        return articleService.convertToArticleResponse(article);
     }
 
     private Staff findStaffByJWT(HttpServletRequest request) throws Exception {

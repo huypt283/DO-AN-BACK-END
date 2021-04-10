@@ -1,8 +1,8 @@
 package com.phamthehuy.doan.service;
 
-import com.phamthehuy.doan.exception.BadRequestException;
 import com.phamthehuy.doan.model.request.ArticleInsertRequest;
 import com.phamthehuy.doan.model.request.ArticleUpdateRequest;
+import com.phamthehuy.doan.model.request.ExtendArticleExpRequest;
 import com.phamthehuy.doan.model.response.ArticleResponse;
 import com.phamthehuy.doan.model.response.MessageResponse;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,7 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.List;
 
 public interface CustomerArticleService {
-    List<ArticleResponse> listArticleNotHidden(String roomType, String search,
+    List<ArticleResponse> listArticleNotHidden(String roomType, String title,
                                                Integer ward, Integer district, Integer city,
                                                Integer minPrice, Integer maxPrice,
                                                Integer minAcreage, Integer maxAcreage) throws Exception;
@@ -19,38 +19,25 @@ public interface CustomerArticleService {
 
     List<ArticleResponse> getListNewArticle(Integer page, Integer limit) throws Exception;
 
-    //    list bài đăng cá nhân	/customer/article
-    //    lọc bài đăng theo trạng thái: chưa duyệt, đang đăng, đã ẩn	/customer/article?status={uncheck/active/hidden}
-    //    tìm kiếm bài đăng theo title	/customer/article?title={title}
-    List<ArticleResponse> listArticleByEmail(String email, String sort, Long start, Long end,
-                                             Integer ward, Integer district, Integer city,
-                                             Boolean roommate,
-                                             String status, Boolean vip, String search,
-                                             Integer minAcreage, Integer maxAcreage,
-                                             Integer page, Integer limit);
+    List<ArticleResponse> listCurrentUserArticleByEmail(Long start, Long end, String roomType,
+                                                        Integer ward, Integer district, Integer city,
+                                                        String status, Boolean vip, String title,
+                                                        Integer minAcreage, Integer maxAcreage,
+                                                        UserDetails currentUser) throws Exception;
 
-    //    đăng bài	/customer/article
+    ArticleResponse detailArticle(UserDetails currentUser, Integer id) throws Exception;
+
     ArticleResponse insertArticle(UserDetails currentUser, ArticleInsertRequest articleInsertRequest)
             throws Exception;
 
-    //    sửa bài đăng	/customer/article
-    ArticleResponse updateArticle(String email, ArticleUpdateRequest articleUpdateRequest,
-                                  Integer id)
-            throws BadRequestException;
+    ArticleResponse updateArticle(UserDetails currentUser, Integer id, ArticleUpdateRequest articleUpdateRequest)
+            throws Exception;
 
+    MessageResponse deleteArticle(UserDetails currentUser, Integer id) throws Exception;
 
-    //    xóa bài đăng	/customer/article/{id}
-    MessageResponse deleteArticle(String email, Integer id) throws BadRequestException;
+    MessageResponse extensionExp(UserDetails currentUser, Integer id, ExtendArticleExpRequest extendArticleExpRequest) throws Exception;
 
-    //    gia hạn bài đăng	/customer/article/extension/{id}?date={int}
-    MessageResponse extensionExp(String email, Integer id, Integer date, String type) throws BadRequestException;
+    MessageResponse hideArticle(UserDetails currentUser, Integer id) throws Exception;
 
-    //    ẩn bài đăng  /customer/article/hidden/{id}
-    MessageResponse hideArticle(String email, Integer id) throws BadRequestException;
-
-    //đăng lại bài đăng đã ẩn	/customer/article/post/{id}?days={int}
-    MessageResponse showArticle(String email, Integer Id) throws BadRequestException;
-
-    //chi tiết bài đăng	/customer/article/{id}
-    ArticleResponse detailArticle(String email, Integer id) throws BadRequestException;
+    MessageResponse showArticle(UserDetails currentUser, Integer id) throws Exception;
 }

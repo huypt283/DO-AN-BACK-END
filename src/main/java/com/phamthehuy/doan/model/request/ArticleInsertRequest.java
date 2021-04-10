@@ -17,7 +17,7 @@ public class ArticleInsertRequest {
     private String title;
 
     @Min(value = 100000, message = "Giá phòng nhỏ nhất là 100000 VNĐ")
-    @NotNull(message = "Giá phòng đăng không được trống")
+    @NotNull(message = "Giá phòng không được trống")
     private Integer roomPrice;
 
     @NotNull
@@ -25,8 +25,8 @@ public class ArticleInsertRequest {
 
     private String description;
 
-    @Min(value = 1, message = "Số ngày/tuần/tháng đăng nhỏ nhất là 1")
-    @NotNull(message = "Số ngày/tuần/tháng đăng không được trống")
+    @Min(value = 1, message = "Số ngày/tuần/tháng  nhỏ nhất là 1")
+    @NotNull(message = "Số ngày/tuần/tháng không được trống")
     private Integer times;
 
     @NotNull(message = "Loại thời gian không được trống")
@@ -51,7 +51,7 @@ public class ArticleInsertRequest {
     @Min(value = 5, message = "Diện tích nhỏ nhất là 5 m2")
     private Double acreage;
 
-    @NotNull(message = "Địa chỉ không được null")
+    @NotNull(message = "Địa chỉ không được trống")
     @Size(min = 3, message = "Địa chỉ phải có ít nhất 3 kí tự")
     private String address;
 

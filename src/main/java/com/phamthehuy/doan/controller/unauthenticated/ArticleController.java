@@ -19,7 +19,7 @@ public class ArticleController {
 
     @GetMapping
     public ResponseEntity<?> getListArticle(@RequestParam(required = false) RoomType roomType,
-                                            @RequestParam(required = false) String search,
+                                            @RequestParam(required = false) String title,
                                             @RequestParam(required = false) Integer ward,
                                             @RequestParam(required = false) Integer district,
                                             @RequestParam(required = false) Integer city,
@@ -27,7 +27,7 @@ public class ArticleController {
                                             @RequestParam(required = false) Integer maxPrice,
                                             @RequestParam(required = false) Integer minAcreage,
                                             @RequestParam(required = false) Integer maxAcreage) throws Exception {
-        return new ResponseEntity<>(articleService.listArticleNotHidden(roomType != null ? roomType.toString() : null, search,
+        return new ResponseEntity<>(articleService.listArticleNotHidden(roomType != null ? roomType.toString() : null, title,
                 ward, district, city, minPrice, maxPrice, minAcreage, maxAcreage), HttpStatus.OK);
     }
 

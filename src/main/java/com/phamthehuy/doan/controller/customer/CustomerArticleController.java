@@ -1,115 +1,98 @@
 package com.phamthehuy.doan.controller.customer;
 
-import com.phamthehuy.doan.exception.BadRequestException;
+import com.phamthehuy.doan.model.enums.RoomType;
 import com.phamthehuy.doan.model.request.ArticleInsertRequest;
 import com.phamthehuy.doan.model.request.ArticleUpdateRequest;
+import com.phamthehuy.doan.model.request.ExtendArticleExpRequest;
 import com.phamthehuy.doan.model.response.ArticleResponse;
-import com.phamthehuy.doan.model.response.MessageResponse;
 import com.phamthehuy.doan.service.CustomerArticleService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
 
 @RestController
 @RequestMapping("/customer/articles")
 public class CustomerArticleController {
-    final
-    CustomerArticleService customerArticleService;
+    @Autowired
+    private CustomerArticleService customerArticleService;
 
-    public CustomerArticleController(CustomerArticleService customerArticleService) {
-        this.customerArticleService = customerArticleService;
-    }
-
-    //    list bài đăng cá nhân	/customer/article
-    //    lọc bài đăng theo trạng thái: chưa duyệt, đang đăng, đã ẩn	/articles?status={uncheck/active/hidden}
-    //    xếp bài đăng theo thời gian (updateTime) tăng/giảm dần	/articles?sort={asc/desc}
-    //    lọc bài đang theo loại: thuê phòng/ ở ghép	/articless?roomate={true/false}
-    //    lọc bài đăng theo thành phố / huyện / phường	/articles?city= hoặc district= hoặc ward=
-    //    lọc bài đăng theo khoảng thời gian (updateTime)	/articles?start={millisecond}&end={millisecond}
-    //    lọc bài đăng theo isVip	/articles?vip={true/false}
-    //    tìm kiếm bài đăng theo title	/articles?title={title}
+    //    list bài đăng cá nhân
+    //    lọc bài đăng theo trạng thái
+    //    lọc bài đang theo loại phòng
+    //    lọc bài đăng theo khoảng thời gian	?start={millisecond}&end={millisecond}
+    //    lọc bài đăng theo isVip
+    //    tìm kiếm bài đăng theo title
     @GetMapping
-    public List<ArticleResponse> listArticle(
-            @RequestParam(required = false) String sort,
-            @RequestParam(required = false) Long start,
-            @RequestParam(required = false) Long end,
-            @RequestParam(required = false) Integer ward,
-            @RequestParam(required = false) Integer district,
-            @RequestParam(required = false) Integer city,
-            @RequestParam(required = false) Boolean roommate,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) Boolean vip,
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) Integer minAcreage,
-            @RequestParam(required = false) Integer maxAcreage,
-            @RequestParam Integer page,
-            @RequestParam Integer limit,
-            HttpServletRequest request
-    ) {
-        String email = (String) request.getAttribute("email");
-        return customerArticleService.listArticleByEmail(email, sort, start, end, ward, district, city,
-                roommate, status, vip, search, minAcreage, maxAcreage, page, limit);
+    public List<ArticleResponse> listArticle(@RequestParam(required = false) Long start,
+                                             @RequestParam(required = false) Long end,
+                                             @RequestParam(required = false) RoomType roomType,
+                                             @RequestParam(required = false) Integer ward,
+                                             @RequestParam(required = false) Integer district,
+                                             @RequestParam(required = false) Integer city,
+                                             @RequestParam(required = false) String status,
+                                             @RequestParam(required = false) Boolean vip,
+                                             @RequestParam(required = false) String title,
+                                             @RequestParam(required = false) Integer minAcreage,
+                                             @RequestParam(required = false) Integer maxAcreage,
+                                             @AuthenticationPrincipal UserDetails currentUser) throws Exception {
+        return customerArticleService.listCurrentUserArticleByEmail(start, end, roomType != null ? roomType.toString() : null, ward, district, city,
+                status, vip, title, minAcreage, maxAcreage, currentUser);
     }
 
     //    chi tiết bài đăng
     @GetMapping("/{id}")
-    public ArticleResponse detailArticle(@PathVariable Integer id,
-                                         HttpServletRequest request) throws BadRequestException {
-        String email = (String) request.getAttribute("email");
-        return customerArticleService.detailArticle(email, id);
+    public ResponseEntity<?> detailArticle(@PathVariable Integer id,
+                                           @AuthenticationPrincipal UserDetails currentUser) throws Exception {
+        return new ResponseEntity<>(customerArticleService.detailArticle(currentUser, id), HttpStatus.OK);
     }
 
     //    đăng bài
     @PostMapping
-    public ArticleResponse insertArticle(@Valid @RequestBody ArticleInsertRequest articleInsertRequest,
-                                         @AuthenticationPrincipal UserDetails currentUser) throws Exception {
-        return customerArticleService.insertArticle(currentUser, articleInsertRequest);
+    public ResponseEntity<?> insertArticle(@Valid @RequestBody ArticleInsertRequest articleInsertRequest,
+                                           @AuthenticationPrincipal UserDetails currentUser) throws Exception {
+        return new ResponseEntity<>(customerArticleService.insertArticle(currentUser, articleInsertRequest), HttpStatus.OK);
     }
 
     //    sửa bài đăng
     @PutMapping("/{id}")
-    public ArticleResponse updateArticle(@Valid @RequestBody ArticleUpdateRequest articleUpdateRequest,
-                                         @PathVariable Integer id,
-                                         HttpServletRequest request) throws BadRequestException {
-        String email = (String) request.getAttribute("email");
-        return customerArticleService.updateArticle(email, articleUpdateRequest, id);
+    public ResponseEntity<?> updateArticle(@PathVariable Integer id,
+                                           @Valid @RequestBody ArticleUpdateRequest articleUpdateRequest,
+                                           @AuthenticationPrincipal UserDetails currentUser) throws Exception {
+        return new ResponseEntity<>(customerArticleService.updateArticle(currentUser, id, articleUpdateRequest), HttpStatus.OK);
     }
 
-    //    xóa bài đăng	/customer/article/{id}
+    //    xóa bài đăng
     @DeleteMapping("/{id}")
-    public MessageResponse deleteArticle(@PathVariable Integer id,
-                                         HttpServletRequest request) throws BadRequestException {
-        String email = (String) request.getAttribute("email");
-        return customerArticleService.deleteArticle(email, id);
+    public ResponseEntity<?> deleteArticle(@PathVariable Integer id,
+                                           @AuthenticationPrincipal UserDetails currentUser) throws Exception {
+        return new ResponseEntity<>(customerArticleService.deleteArticle(currentUser, id), HttpStatus.OK);
     }
 
-    //    gia hạn bài đăng	/customer/article/extension/{id}?days={int}
-    @GetMapping("/extend/{id}")
-    public MessageResponse extendExp(@PathVariable Integer id,
-                                        @RequestParam Integer number,
-                                        @RequestParam String type,
-                                        HttpServletRequest request) throws BadRequestException {
-        String email = (String) request.getAttribute("email");
-        return customerArticleService.extensionExp(email, id, number, type);
+    //    gia hạn bài đăng
+    @PostMapping("/extend/{id}")
+    public ResponseEntity<?> extendExp(@PathVariable Integer id,
+                                       @Valid @RequestBody ExtendArticleExpRequest extendArticleExpRequest,
+                                       @AuthenticationPrincipal UserDetails currentUser) throws Exception {
+        return new ResponseEntity<>(customerArticleService.extensionExp(currentUser, id, extendArticleExpRequest), HttpStatus.OK);
     }
 
     //    ẩn bài đăng
     @PutMapping("/hide/{id}")
-    public MessageResponse hideArticle(@PathVariable Integer id,
-                                       HttpServletRequest request) throws BadRequestException {
-        String email = (String) request.getAttribute("email");
-        return customerArticleService.hideArticle(email, id);
+    public ResponseEntity<?> hideArticle(@PathVariable Integer id,
+                                         @AuthenticationPrincipal UserDetails currentUser) throws Exception {
+        return new ResponseEntity<>(customerArticleService.hideArticle(currentUser, id), HttpStatus.OK);
     }
 
-    //    đăng lại bài đăng đã ẩn	/customer/article/post/{id}?days={int}
-    @PutMapping("/post/{id}")
-    public MessageResponse showArticle(@PathVariable Integer id,
-                                          HttpServletRequest request) throws BadRequestException {
-        String email = (String) request.getAttribute("email");
-        return customerArticleService.showArticle(email, id);
+    //    hiển thị lại bài đăng đã ẩn
+    @PutMapping("/show/{id}")
+    public ResponseEntity<?> showArticle(@PathVariable Integer id,
+                                         @AuthenticationPrincipal UserDetails currentUser) throws Exception {
+        return new ResponseEntity<>(customerArticleService.showArticle(currentUser, id), HttpStatus.OK);
     }
 }

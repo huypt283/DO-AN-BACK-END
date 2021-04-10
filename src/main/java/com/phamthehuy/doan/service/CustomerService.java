@@ -9,12 +9,7 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 public interface CustomerService {
-    //Tìm kiếm khách hàng = email, phone, name
-    //sắp xếp theo name, balance =asc/desc (chỉ truyền 1 trong 2)
-    //phân trang
-    //nếu không truyền vào tham số thì trả về all list
-    List<CustomerResponse> listCustomer(String search, Boolean deleted, String nameSort,
-                                        String balanceSort, Integer page, Integer limit);
+    List<CustomerResponse> listCustomer(Integer page, Integer limit) throws Exception;
 
     //    cập nhật thông tin khách hàng	Put/super-admin/customers
     ResponseEntity<?> updateCustomer(CustomerUpdateRequest customerUpdateRequest,

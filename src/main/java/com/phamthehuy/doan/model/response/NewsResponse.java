@@ -2,6 +2,7 @@ package com.phamthehuy.doan.model.response;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 
@@ -18,6 +19,7 @@ public class NewsResponse {
 
     private String author;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date lastUpdatedTime;
 
     private Boolean deleted;

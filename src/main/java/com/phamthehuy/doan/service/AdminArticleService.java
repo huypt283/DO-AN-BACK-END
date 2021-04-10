@@ -4,6 +4,7 @@ import com.phamthehuy.doan.exception.BadRequestException;
 import com.phamthehuy.doan.model.request.ContactCustomerRequest;
 import com.phamthehuy.doan.model.response.ArticleResponse;
 import com.phamthehuy.doan.model.response.MessageResponse;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -23,7 +24,7 @@ public interface AdminArticleService {
                                       HttpServletRequest request) throws BadRequestException;
 
     //    duyệt bài đăng (hiện) (gửi mail)	/admin/article/active/{id}
-    MessageResponse activeArticle(Integer id, HttpServletRequest request) throws BadRequestException;
+    MessageResponse activeArticle(Integer id, UserDetails admin) throws Exception;
 
     //    ẩn bài đăng (gửi mail)	/admin/article/block/{id}
     MessageResponse hiddenArticle(Integer id, String reason, HttpServletRequest request) throws BadRequestException;

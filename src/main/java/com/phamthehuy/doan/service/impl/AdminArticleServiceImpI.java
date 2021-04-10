@@ -3,7 +3,10 @@ package com.phamthehuy.doan.service.impl;
 import com.phamthehuy.doan.entity.Article;
 import com.phamthehuy.doan.entity.Staff;
 import com.phamthehuy.doan.entity.StaffArticle;
+import com.phamthehuy.doan.exception.AccessDeniedException;
 import com.phamthehuy.doan.exception.BadRequestException;
+import com.phamthehuy.doan.exception.ConflictException;
+import com.phamthehuy.doan.exception.NotFoundException;
 import com.phamthehuy.doan.helper.Helper;
 import com.phamthehuy.doan.model.request.ContactCustomerRequest;
 import com.phamthehuy.doan.model.response.ArticleResponse;
@@ -16,6 +19,8 @@ import com.phamthehuy.doan.util.MailSender;
 import com.phamthehuy.doan.util.auth.JwtUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -42,6 +47,9 @@ public class AdminArticleServiceImpI implements AdminArticleService {
     private StaffRepository staffRepository;
     @Autowired
     private Helper helper;
+
+    @Value("${client.url}")
+    private String clientUrl;
 
     @Override
     public List<ArticleResponse> listAllArticle() {
@@ -87,36 +95,33 @@ public class AdminArticleServiceImpI implements AdminArticleService {
     }
 
     @Override
-    public MessageResponse activeArticle(Integer id, HttpServletRequest request) throws BadRequestException {
+    public MessageResponse activeArticle(Integer id, UserDetails admin) throws Exception {
         Optional<Article> articleOptional = articleRepository.findById(id);
         if (articleOptional.isPresent()) {
-            Staff staff;
-            try {
-                staff = findStaffByJWT(request);
-            } catch (ExpiredJwtException e) {
-                throw new BadRequestException("JWT hết hạn");
-            } catch (Exception e) {
-                throw new BadRequestException("JWT không hợp lệ");
-            }
+            Staff staff = staffRepository.findByEmail(admin.getUsername());
+            if (staff == null)
+                throw new NotFoundException("Không tìm thấy tài khoản");
+            else if (!staff.getEnabled())
+                throw new AccessDeniedException("Tài khoản này chưa được kích hoạt");
+            else if (staff.getDeleted())
+                throw new AccessDeniedException("Tài khoản này đang bị khoá");
 
             //duyệt bài
-            //chuyển deleted thành true
+            //chuyển deleted thành false
             Article article = articleOptional.get();
             if (article.getDeleted() != null)
-                throw new BadRequestException("Chỉ được duyệt bài có trạng thái là chưa duyệt");
+                throw new ConflictException("Chỉ được duyệt bài có trạng thái là chưa duyệt");
             article.setDeleted(false);
 
             //tạo thời hạn
             article.setExpTime(helper.addDayForDate(article.getDays(), new Date()));
             article.setDays(null);
 
-            //tạo bản ghi staffArticle
             StaffArticle staffArticle = new StaffArticle();
-            staffArticle.setTime(new Date());
             staffArticle.setStaff(staff);
             staffArticle.setArticle(article);
             staffArticle.setAction(true);
-            //lưu
+            //lưu vết người duyệt bài
             staffArticleRepository.save(staffArticle);
 
             article = articleRepository.save(article);
@@ -138,7 +143,7 @@ public class AdminArticleServiceImpI implements AdminArticleService {
                     "\n" +
                     "<p>SĐT: " + article.getCustomer().getPhone() + "</p>\n" +
                     "\n" +
-                    "<p>Thời gian đăng: " + simpleDateFormat.format(article.getTimeCreated()) + "</p>\n" +
+                    "<p>Thời gian đăng: " + article.getTimeCreated() + "</p>\n" +
                     "\n" +
                     "\n" +
                     "<p>Thời gian duyệt bài: " + simpleDateFormat.format(new Date()) + "</p>\n" +
@@ -151,10 +156,11 @@ public class AdminArticleServiceImpI implements AdminArticleService {
                     "\n" +
                     "<p>Bạn có thể vào theo đường dẫn sau để xem bài viết của mình:</p>\n" +
                     "\n" +
-                    "<p> xxxx </p>\n";
+                    "<p> "+ this.clientUrl + "/articles/" + article.getSlug() + " </p>\n";
             mailSender.send(to, title, content, note);
             return new MessageResponse("Duyệt bài thành công");
-        } else throw new BadRequestException("Bài đăng với id: " + id + " không tồn tại");
+        } else
+            throw new BadRequestException("Bài đăng với không tồn tại");
     }
 
     @Override

@@ -61,9 +61,9 @@ public class Staff extends BaseEntity implements Serializable {
     @Column
     private String refreshToken;
 
-    @OneToMany(mappedBy = "staff", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<News> news;
-
-    @OneToMany(mappedBy = "staff", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<StaffArticle> staffArticles;
+//    @OneToMany(mappedBy = "staff", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+//    private Set<News> news;
+//
+//    @OneToMany(mappedBy = "staff", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+//    private Set<StaffArticle> staffArticles;
 }

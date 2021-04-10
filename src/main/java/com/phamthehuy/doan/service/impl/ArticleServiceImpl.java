@@ -4,13 +4,14 @@ import com.phamthehuy.doan.entity.Article;
 import com.phamthehuy.doan.entity.StaffArticle;
 import com.phamthehuy.doan.model.response.ArticleResponse;
 import com.phamthehuy.doan.repository.StaffArticleRepository;
-import com.phamthehuy.doan.util.SlugUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -29,12 +30,11 @@ public class ArticleServiceImpl {
             if (article.getDeleted())
                 articleResponse.setStatus("Đã ẩn");
             else
-                articleResponse.setStatus("Đang đăng");
+                articleResponse.setStatus("Đang hiển thị");
         } else articleResponse.setStatus("Chưa duyệt");
 
         StaffArticle staffArticle = staffArticleRepository.
                 findFirstByArticle_ArticleId(article.getArticleId(), Sort.by("time").descending());
-
 
         if (staffArticle != null && article.getDeleted() != null) {
             Map<String, String> moderator = new HashMap<>();
@@ -51,10 +51,11 @@ public class ArticleServiceImpl {
         customer.put("phone", article.getCustomer().getPhone());
         articleResponse.setCustomer(customer);
 
-        if (article.getDeleted() != null && !article.getDeleted()) {
-            articleResponse.
-                    setExpDate(article.getExpTime());
-        }
+//        if (article.getDeleted() != null && !article.getDeleted()) {
+        articleResponse.setExpDate(article.getExpTime());
+//        }
+        List<String> images = Arrays.asList(article.getImages().split(",@"));
+        articleResponse.setImages(images);
 
         Map<String, String> location = new HashMap<>();
         location.put("wardId", article.getWard().getWardId() + "");

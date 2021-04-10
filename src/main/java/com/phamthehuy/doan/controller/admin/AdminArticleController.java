@@ -8,6 +8,8 @@ import com.phamthehuy.doan.service.AdminArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -65,9 +67,9 @@ public class AdminArticleController {
 
     //    duyệt bài đăng (hiện) (gửi mail)	/admin/article/active/{id}
     @PutMapping("/active/{id}")
-    public ResponseEntity<MessageResponse> activeArticle(@PathVariable Integer id, HttpServletRequest request)
-            throws BadRequestException {
-        return new ResponseEntity<>(adminArticleService.activeArticle(id, request), HttpStatus.OK);
+    public ResponseEntity<MessageResponse> activeArticle(@PathVariable Integer id, @AuthenticationPrincipal UserDetails admin)
+            throws Exception {
+        return new ResponseEntity<>(adminArticleService.activeArticle(id, admin), HttpStatus.OK);
     }
 
     //    ẩn bài đăng (gửi mail)	/admin/article/block/{id}

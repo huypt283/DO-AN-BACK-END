@@ -4,8 +4,10 @@ import com.phamthehuy.doan.entity.Roommate;
 import com.phamthehuy.doan.entity.RoomService;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -31,19 +33,13 @@ public class ArticleResponse {
 
     private String status;
 
-    private String city;
-
-    private String district;
-
-    private String ward;
-
     private RoomService roomService;
 
     private Roommate roommate;
 
-    private Integer acreage;
+    private Double acreage;
 
-    private String image;
+    private List<String> images;
 
     private String video;
 

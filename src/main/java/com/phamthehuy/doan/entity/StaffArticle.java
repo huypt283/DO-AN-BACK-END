@@ -26,6 +26,7 @@ public class StaffArticle implements Serializable {
 
     @Column(nullable = false)
     @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @Temporal(TemporalType.DATE)
     private Date time = new Date();
 
     @Column(nullable = false)

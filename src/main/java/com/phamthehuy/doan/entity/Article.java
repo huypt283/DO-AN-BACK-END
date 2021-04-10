@@ -40,7 +40,6 @@ public class Article extends BaseEntity implements Serializable {
     private String roomType;
 
     @Column
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date expTime;
 
     @Column(nullable = false, columnDefinition = "BOOLEAN")
@@ -57,7 +56,6 @@ public class Article extends BaseEntity implements Serializable {
 
     private String video;
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date timeUpdated;
 
     @OneToOne(cascade = CascadeType.ALL)

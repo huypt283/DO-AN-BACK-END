@@ -19,7 +19,6 @@ public class NewsResponse {
 
     private String author;
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date lastUpdatedTime;
 
     private Boolean deleted;

@@ -44,11 +44,18 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
     private TransactionRepository transactionRepository;
 
     @Override
-    public List<ArticleResponse> listArticleNotHidden(Long start, Long end, Integer ward, Integer district, Integer city, Boolean roommate, Boolean vip, String search, Integer minAcreage, Integer maxAcreage) throws Exception {
-        List<Article> articles = articleRepository.findCustomNotHidden(start, end, ward, district, city,
-                roommate, vip, search, minAcreage, maxAcreage);
+    public List<ArticleResponse> listArticleNotHidden(String roomType, String search,
+                                                      Integer ward, Integer district, Integer city,
+                                                      Integer minAcreage, Integer maxAcreage) throws Exception {
+        List<Article> articles = articleRepository.findCustomNotHidden(roomType, search, ward, district, city, minAcreage, maxAcreage);
 
         return articles.stream().map(articleService::convertToOutputDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public ArticleResponse getArticleBySlug(String slug) throws Exception {
+        Article article = articleRepository.findBySlug(slug);
+        return article == null ? null : articleService.convertToOutputDTO(article);
     }
 
     @Override

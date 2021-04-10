@@ -19,6 +19,8 @@ public class ArticleResponse {
 
     private String slug;
 
+    private String roomType;
+
     private Integer roomPrice;
 
     private String description;

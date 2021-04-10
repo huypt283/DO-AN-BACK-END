@@ -17,8 +17,6 @@ public abstract class BaseEntity {
     @Column(columnDefinition = "BOOLEAN")
     private Boolean deleted = false;
 
-    @Temporal(TemporalType.DATE)
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Column(updatable = false)
     private Date timeCreated = new Date();
 }

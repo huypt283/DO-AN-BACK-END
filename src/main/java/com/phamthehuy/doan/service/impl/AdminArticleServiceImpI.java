@@ -143,7 +143,7 @@ public class AdminArticleServiceImpI implements AdminArticleService {
                     "\n" +
                     "<p>SĐT: " + article.getCustomer().getPhone() + "</p>\n" +
                     "\n" +
-                    "<p>Thời gian đăng: " + article.getTimeCreated() + "</p>\n" +
+                    "<p>Thời gian đăng: " + simpleDateFormat.format(article.getTimeCreated()) + "</p>\n" +
                     "\n" +
                     "\n" +
                     "<p>Thời gian duyệt bài: " + simpleDateFormat.format(new Date()) + "</p>\n" +

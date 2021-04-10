@@ -10,20 +10,21 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.List;
 
 public interface CustomerArticleService {
-    List<ArticleResponse> listArticleNotHidden(Long start, Long end,
-                                                      Integer ward, Integer district, Integer city,
-                                                      Boolean roommate, Boolean vip, String search,
-                                                      Integer minAcreage, Integer maxAcreage) throws Exception;
+    List<ArticleResponse> listArticleNotHidden(String roomType, String search,
+                                               Integer ward, Integer district, Integer city,
+                                               Integer minAcreage, Integer maxAcreage) throws Exception;
+
+    ArticleResponse getArticleBySlug(String slug) throws Exception;
 
     //    list bài đăng cá nhân	/customer/article
     //    lọc bài đăng theo trạng thái: chưa duyệt, đang đăng, đã ẩn	/customer/article?status={uncheck/active/hidden}
     //    tìm kiếm bài đăng theo title	/customer/article?title={title}
     List<ArticleResponse> listArticleByEmail(String email, String sort, Long start, Long end,
-                                      Integer ward, Integer district, Integer city,
-                                      Boolean roommate,
-                                      String status, Boolean vip, String search,
-                                      Integer minAcreage, Integer maxAcreage,
-                                      Integer page, Integer limit);
+                                             Integer ward, Integer district, Integer city,
+                                             Boolean roommate,
+                                             String status, Boolean vip, String search,
+                                             Integer minAcreage, Integer maxAcreage,
+                                             Integer page, Integer limit);
 
     //    đăng bài	/customer/article
     ArticleResponse insertArticle(UserDetails currentUser, ArticleInsertRequest articleInsertRequest)
@@ -33,7 +34,6 @@ public interface CustomerArticleService {
     ArticleResponse updateArticle(String email, ArticleUpdateRequest articleUpdateRequest,
                                   Integer id)
             throws BadRequestException;
-
 
 
     //    xóa bài đăng	/customer/article/{id}

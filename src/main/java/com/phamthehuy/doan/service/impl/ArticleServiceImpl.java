@@ -54,6 +54,8 @@ public class ArticleServiceImpl {
 //        if (article.getDeleted() != null && !article.getDeleted()) {
         articleResponse.setExpDate(article.getExpTime());
 //        }
+
+        articleResponse.setLastUpdateTime(article.getTimeUpdated() != null ? article.getTimeUpdated() : article.getTimeCreated());
         List<String> images = Arrays.asList(article.getImages().split(",@"));
         articleResponse.setImages(images);
 

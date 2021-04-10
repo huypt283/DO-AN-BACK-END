@@ -124,11 +124,11 @@ public class CustomArticleRepositoryImpl implements CustomArticleRepository {
     }
 
     @Override
-    public List<Article> findCustomNotHidden(Long start, Long end,
-                                           Integer ward, Integer district, Integer city,
-                                           Boolean roommate, Boolean vip, String search,
-                                           Integer minAcreage, Integer maxAcreage) {
-        if (search == null || search.trim().equals("")) search = "";
+    public List<Article> findCustomNotHidden(String roomType, String search,
+                                             Integer ward, Integer district, Integer city,
+                                             Integer minAcreage, Integer maxAcreage) {
+        if (search == null || search.trim().equals(""))
+            search = "";
 
         //tạo builder
         CriteriaBuilder builder = em.getCriteriaBuilder();
@@ -143,65 +143,41 @@ public class CustomArticleRepositoryImpl implements CustomArticleRepository {
         query.select(root);
 
         //search
-        Predicate searchByName = builder.like(root.get("customer").get("name"), "%" + search + "%");
-        Predicate searchByPhone = builder.like(root.get("customer").get("phone"), "%" + search + "%");
-        Predicate searchByEmail = builder.like(root.get("customer").get("email"), "%" + search + "%");
-        Predicate searchByTitle = builder.like(root.get("title"), "%" + search + "%");
-        searchByTitle = builder.or(searchByTitle, searchByEmail, searchByPhone, searchByName);
-
-        //tìm khoảng thời gian
-        if (start != null) {
-            Predicate findByGreaterTime = builder.greaterThanOrEqualTo(root.get("timeUpdated"), new Date(start));
-            searchByTitle = builder.and(searchByTitle, findByGreaterTime);
-        }
-        if (end != null) {
-            Predicate findByLessTime = builder.lessThanOrEqualTo(root.get("timeUpdated"), new Date(end));
-            searchByTitle = builder.and(searchByTitle, findByLessTime);
-        }
+        Predicate predicate = builder.like(root.get("title"), "%" + search + "%");
+        predicate = builder.and(predicate);
 
         //lọc theo diện tích
         if (minAcreage != null) {
             Predicate findByGreaterAcreage = builder.greaterThanOrEqualTo(root.get("acreage"), minAcreage);
-            searchByTitle = builder.and(searchByTitle, findByGreaterAcreage);
+            predicate = builder.and(predicate, findByGreaterAcreage);
         }
         if (maxAcreage != null) {
             Predicate findByLessAcreage = builder.lessThanOrEqualTo(root.get("acreage"), maxAcreage);
-            searchByTitle = builder.and(searchByTitle, findByLessAcreage);
+            predicate = builder.and(predicate, findByLessAcreage);
         }
 
         //tìm theo xã, huyện, tỉnh
         if (ward != null) {
             Predicate findByWard = builder.equal(root.get("ward").get("wardId"), ward);
-            searchByTitle = builder.and(searchByTitle, findByWard);
+            predicate = builder.and(predicate, findByWard);
         } else if (district != null) {
             Predicate findByDistrict = builder.equal(root.get("ward").get("district").get("districtId"), district);
-            searchByTitle = builder.and(searchByTitle, findByDistrict);
+            predicate = builder.and(predicate, findByDistrict);
         } else if (city != null) {
             Predicate findByCity = builder.equal(root.get("ward").get("district").get("city").get("cityId"), city);
-            searchByTitle = builder.and(searchByTitle, findByCity);
+            predicate = builder.and(predicate, findByCity);
         }
 
         //tìm theo roommate
-        if (roommate != null) {
-            if (roommate) {
-                Predicate findByRoommateNotNull = builder.isNotNull(root.get("roommate"));
-                searchByTitle = builder.and(searchByTitle, findByRoommateNotNull);
-            } else {
-                Predicate findByRoommateNull = builder.isNull(root.get("roommate"));
-                searchByTitle = builder.and(searchByTitle, findByRoommateNull);
-            }
+        if (roomType != null) {
+            Predicate findByRoomType = builder.equal(root.get("roomType"), roomType);
+            predicate = builder.and(predicate, findByRoomType);
         }
 
-        Predicate findByStatusTrue = builder.isFalse(root.get("deleted"));
-        searchByTitle = builder.and(searchByTitle, findByStatusTrue);
+        //tìm theo status
+        predicate = builder.and(predicate, builder.isFalse(root.get("deleted")));
 
-        //tìm theo vip
-        if (vip != null) {
-            Predicate findByVip = builder.equal(root.get("vip"), vip);
-            searchByTitle = builder.and(searchByTitle, findByVip);
-        }
-
-        query.where(searchByTitle);
+        query.where(predicate);
 
         query.orderBy(builder.desc(root.get("timeUpdated")));
 

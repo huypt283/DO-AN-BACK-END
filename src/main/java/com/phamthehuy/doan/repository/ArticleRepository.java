@@ -10,5 +10,7 @@ import java.util.List;
 public interface ArticleRepository extends JpaRepository<Article, Integer>, CustomArticleRepository{
     Article findByArticleId(Integer id);
 
+    Article findBySlug(String slug);
+
     List<Article> findByDeletedFalse();
 }

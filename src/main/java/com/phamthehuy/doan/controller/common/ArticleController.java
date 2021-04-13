@@ -1,4 +1,4 @@
-package com.phamthehuy.doan.controller.unauthenticated;
+package com.phamthehuy.doan.controller.common;
 
 import com.phamthehuy.doan.model.enums.RoomType;
 import com.phamthehuy.doan.service.CustomerArticleService;

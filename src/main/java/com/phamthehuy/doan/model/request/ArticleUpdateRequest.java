@@ -4,6 +4,7 @@ import com.phamthehuy.doan.model.enums.RoomType;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -53,6 +54,7 @@ public class ArticleUpdateRequest {
 
     private String video;
 
+    @Valid
     private RoommateRequest roommateRequest;
 
     @NotNull(message = "Phường không được trống")

@@ -1,13 +1,17 @@
 package com.phamthehuy.doan.model.request;
 
+import com.phamthehuy.doan.validation.ValidBirthday;
+import com.phamthehuy.doan.validation.ValidNumber;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.validation.annotation.Validated;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Date;
 
+@Validated
 @Getter
 @Setter
 public class CustomerUpdateRequest {
@@ -21,12 +25,17 @@ public class CustomerUpdateRequest {
     private String address;
 
     @Size(min = 9, max = 11, message = "Số điện thoại phải có 9-11 kí tự")
-    @NotNull(message = "Số điện thoại không được null")
+    @NotNull(message = "Số điện thoại không được trống")
+    @ValidNumber(message = "Số điện thoại phải là số")
     private String phone;
 
     @Size(min = 9, max = 12, message = "Số CMND phải có 9-12 kí tự")
+    @NotNull(message = "Số CMND không được trống")
+    @ValidNumber(message = "Số CMND phải là số")
     private String cardId;
 
     @NotNull(message = "Ngày sinh không được trống")
+    @ValidBirthday(message = "Ngày sinh không hợp lệ")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date birthday;
 }

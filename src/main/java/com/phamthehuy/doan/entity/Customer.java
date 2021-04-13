@@ -11,7 +11,6 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
-
 @Entity
 @Getter
 @Setter
@@ -51,7 +50,7 @@ public class Customer extends BaseEntity implements Serializable {
     private Integer accountBalance;
 
     @Column(nullable = false, columnDefinition = "BOOLEAN")
-    private Boolean enabled = false;
+    private Boolean enabled;
 
     @Column
     private String token;
@@ -70,5 +69,4 @@ public class Customer extends BaseEntity implements Serializable {
 
     @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<Transaction> transactions;
-
 }

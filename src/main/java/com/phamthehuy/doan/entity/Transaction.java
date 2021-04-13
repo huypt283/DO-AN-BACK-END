@@ -28,6 +28,6 @@ public class Transaction extends BaseEntity implements Serializable {
     private String description;
 
     @ManyToOne
-    @JoinColumn(name = "customerId")
+    @JoinColumn(name = "customerId", nullable = false)
     private Customer customer;
 }

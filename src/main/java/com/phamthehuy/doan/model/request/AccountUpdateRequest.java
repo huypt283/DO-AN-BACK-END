@@ -1,5 +1,7 @@
 package com.phamthehuy.doan.model.request;
 
+import com.phamthehuy.doan.validation.ValidBirthday;
+import com.phamthehuy.doan.validation.ValidNumber;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -17,10 +19,12 @@ public class AccountUpdateRequest {
 
     @Size(min = 9, max = 11, message = "Số điện thoại phải có 9-11 kí tự")
     @NotNull(message = "Số điện thoại không được trống")
+    @ValidNumber(message = "Số điện thoại phải là số")
     private String phone;
 
     @Size(min = 9, max = 12, message = "Số CMND phải có 9-12 kí tự")
     @NotNull(message = "Số CMND không được trống")
+    @ValidNumber(message = "Số CMND phải là số")
     private String cardId;
 
     @NotNull(message = "Giới tính không được trống")
@@ -30,6 +34,7 @@ public class AccountUpdateRequest {
     private String address;
 
     @NotNull(message = "Ngày sinh không được trống")
+    @ValidBirthday(message = "Ngày sinh không hợp lệ")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date birthday;
 }

@@ -19,16 +19,12 @@ public interface AdminArticleService {
                                       Integer page, Integer limit
     );
 
-    //    contact với khách hàng (gửi mail cho khách hàng về bài viết này)	/admin/article/contact/{id}
-    MessageResponse contactToCustomer(Integer id, ContactCustomerRequest contactCustomerRequest,
-                                      HttpServletRequest request) throws BadRequestException;
+    ArticleResponse detailArticle(Integer id) throws Exception;
 
-    //    duyệt bài đăng (hiện) (gửi mail)	/admin/article/active/{id}
+    MessageResponse contactToCustomer(Integer id, UserDetails admin,
+                                      ContactCustomerRequest contactCustomerRequest) throws Exception;
+
     MessageResponse activeArticle(Integer id, UserDetails admin) throws Exception;
 
-    //    ẩn bài đăng (gửi mail)	/admin/article/block/{id}
-    MessageResponse hiddenArticle(Integer id, String reason, HttpServletRequest request) throws BadRequestException;
-
-    //chi tiết bài đăng
-    ArticleResponse detailArticle(Integer id) throws BadRequestException;
+    MessageResponse hideArticle(Integer id, UserDetails admin, String reason) throws Exception;
 }

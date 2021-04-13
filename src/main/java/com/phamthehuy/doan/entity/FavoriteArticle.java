@@ -9,15 +9,17 @@ import java.io.Serializable;
 @Entity
 @Getter
 @Setter
-@IdClass(FavoriteArticlesCompositeKey.class)
-public class FavoriteArticle extends BaseEntity implements Serializable {
+//@IdClass(FavoriteArticlesCompositeKey.class)
+public class FavoriteArticle implements Serializable {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer favoriteId;
+
     @ManyToOne
-    @JoinColumn(name = "articleId")
+    @JoinColumn(name = "articleId", nullable = false)
     private Article article;
 
-    @Id
     @ManyToOne
-    @JoinColumn(name = "customerId")
+    @JoinColumn(name = "customerId", nullable = false)
     private Customer customer;
 }

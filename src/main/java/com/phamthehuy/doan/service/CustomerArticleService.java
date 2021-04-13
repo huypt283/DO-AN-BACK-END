@@ -35,7 +35,8 @@ public interface CustomerArticleService {
 
     MessageResponse deleteArticle(UserDetails currentUser, Integer id) throws Exception;
 
-    MessageResponse extensionExp(UserDetails currentUser, Integer id, ExtendArticleExpRequest extendArticleExpRequest) throws Exception;
+    MessageResponse extendExp(UserDetails currentUser, Integer id, ExtendArticleExpRequest extendArticleExpRequest)
+            throws Exception;
 
     MessageResponse hideArticle(UserDetails currentUser, Integer id) throws Exception;
 

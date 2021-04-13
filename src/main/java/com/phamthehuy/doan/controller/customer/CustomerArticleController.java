@@ -79,18 +79,18 @@ public class CustomerArticleController {
     public ResponseEntity<?> extendExp(@PathVariable Integer id,
                                        @Valid @RequestBody ExtendArticleExpRequest extendArticleExpRequest,
                                        @AuthenticationPrincipal UserDetails currentUser) throws Exception {
-        return new ResponseEntity<>(customerArticleService.extensionExp(currentUser, id, extendArticleExpRequest), HttpStatus.OK);
+        return new ResponseEntity<>(customerArticleService.extendExp(currentUser, id, extendArticleExpRequest), HttpStatus.OK);
     }
 
     //    ẩn bài đăng
-    @PutMapping("/hide/{id}")
+    @PostMapping("/hide/{id}")
     public ResponseEntity<?> hideArticle(@PathVariable Integer id,
                                          @AuthenticationPrincipal UserDetails currentUser) throws Exception {
         return new ResponseEntity<>(customerArticleService.hideArticle(currentUser, id), HttpStatus.OK);
     }
 
     //    hiển thị lại bài đăng đã ẩn
-    @PutMapping("/show/{id}")
+    @PostMapping("/show/{id}")
     public ResponseEntity<?> showArticle(@PathVariable Integer id,
                                          @AuthenticationPrincipal UserDetails currentUser) throws Exception {
         return new ResponseEntity<>(customerArticleService.showArticle(currentUser, id), HttpStatus.OK);

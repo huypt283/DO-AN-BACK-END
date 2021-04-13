@@ -1,9 +1,7 @@
 package com.phamthehuy.doan.controller.admin;
 
-import com.phamthehuy.doan.exception.BadRequestException;
 import com.phamthehuy.doan.model.request.ContactCustomerRequest;
 import com.phamthehuy.doan.model.response.ArticleResponse;
-import com.phamthehuy.doan.model.response.MessageResponse;
 import com.phamthehuy.doan.service.AdminArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,7 +10,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -23,9 +20,14 @@ public class AdminArticleController {
     private AdminArticleService adminArticleService;
 
     @GetMapping
-    public ResponseEntity<List<ArticleResponse>> listAllArticle() {
+    public ResponseEntity<?> listAllArticle() {
         List<ArticleResponse> articleResponses = adminArticleService.listAllArticle();
         return new ResponseEntity<>(articleResponses, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> detailArticle(@PathVariable Integer id) throws Exception {
+        return new ResponseEntity<>(adminArticleService.detailArticle(id), HttpStatus.OK);
     }
 
     //    list bài đăng	/admin/article
@@ -57,32 +59,23 @@ public class AdminArticleController {
 //                roommate, status, vip, search, minAcreage, maxAcreage, page, limit);
 //    }
 
-    //    contact với khách hàng (gửi mail cho khách hàng về bài viết này)	/admin/article/contact/{id}
     @PostMapping("/contact/{id}")
-    public MessageResponse contactToCustomer(@PathVariable Integer id,
-                                             @Valid @RequestBody ContactCustomerRequest contactCustomerRequest,
-                                             HttpServletRequest request) throws BadRequestException {
-        return adminArticleService.contactToCustomer(id, contactCustomerRequest, request);
+    public ResponseEntity<?> contactToCustomer(@PathVariable Integer id,
+                                               @Valid @RequestBody ContactCustomerRequest contactCustomerRequest,
+                                               @AuthenticationPrincipal UserDetails admin) throws Exception {
+        return new ResponseEntity<>(adminArticleService.contactToCustomer(id, admin, contactCustomerRequest), HttpStatus.OK);
     }
 
-    //    duyệt bài đăng (hiện) (gửi mail)	/admin/article/active/{id}
     @PutMapping("/active/{id}")
-    public ResponseEntity<MessageResponse> activeArticle(@PathVariable Integer id, @AuthenticationPrincipal UserDetails admin)
-            throws Exception {
+    public ResponseEntity<?> activeArticle(@PathVariable Integer id,
+                                           @AuthenticationPrincipal UserDetails admin) throws Exception {
         return new ResponseEntity<>(adminArticleService.activeArticle(id, admin), HttpStatus.OK);
     }
 
-    //    ẩn bài đăng (gửi mail)	/admin/article/block/{id}
     @PutMapping("/hide/{id}")
-    public MessageResponse hiddenArticle(@PathVariable Integer id,
-                                         @RequestParam String mess,
-                                         HttpServletRequest request)
-            throws BadRequestException {
-        return adminArticleService.hiddenArticle(id, mess, request);
-    }
-
-    @GetMapping("/{id}")
-    public ArticleResponse detailArticle(@PathVariable Integer id) throws BadRequestException {
-        return adminArticleService.detailArticle(id);
+    public ResponseEntity<?> hiddenArticle(@PathVariable Integer id,
+                                           @AuthenticationPrincipal UserDetails admin,
+                                           @RequestBody String reason) throws Exception {
+        return new ResponseEntity<>(adminArticleService.hideArticle(id, admin, reason), HttpStatus.OK);
     }
 }

@@ -12,6 +12,7 @@ import java.util.Optional;
 
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Integer> {
+    Customer findByCustomerId(Integer id);
 
     Customer findByEmail(String email);
 
@@ -29,6 +30,8 @@ public interface CustomerRepository extends JpaRepository<Customer, Integer> {
             (String name, String phone, String email, Pageable pageable);
 
     Customer findByCustomerIdAndDeletedFalseAndEnabledTrue(Integer id);
+
+    List<Customer> findByDeletedTrue();
 
     List<Customer> findByDeletedTrueAndEnabledTrue();
 

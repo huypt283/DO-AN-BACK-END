@@ -49,7 +49,7 @@ public class HandleException extends ResponseEntityExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Object> handleAccessDeniedException(Exception ex) {
         Map<String, String> map = new HashMap<>();
-        map.put("mess", "Không có quyền truy cập");
+        map.put("message", ex.getMessage());
         return new ResponseEntity<>(map, HttpStatus.FORBIDDEN);
     }
 

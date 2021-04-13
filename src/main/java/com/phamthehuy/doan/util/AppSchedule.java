@@ -30,7 +30,7 @@ public class AppSchedule {
         if (articleList.size() > 0) {
             for (Article article : articleList) {
                 //ẩn bài đăng hết hạn
-                if (article.getExpTime().before(new Date())) {
+                if (new Date().after(article.getExpTime())) {
                     article.setDeleted(true);
                     articleRepository.save(article);
 

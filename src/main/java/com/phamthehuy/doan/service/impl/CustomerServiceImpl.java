@@ -1,30 +1,22 @@
 package com.phamthehuy.doan.service.impl;
 
-import com.phamthehuy.doan.model.request.OffsetBasedPageRequest;
-import com.phamthehuy.doan.repository.CustomerRepository;
-import com.phamthehuy.doan.repository.StaffRepository;
+import com.phamthehuy.doan.entity.Customer;
 import com.phamthehuy.doan.exception.BadRequestException;
+import com.phamthehuy.doan.exception.ConflictException;
+import com.phamthehuy.doan.exception.NotFoundException;
 import com.phamthehuy.doan.model.request.CustomerUpdateRequest;
 import com.phamthehuy.doan.model.response.CustomerResponse;
 import com.phamthehuy.doan.model.response.MessageResponse;
-import com.phamthehuy.doan.entity.Customer;
+import com.phamthehuy.doan.repository.CustomerRepository;
+import com.phamthehuy.doan.repository.StaffRepository;
 import com.phamthehuy.doan.service.CustomerService;
-import org.modelmapper.ModelMapper;
-import org.modelmapper.convention.MatchingStrategies;
+import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,8 +28,6 @@ public class CustomerServiceImpl implements CustomerService {
     @Autowired
     PasswordEncoder passwordEncoder;
 
-//    private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-
     @Override
     public List<CustomerResponse> listCustomer(Integer page, Integer limit) throws Exception {
 //        OffsetBasedPageRequest pageable = new OffsetBasedPageRequest((page - 1) * limit, limit, Sort.by("id").descending();
@@ -46,42 +36,37 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public ResponseEntity<?> updateCustomer(CustomerUpdateRequest customerUpdateRequest,
-                                            Integer id) throws BadRequestException {
-        //validate
-        String matchNumber = "[0-9]+";
-        if (customerUpdateRequest.getCardId() != null && !customerUpdateRequest.getCardId().equals("")) {
-            if (!customerUpdateRequest.getCardId().matches(matchNumber))
-                throw new BadRequestException("Số CMND phải là số");
-            else if (customerUpdateRequest.getCardId().length() < 9 || customerUpdateRequest.getCardId().length() > 12)
-                throw new BadRequestException("Số CMND phải gồm 9-12 số");
+    public CustomerResponse findCustomerById(Integer id) throws Exception {
+        Customer customer = customerRepository.findByCustomerId(id);
+        if (customer == null) {
+            throw new NotFoundException("Không tìm thấy khách hàng");
         }
-        if (!customerUpdateRequest.getPhone().matches(matchNumber))
-            throw new BadRequestException("Số điện thoại phải là số");
-        if (customerUpdateRequest.getBirthday().after(new Date()))
-            throw new BadRequestException("Ngày sinh không hợp lệ");
 
-        //update
-        try {
-            ModelMapper modelMapper = new ModelMapper();
-            modelMapper.getConfiguration()
-                    .setMatchingStrategy(MatchingStrategies.STRICT);
-            Optional<Customer> optionalCustomer = customerRepository.findById(id);
-            Customer customer = optionalCustomer.get();
-            customer.setName(customerUpdateRequest.getName());
-            customer.setGender(customerUpdateRequest.getGender());
-            customer.setAddress(customerUpdateRequest.getAddress());
-            customer.setPhone(customerUpdateRequest.getPhone());
-            customer.setCardId(customerUpdateRequest.getCardId());
-            customer.setDob(customerUpdateRequest.getBirthday());
-            Customer newCustomer = customerRepository.save(customer);
-            CustomerResponse customerResponse = modelMapper.map(newCustomer, CustomerResponse.class);
-            customerResponse.setBirthday(newCustomer.getDob());
-            return ResponseEntity.ok(customerResponse);
-        } catch (Exception e) {
-            //e.printStackTrace();
-            throw new BadRequestException("Cập nhật khách hàng thất bại");
+        CustomerResponse customerResponse = new CustomerResponse();
+        BeanUtils.copyProperties(customer, customerResponse);
+        customerResponse.setBirthday(customer.getDob());
+
+        return customerResponse;
+    }
+
+    @Override
+    public CustomerResponse updateCustomerById(CustomerUpdateRequest customerUpdateRequest,
+                                               Integer id) throws Exception {
+        Customer customer = customerRepository.findByCustomerId(id);
+        if (customer == null) {
+            throw new NotFoundException("Không tìm thấy khách hàng");
         }
+
+        BeanUtils.copyProperties(customerUpdateRequest, customer);
+        customer.setDob(customerUpdateRequest.getBirthday());
+
+        customer = customerRepository.save(customer);
+
+        CustomerResponse customerResponse = new CustomerResponse();
+        BeanUtils.copyProperties(customer, customerResponse);
+        customerResponse.setBirthday(customer.getDob());
+
+        return customerResponse;
     }
 
     private CustomerResponse convertToCustomerResponse(Customer customer) {
@@ -92,57 +77,52 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public MessageResponse blockCustomer(Integer id) throws BadRequestException {
-        Customer customer = customerRepository.findByCustomerIdAndDeletedFalseAndEnabledTrue(id);
-        if (customer == null) throw new BadRequestException("Lỗi: id " + id + " không tồn tại, hoặc đã block rồi");
-        else {
+    public MessageResponse activeCustomerById(Integer id) throws Exception {
+        Customer customer = customerRepository.findByCustomerId(id);
+        if (customer == null) {
+            throw new NotFoundException("Không tìm thấy khách hàng");
+        } else {
+            if (BooleanUtils.isFalse(customer.getDeleted()))
+                throw new ConflictException("Khách hàng này không bị khoá");
+
+            customer.setDeleted(false);
+            customerRepository.save(customer);
+            return new MessageResponse("Kích hoạt khách hàng thành công");
+        }
+    }
+
+    @Override
+    public MessageResponse blockCustomerById(Integer id) throws Exception {
+        Customer customer = customerRepository.findByCustomerId(id);
+        if (customer == null) {
+            throw new NotFoundException("Không tìm thấy khách hàng");
+        } else {
+            if (BooleanUtils.isTrue(customer.getDeleted()))
+                throw new ConflictException("Khách hàng này đã bị khoá");
+
             customer.setDeleted(true);
             customerRepository.save(customer);
-            return new MessageResponse("Block khách hàng id " + id + " thành công");
+            return new MessageResponse("Khoá khách hàng thành công");
         }
     }
 
     @Override
-    public MessageResponse activeCustomer(Integer id) throws BadRequestException {
-        Optional<Customer> optionalCustomer = customerRepository.findById(id);
-        if (!optionalCustomer.isPresent()) throw new BadRequestException("Lỗi: id " + id + " không tồn tại");
-        else {
-            optionalCustomer.get().setDeleted(false);
-            customerRepository.save(optionalCustomer.get());
-            return new MessageResponse("Kích hoạt khách hàng id: " + id + " thành công");
-        }
-    }
-
-    @Override
-    public ResponseEntity<?> findOneCustomer(Integer id) {
-        try {
-            ModelMapper modelMapper = new ModelMapper();
-            modelMapper.getConfiguration()
-                    .setMatchingStrategy(MatchingStrategies.STRICT);
-            Customer customer = customerRepository.findById(id).get();
-            CustomerResponse customerResponse = modelMapper.map(customer, CustomerResponse.class);
-            customerResponse.setBirthday(customer.getDob());
-            return ResponseEntity.ok(customerResponse);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Lỗi: khách hàng id " + id + " không tồn tại"));
-        }
-    }
-
-    @Override
-    public MessageResponse deleteAllCustomers() {
-        List<Customer> customerList = customerRepository.findByDeletedTrueAndEnabledTrue();
-        for (Customer customer : customerList) {
+    public MessageResponse deleteCustomerById(Integer id) throws BadRequestException {
+        Customer customer = customerRepository.findByCustomerId(id);
+        if (customer == null) {
+            throw new NotFoundException("Không tìm thấy khách hàng");
+        } else {
             customerRepository.delete(customer);
+            return new MessageResponse("Xóa hách hàng thành công");
         }
-        return new MessageResponse("Xóa tất cả khách hàng bị xóa mềm thành công");
     }
 
     @Override
-    public MessageResponse deleteCustomers(Integer id) throws BadRequestException {
-        Customer customer = customerRepository.findByCustomerIdAndEnabledTrue(id);
-        if (customer == null) throw new BadRequestException("Khách hàng với id " + id + " không tồn tại");
-        customerRepository.delete(customer);
-        return new MessageResponse("Xóa hách hàng id " + id + " thành công");
+    public MessageResponse deleteAllBlockCustomers() {
+        List<Customer> customers = customerRepository.findByDeletedTrue();
+        customers.forEach(customer -> customerRepository.delete(customer));
+
+        return new MessageResponse("Xóa tất cả khách hàng bị khoá thành công");
     }
 
 //    public List<CustomerResponse> listCustomer(String search, Boolean deleted, String nameSort,

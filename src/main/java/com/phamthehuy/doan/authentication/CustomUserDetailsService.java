@@ -32,22 +32,21 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         List<SimpleGrantedAuthority> roles = null;
-        Customer customer = null;
         Staff staff = staffRepository.findByEmail(email);;
-        if (staff == null)
-            customer = customerRepository.findByEmail(email);
-        else {
+        if (staff != null) {
             if (staff.getRole()) {
                 roles = Collections.singletonList(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"));
             } else {
                 roles = Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN"));
             }
             return new User(staff.getEmail(), staff.getPass(), roles);
-        }
+        } else {
+            Customer customer = customerRepository.findByEmail(email);
 
-        if (customer != null) {
-            roles = Collections.singletonList(new SimpleGrantedAuthority("ROLE_CUSTOMER"));
-            return new User(customer.getEmail(), customer.getPass(), roles);
+            if (customer != null) {
+                roles = Collections.singletonList(new SimpleGrantedAuthority("ROLE_CUSTOMER"));
+                return new User(customer.getEmail(), customer.getPass(), roles);
+            }
         }
 
         throw new UsernameNotFoundException("User not found with the name " + email);

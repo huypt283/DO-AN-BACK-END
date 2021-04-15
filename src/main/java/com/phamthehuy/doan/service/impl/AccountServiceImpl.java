@@ -21,8 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -68,7 +66,7 @@ public class AccountServiceImpl implements AccountService {
 
         try {
             //create token
-            String token = helper.createToken(30);
+            String token = helper.createUserToken(30);
 
             //create customer
             Customer customer = new Customer();
@@ -160,7 +158,7 @@ public class AccountServiceImpl implements AccountService {
                 }
 
                 userDetails = new User(staff.getEmail(), staff.getPass(), roles);
-            } else if (customer != null && passwordEncoder.matches(signinRequest.getPassword(), customer.getPass())){
+            } else if (customer != null && passwordEncoder.matches(signinRequest.getPassword(), customer.getPass())) {
                 roles = Collections.singletonList(new SimpleGrantedAuthority("ROLE_CUSTOMER"));
 
                 userDetails = new User(customer.getEmail(), customer.getPass(), roles);
@@ -242,7 +240,7 @@ public class AccountServiceImpl implements AccountService {
             if (staff.getToken() != null)
                 throw new AccessDeniedException("Email đổi mật khẩu đã được gửi, bạn hãy check lại mail");
 
-            token = helper.createToken(31);
+            token = helper.createUserToken(31);
             staff.setToken(token);
             staffRepository.save(staff);
         } else {
@@ -252,7 +250,7 @@ public class AccountServiceImpl implements AccountService {
                 if (customer.getToken() != null)
                     throw new AccessDeniedException("Email đổi mật khẩu đã được gửi, bạn hãy check lại mail");
 
-                token = helper.createToken(31);
+                token = helper.createUserToken(31);
                 customer.setToken(token);
                 customerRepository.save(customer);
             } else {

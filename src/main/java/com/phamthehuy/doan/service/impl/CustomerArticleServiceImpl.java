@@ -1,7 +1,10 @@
 package com.phamthehuy.doan.service.impl;
 
 import com.phamthehuy.doan.entity.*;
-import com.phamthehuy.doan.exception.*;
+import com.phamthehuy.doan.exception.AccessDeniedException;
+import com.phamthehuy.doan.exception.BadRequestException;
+import com.phamthehuy.doan.exception.ConflictException;
+import com.phamthehuy.doan.exception.NotFoundException;
 import com.phamthehuy.doan.helper.Helper;
 import com.phamthehuy.doan.model.request.*;
 import com.phamthehuy.doan.model.response.ArticleResponse;
@@ -234,7 +237,7 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
         if (article == null)
             throw new NotFoundException("Không tìm thấy bài đăng");
         else if (BooleanUtils.isTrue(article.getDeleted()))
-            throw new ConflictException("Gia hạn chỉ áp dụng với bài đăng đã được duyệt");
+            throw new ConflictException("Gia hạn không áp dụng với bài đăng đã ẩn");
 
         Customer customer = article.getCustomer();
         validateCustomer(customer);
@@ -269,11 +272,15 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
         if (customer.getAccountBalance() < money)
             throw new ConflictException("Số tiền trong tài khoản không đủ");
 
+        if (article.getDeleted() == null) {
+            //đặt ngày để duyệt
+            article.setDays(article.getDays() + days);
+        } else {
+            //tạo thời hạn
+            article.setExpTime(helper.addDayForDate(days, article.getExpTime()));
+        }
+
         customer.setAccountBalance(customer.getAccountBalance() - money);
-
-        //tạo thời hạn
-        article.setExpTime(helper.addDayForDate(days, article.getExpTime()));
-
         customer = customerRepository.save(customer);
 
         articleRepository.save(article);
@@ -332,7 +339,8 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
 
     private void createTransactionPay(Integer amount, Customer customer, String description) {
         Transaction transaction = new Transaction();
-        transaction.setType(false);
+        transaction.setPayment(false);
+        transaction.setStatus("Thành công");
         transaction.setAmount(amount);
         transaction.setCustomer(customer);
         transaction.setDescription(description);

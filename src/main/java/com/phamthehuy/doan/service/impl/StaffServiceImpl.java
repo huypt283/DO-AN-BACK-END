@@ -153,7 +153,7 @@ public class StaffServiceImpl implements StaffService {
             throw new BadRequestException("Ngày sinh phải trong quá khứ");
 
         //create token
-        String token = helper.createToken(30);
+        String token = helper.createUserToken(30);
 
         //insert
         try {

@@ -1,7 +1,7 @@
 package com.phamthehuy.doan.util;
 
-import com.phamthehuy.doan.repository.ArticleRepository;
 import com.phamthehuy.doan.entity.Article;
+import com.phamthehuy.doan.repository.ArticleRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -36,12 +36,12 @@ public class AppSchedule {
 
                     mailSender.send(
                             article.getCustomer().getEmail(),
-                            "Bài đăng số: " + article.getArticleId() + " đã hết hạn",
+                            "Bài đăng số: " + article.getArticleId() + " của đã hết hạn",
                             "<p><strong>Chúng tôi xin trân trọng thông báo:</strong></p>\n" +
                                     "<p>Bài đăng số: " + article.getArticleId() + "</p>\n" +
                                     "<p>Tiêu đề: " + article.getTitle() + "</p>\n" +
                                     "<p>Đã hết hạn vào ngày: <span style=\"color: #0000ff;\">" + sdf.format(article.getExpTime()) + "</span></p>\n" +
-                                    "<p>Nếu bạn muốn bài đăng tiếp tục được đăng vui lòng gia hạn thêm thời gian.</p>",
+                                    "<p>Nếu bạn muốn bài đăng tiếp tục được hiển thị vui lòng gia hạn thêm thời gian.</p>",
                             "Xin cảm ơn quý khách đã sử dụng dịch vụ của chúng tôi."
                     );
                 } else {
@@ -49,12 +49,12 @@ public class AppSchedule {
                     if (new Date().getTime() - article.getExpTime().getTime() < 50 * 3600 * 1000) {
                         mailSender.send(
                                 article.getCustomer().getEmail(),
-                                "Bài đăng số: " + article.getArticleId() + " sắp hết hạn",
+                                "Bài đăng số: " + article.getArticleId() + " của bạn sắp hết hạn",
                                 "<p><strong>Chúng tôi xin trân trọng thông báo:</strong></p>\n" +
                                         "<p>Bài đăng số: " + article.getArticleId() + "</p>\n" +
                                         "<p>Tiêu đề: " + article.getTitle() + "</p>\n" +
                                         "<p>Sẽ hết hạn vào ngày: <span style=\"color: #0000ff;\">" + sdf.format(article.getExpTime()) + "</span></p>\n" +
-                                        "<p>Nếu bạn muốn bài đăng tiếp tục được đăng vui lòng gia hạn bài đăng trước thời hạn trên.</p>",
+                                        "<p>Nếu bạn muốn bài đăng tiếp tục được hiển thị vui lòng gia hạn bài đăng trước thời hạn trên.</p>",
                                 "Xin cảm ơn quý khách đã sử dụng dịch vụ của chúng tôi."
                         );
                     }

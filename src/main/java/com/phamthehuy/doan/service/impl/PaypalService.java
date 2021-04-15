@@ -20,7 +20,7 @@ public class PaypalService {
     }
 
     public Payment createPayment(
-            Double total,
+            Integer total,
             String currency,
             PaypalPaymentMethod method,
             PaypalPaymentIntent intent,
@@ -29,7 +29,7 @@ public class PaypalService {
             String successUrl) throws PayPalRESTException {
         Amount amount = new Amount();
         amount.setCurrency(currency);
-        amount.setTotal(String.format("%f", total).replaceAll(",", "."));
+        amount.setTotal(total + ".00");
 
         Transaction transaction = new Transaction();
         transaction.setDescription(description);

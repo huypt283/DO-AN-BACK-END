@@ -1,9 +1,10 @@
 package com.phamthehuy.doan.authentication;
 
-import com.phamthehuy.doan.repository.CustomerRepository;
-import com.phamthehuy.doan.repository.StaffRepository;
 import com.phamthehuy.doan.entity.Customer;
 import com.phamthehuy.doan.entity.Staff;
+import com.phamthehuy.doan.repository.CustomerRepository;
+import com.phamthehuy.doan.repository.StaffRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,23 +17,17 @@ import java.util.List;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
-
-    final
-    CustomerRepository customerRepository;
-
-    final
-    StaffRepository staffRepository;
-
-    public CustomUserDetailsService(CustomerRepository customerRepository, StaffRepository staffRepository) {
-        this.customerRepository = customerRepository;
-        this.staffRepository = staffRepository;
-    }
+    @Autowired
+    private CustomerRepository customerRepository;
+    @Autowired
+    private StaffRepository staffRepository;
 
     //load user by email return user
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         List<SimpleGrantedAuthority> roles = null;
-        Staff staff = staffRepository.findByEmail(email);;
+        Staff staff = staffRepository.findByEmail(email);
+        ;
         if (staff != null) {
             if (staff.getRole()) {
                 roles = Collections.singletonList(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"));

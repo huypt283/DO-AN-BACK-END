@@ -18,11 +18,17 @@ public class Transaction extends BaseEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer transactionId;
 
-    @Column(nullable = false, columnDefinition = "BOOLEAN")
-    private Boolean type;
-
     @Column(nullable = false)
     private Integer amount;
+
+    @Column(nullable = false, columnDefinition = "BOOLEAN")
+    private Boolean payment;
+
+    @Column(nullable = false)
+    private String status;
+
+    @Column(unique = true)
+    private String token;
 
     @Column
     private String description;

@@ -113,7 +113,7 @@ public class AdminArticleServiceImpI implements AdminArticleService {
 
             //tạo thời hạn
             article.setExpTime(helper.addDayForDate(article.getDays(), new Date()));
-            article.setDays(null);
+            article.setDays(0);
 
             StaffArticle staffArticle = new StaffArticle();
             staffArticle.setStaff(staff);
@@ -123,8 +123,6 @@ public class AdminArticleServiceImpI implements AdminArticleService {
             staffArticleRepository.save(staffArticle);
 
             article = articleRepository.save(article);
-
-//            ArticleResponse articleResponse = articleService.convertToArticleResponse(article);
 
             //gửi thư
             String to = article.getCustomer().getEmail();
@@ -178,7 +176,7 @@ public class AdminArticleServiceImpI implements AdminArticleService {
 
             //ẩn bài
             //chuyển deleted thành true
-            if (!article.getDeleted())
+            if (BooleanUtils.isFalse(article.getDeleted()))
                 throw new BadRequestException("Không thể ẩn bài viết đang ẩn");
 
             article.setDeleted(true);

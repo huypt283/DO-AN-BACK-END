@@ -31,4 +31,6 @@ public class StaffResponse {
     private String image;
 
     private Boolean deleted;
+
+    private Boolean enabled;
 }

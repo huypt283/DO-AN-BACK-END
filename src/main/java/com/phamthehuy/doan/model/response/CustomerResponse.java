@@ -33,4 +33,6 @@ public class CustomerResponse {
     private String image;
 
     private Boolean deleted;
+
+    private Boolean enabled;
 }

@@ -78,8 +78,8 @@ public class TransactionController {
                     PaypalPaymentMethod.paypal,
                     PaypalPaymentIntent.sale,
                     "Nạp " + value + " USD",
-                    cancelUrl + "?payment-token=" + token,
-                    successUrl + "?payment-token=" + token);
+                    cancelUrl + "&payment-token=" + token,
+                    successUrl + "&payment-token=" + token);
 
             for (Links links : payment.getLinks()) {
                 if (links.getRel().equals("approval_url")) {

@@ -190,8 +190,6 @@ public class AdminArticleServiceImpI implements AdminArticleService {
 
             article = articleRepository.save(article);
 
-//            ArticleResponse articleResponse = articleService.convertToArticleResponse(article);
-
             //gửi thư
             if (reason == null || reason.trim().equals("")) reason = "không có lý do cụ thể";
             String to = article.getCustomer().getEmail();

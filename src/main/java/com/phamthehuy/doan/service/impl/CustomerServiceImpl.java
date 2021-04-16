@@ -38,35 +38,21 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerResponse findCustomerById(Integer id) throws Exception {
         Customer customer = customerRepository.findByCustomerId(id);
-        if (customer == null) {
-            throw new NotFoundException("Không tìm thấy khách hàng");
-        }
-
-        CustomerResponse customerResponse = new CustomerResponse();
-        BeanUtils.copyProperties(customer, customerResponse);
-        customerResponse.setBirthday(customer.getDob());
-
-        return customerResponse;
+        validateCustomer(customer);
+        return this.convertToCustomerResponse(customer);
     }
 
     @Override
     public CustomerResponse updateCustomerById(CustomerUpdateRequest customerUpdateRequest,
                                                Integer id) throws Exception {
         Customer customer = customerRepository.findByCustomerId(id);
-        if (customer == null) {
-            throw new NotFoundException("Không tìm thấy khách hàng");
-        }
+        validateCustomer(customer);
 
         BeanUtils.copyProperties(customerUpdateRequest, customer);
         customer.setDob(customerUpdateRequest.getBirthday());
-
         customer = customerRepository.save(customer);
 
-        CustomerResponse customerResponse = new CustomerResponse();
-        BeanUtils.copyProperties(customer, customerResponse);
-        customerResponse.setBirthday(customer.getDob());
-
-        return customerResponse;
+        return this.convertToCustomerResponse(customer);
     }
 
     private CustomerResponse convertToCustomerResponse(Customer customer) {
@@ -79,42 +65,34 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public MessageResponse activeCustomerById(Integer id) throws Exception {
         Customer customer = customerRepository.findByCustomerId(id);
-        if (customer == null) {
-            throw new NotFoundException("Không tìm thấy khách hàng");
-        } else {
-            if (BooleanUtils.isFalse(customer.getDeleted()))
-                throw new ConflictException("Khách hàng này không bị khoá");
+        validateCustomer(customer);
 
-            customer.setDeleted(false);
-            customerRepository.save(customer);
-            return new MessageResponse("Kích hoạt khách hàng thành công");
-        }
+        if (BooleanUtils.isFalse(customer.getDeleted()))
+            throw new ConflictException("Khách hàng này không bị khoá");
+
+        customer.setDeleted(false);
+        customerRepository.save(customer);
+        return new MessageResponse("Kích hoạt khách hàng thành công");
     }
 
     @Override
     public MessageResponse blockCustomerById(Integer id) throws Exception {
         Customer customer = customerRepository.findByCustomerId(id);
-        if (customer == null) {
-            throw new NotFoundException("Không tìm thấy khách hàng");
-        } else {
-            if (BooleanUtils.isTrue(customer.getDeleted()))
-                throw new ConflictException("Khách hàng này đã bị khoá");
+        validateCustomer(customer);
+        if (BooleanUtils.isTrue(customer.getDeleted()))
+            throw new ConflictException("Khách hàng này đã bị khoá");
 
-            customer.setDeleted(true);
-            customerRepository.save(customer);
-            return new MessageResponse("Khoá khách hàng thành công");
-        }
+        customer.setDeleted(true);
+        customerRepository.save(customer);
+        return new MessageResponse("Khoá khách hàng thành công");
     }
 
     @Override
     public MessageResponse deleteCustomerById(Integer id) throws BadRequestException {
         Customer customer = customerRepository.findByCustomerId(id);
-        if (customer == null) {
-            throw new NotFoundException("Không tìm thấy khách hàng");
-        } else {
-            customerRepository.delete(customer);
-            return new MessageResponse("Xóa hách hàng thành công");
-        }
+        validateCustomer(customer);
+        customerRepository.delete(customer);
+        return new MessageResponse("Xóa hách hàng thành công");
     }
 
     @Override
@@ -125,6 +103,11 @@ public class CustomerServiceImpl implements CustomerService {
         return new MessageResponse("Xóa tất cả khách hàng bị khoá thành công");
     }
 
+    private void validateCustomer(Customer customer) {
+        if (customer == null) {
+            throw new NotFoundException("Không tìm thấy khách hàng");
+        }
+    }
 //    public List<CustomerResponse> listCustomer(String search, Boolean deleted, String nameSort,
 //                                               String balanceSort, Integer page, Integer limit) {
 //        if (search == null || search.trim().equals("")) search = "";

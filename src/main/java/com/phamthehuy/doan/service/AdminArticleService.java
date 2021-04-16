@@ -1,12 +1,10 @@
 package com.phamthehuy.doan.service;
 
-import com.phamthehuy.doan.exception.BadRequestException;
 import com.phamthehuy.doan.model.request.ContactCustomerRequest;
 import com.phamthehuy.doan.model.response.ArticleResponse;
 import com.phamthehuy.doan.model.response.MessageResponse;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 public interface AdminArticleService {

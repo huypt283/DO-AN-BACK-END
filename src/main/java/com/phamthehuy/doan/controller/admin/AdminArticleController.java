@@ -30,6 +30,26 @@ public class AdminArticleController {
         return new ResponseEntity<>(adminArticleService.detailArticle(id), HttpStatus.OK);
     }
 
+    @PostMapping("/contact/{id}")
+    public ResponseEntity<?> contactToCustomer(@PathVariable Integer id,
+                                               @Valid @RequestBody ContactCustomerRequest contactCustomerRequest,
+                                               @AuthenticationPrincipal UserDetails admin) throws Exception {
+        return new ResponseEntity<>(adminArticleService.contactToCustomer(id, admin, contactCustomerRequest), HttpStatus.OK);
+    }
+
+    @PutMapping("/active/{id}")
+    public ResponseEntity<?> activeArticle(@PathVariable Integer id,
+                                           @AuthenticationPrincipal UserDetails admin) throws Exception {
+        return new ResponseEntity<>(adminArticleService.activeArticle(id, admin), HttpStatus.OK);
+    }
+
+    @PutMapping("/hide/{id}")
+    public ResponseEntity<?> hiddenArticle(@PathVariable Integer id,
+                                           @AuthenticationPrincipal UserDetails admin,
+                                           @RequestBody String reason) throws Exception {
+        return new ResponseEntity<>(adminArticleService.hideArticle(id, admin, reason), HttpStatus.OK);
+    }
+
     //    list bài đăng	/admin/article
     //    xếp bài đăng theo ngày tăng dần	/admin/articles?sort=asc
     //    xếp bài đăng theo ngày giảm dần	/admin/articles?sort=desc
@@ -58,24 +78,4 @@ public class AdminArticleController {
 //        return articleService.listArticle(sort, start, end, ward, district, city,
 //                roommate, status, vip, search, minAcreage, maxAcreage, page, limit);
 //    }
-
-    @PostMapping("/contact/{id}")
-    public ResponseEntity<?> contactToCustomer(@PathVariable Integer id,
-                                               @Valid @RequestBody ContactCustomerRequest contactCustomerRequest,
-                                               @AuthenticationPrincipal UserDetails admin) throws Exception {
-        return new ResponseEntity<>(adminArticleService.contactToCustomer(id, admin, contactCustomerRequest), HttpStatus.OK);
-    }
-
-    @PutMapping("/active/{id}")
-    public ResponseEntity<?> activeArticle(@PathVariable Integer id,
-                                           @AuthenticationPrincipal UserDetails admin) throws Exception {
-        return new ResponseEntity<>(adminArticleService.activeArticle(id, admin), HttpStatus.OK);
-    }
-
-    @PutMapping("/hide/{id}")
-    public ResponseEntity<?> hiddenArticle(@PathVariable Integer id,
-                                           @AuthenticationPrincipal UserDetails admin,
-                                           @RequestBody String reason) throws Exception {
-        return new ResponseEntity<>(adminArticleService.hideArticle(id, admin, reason), HttpStatus.OK);
-    }
 }

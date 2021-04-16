@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 @Service
@@ -29,7 +30,7 @@ public class UploadFile {
     //upload
     public void save(MultipartFile file) throws BadRequestException {
         try {
-            Files.copy(file.getInputStream(), this.root.resolve(file.getOriginalFilename()));
+            Files.copy(file.getInputStream(), this.root.resolve(Objects.requireNonNull(file.getOriginalFilename())));
         } catch (Exception e) {
             throw new BadRequestException("Could not store the file. Error: " + e.getMessage());
         }

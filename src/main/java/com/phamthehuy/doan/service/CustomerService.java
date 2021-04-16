@@ -12,7 +12,7 @@ public interface CustomerService {
     CustomerResponse findCustomerById(Integer id) throws Exception;
 
     CustomerResponse updateCustomerById(CustomerUpdateRequest customerUpdateRequest,
-                                    Integer id) throws Exception;
+                                        Integer id) throws Exception;
 
     MessageResponse activeCustomerById(Integer id) throws Exception;
 

@@ -16,13 +16,13 @@ public class AdminCustomerController {
     private CustomerService customerService;
 
     @GetMapping
-    public ResponseEntity<?> listCustomers(@RequestParam(required = false, defaultValue = "1") Integer page,
-                                           @RequestParam(required = false, defaultValue = "10") Integer limit) throws Exception {
+    public ResponseEntity<?> listAllCustomer(@RequestParam(required = false, defaultValue = "1") Integer page,
+                                             @RequestParam(required = false, defaultValue = "10") Integer limit) throws Exception {
         return new ResponseEntity<>(customerService.listCustomer(page, limit), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> findOneCustomer(@PathVariable Integer id) throws Exception {
+    public ResponseEntity<?> detailCustomer(@PathVariable Integer id) throws Exception {
         return new ResponseEntity<>(customerService.findCustomerById(id), HttpStatus.OK);
     }
 

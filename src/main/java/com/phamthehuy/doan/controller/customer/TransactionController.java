@@ -13,11 +13,14 @@ import com.phamthehuy.doan.model.enums.PaypalPaymentIntent;
 import com.phamthehuy.doan.model.enums.PaypalPaymentMethod;
 import com.phamthehuy.doan.model.request.PaymentRequest;
 import com.phamthehuy.doan.model.request.SuccessPaymentRequest;
+import com.phamthehuy.doan.model.response.MessageResponse;
 import com.phamthehuy.doan.model.response.PaymentSuccessResponse;
+import com.phamthehuy.doan.model.response.TransactionResponse;
 import com.phamthehuy.doan.repository.CustomerRepository;
 import com.phamthehuy.doan.repository.TransactionRepository;
 import com.phamthehuy.doan.service.impl.PaypalService;
 import org.apache.commons.lang3.BooleanUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -29,6 +32,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -55,7 +59,18 @@ public class TransactionController {
     @GetMapping("/transactions")
     public ResponseEntity<?> listTransaction(@AuthenticationPrincipal UserDetails currentUser) {
         List<Transaction> transactions = transactionRepository.findByCustomer_Email(currentUser.getUsername());
-        return new ResponseEntity<>(transactions, HttpStatus.OK);
+
+        return new ResponseEntity<>(transactions.stream()
+                .map(this::convertToTransactionResponse)
+                .collect(Collectors.toList())
+                , HttpStatus.OK);
+    }
+
+    private TransactionResponse convertToTransactionResponse(Transaction transaction) {
+        TransactionResponse transactionResponse = new TransactionResponse();
+        BeanUtils.copyProperties(transaction, transactionResponse);
+        transactionResponse.setEmail(transaction.getCustomer().getEmail());
+        return transactionResponse;
     }
 
     @PostMapping("/payment")
@@ -98,8 +113,8 @@ public class TransactionController {
     }
 
     @GetMapping("/payment/cancel")
-    public ResponseEntity<String> cancelPay(@RequestParam String token,
-                                            @AuthenticationPrincipal UserDetails currentUser) {
+    public ResponseEntity<?> cancelPay(@RequestParam String token,
+                                       @AuthenticationPrincipal UserDetails currentUser) {
         Customer customer = customerRepository.findByEmail(currentUser.getUsername());
         validateCustomer(customer);
 
@@ -107,15 +122,18 @@ public class TransactionController {
         if (transaction == null) {
             throw new ConflictException("Giao dịch không hợp lệ");
         }
+        if (transaction.getStatus().equals("Huỷ bỏ")) {
+            throw new ConflictException("Giao dịch này đã huỷ bỏ");
+        }
         transaction.setStatus("Huỷ bỏ");
         transactionRepository.save(transaction);
 
-        return new ResponseEntity<>("Thanh toán bị hủy bỏ", HttpStatus.NOT_IMPLEMENTED);
+        return new ResponseEntity<>(new MessageResponse("Thanh toán hủy bỏ"), HttpStatus.OK);
     }
 
     @PostMapping("/payment/success")
-    public ResponseEntity<String> successPay(@Valid @RequestBody SuccessPaymentRequest successPaymentRequest,
-                                             @AuthenticationPrincipal UserDetails currentUser) throws Exception {
+    public ResponseEntity<?> successPay(@Valid @RequestBody SuccessPaymentRequest successPaymentRequest,
+                                        @AuthenticationPrincipal UserDetails currentUser) throws Exception {
         boolean status = false;
         Customer customer = customerRepository.findByEmail(currentUser.getUsername());
         validateCustomer(customer);
@@ -139,7 +157,7 @@ public class TransactionController {
             throw new ConflictException("Giao dịch không hợp lệ");
 
         if (status)
-            return new ResponseEntity<>("Thanh toán thành công, số tiền: " + transaction.getAmount() + " VNĐ", HttpStatus.OK);
+            return new ResponseEntity<>(new MessageResponse("Thanh toán thành công, số tiền: " + transaction.getAmount() + " VNĐ"), HttpStatus.OK);
         throw new InternalServerError("Không xác định được lỗi, bạn vui lòng thử lại");
     }
 

@@ -33,7 +33,7 @@ public class Transaction extends BaseEntity implements Serializable {
     @Column
     private String description;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customerId", nullable = false)
     private Customer customer;
 }

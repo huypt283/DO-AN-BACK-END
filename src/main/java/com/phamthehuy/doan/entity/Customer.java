@@ -1,5 +1,6 @@
 package com.phamthehuy.doan.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -61,12 +62,15 @@ public class Customer extends BaseEntity implements Serializable {
     @Column(columnDefinition = "text", length = 2000)
     private String image;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<FavoriteArticle> favoriteArticles;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<Article> articles;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<Transaction> transactions;
 }

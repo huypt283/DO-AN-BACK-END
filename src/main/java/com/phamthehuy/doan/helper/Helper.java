@@ -1,6 +1,5 @@
 package com.phamthehuy.doan.helper;
 
-import com.phamthehuy.doan.authentication.CustomJwtAuthenticationFilter;
 import com.phamthehuy.doan.repository.CustomerRepository;
 import com.phamthehuy.doan.repository.StaffRepository;
 import com.phamthehuy.doan.repository.TransactionRepository;
@@ -19,19 +18,12 @@ public class Helper {
     private CustomerRepository customerRepository;
     @Autowired
     private StaffRepository staffRepository;
-    @Autowired
-    private CustomJwtAuthenticationFilter customJwtAuthenticationFilter;
 
     private final String alpha = "abcdefghijklmnopqrstuvwxyz"; // a-z
     private final String alphaUpperCase = alpha.toUpperCase(); // A-Z
     private final String digits = "0123456789"; // 0-9
     private final String ALPHA_NUMERIC = alpha + alphaUpperCase + digits;
     private final Random generator = new Random();
-
-    public String getHostUrl(String url, String substring) {
-        int index = url.indexOf(substring);
-        return url.substring(0, index);
-    }
 
     public String createUserToken(int numberOfCharacter) {
         String token;

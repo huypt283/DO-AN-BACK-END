@@ -1,6 +1,7 @@
 package com.phamthehuy.doan.model.request;
 
 import com.phamthehuy.doan.model.enums.RoomType;
+import com.phamthehuy.doan.validation.ValidAddress;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -53,7 +54,7 @@ public class ArticleInsertRequest {
     private Double acreage;
 
     @NotNull(message = "Địa chỉ không được trống")
-    @Size(min = 3, message = "Địa chỉ phải có ít nhất 3 kí tự")
+    @ValidAddress
     private String address;
 
     @NotBlank(message = "Ảnh không được trống")

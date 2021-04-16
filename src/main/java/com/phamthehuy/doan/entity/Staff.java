@@ -1,5 +1,6 @@
 package com.phamthehuy.doan.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -61,9 +62,11 @@ public class Staff extends BaseEntity implements Serializable {
     @Column
     private String refreshToken;
 
-//    @OneToMany(mappedBy = "staff", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-//    private Set<News> news;
-//
-//    @OneToMany(mappedBy = "staff", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-//    private Set<StaffArticle> staffArticles;
+    @JsonIgnore
+    @OneToMany(mappedBy = "staff", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<News> news;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "staff", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<StaffArticle> staffArticles;
 }

@@ -24,9 +24,7 @@ public interface StaffRepository extends JpaRepository<Staff, Integer> {
             String name, String email, String phone, Pageable pageable
     );
 
-    Staff findByStaffIdAndDeletedFalseAndEnabledTrue(Integer staffId);
-
-    List<Staff> findByDeletedTrueAndEnabledTrue();
+    Staff findByStaffId(Integer staffId);
 
     Staff findByEmail(String email);
 
@@ -35,8 +33,4 @@ public interface StaffRepository extends JpaRepository<Staff, Integer> {
     Staff findByRefreshToken(String refreshToken);
 
     List<Staff> findByEnabledFalseAndTimeCreatedLessThanEqual(Date date);
-
-    Staff findByEnabledTrueAndStaffId(Integer id);
-
-    Optional<Staff> findByStaffIdAndEnabledFalse(Integer id);
 }

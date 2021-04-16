@@ -101,6 +101,10 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
     @Override
     public ArticleResponse insertArticle(UserDetails currentUser, ArticleInsertRequest articleInsertRequest)
             throws Exception {
+        Optional<Ward> ward = wardRepository.findById(articleInsertRequest.getWardId());
+        if (!ward.isPresent())
+            throw new BadRequestException("Mã phường/xã không hợp lệ");
+
         Customer customer = customerRepository.findByEmail(currentUser.getUsername());
         if (customer == null)
             throw new NotFoundException("Không tìm thấy tài khoản");
@@ -153,9 +157,6 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
             article.setRoommate(roommate);
         }
 
-        Optional<Ward> ward = wardRepository.findById(articleInsertRequest.getWardId());
-        if (!ward.isPresent())
-            throw new BadRequestException("Mã phường/xã không hợp lệ");
         article.setWard(ward.get());
 
         article.setTimeCreated(new Date());
@@ -176,6 +177,10 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
     @Override
     public ArticleResponse updateArticle(UserDetails currentUser, Integer id, ArticleUpdateRequest articleUpdateRequest)
             throws Exception {
+        Optional<Ward> wardOptional = wardRepository.findById(articleUpdateRequest.getWardId());
+        if (!wardOptional.isPresent())
+            throw new BadRequestException("Mã phường/xã không hợp lệ");
+
         Article article = articleRepository.findByArticleId(id);
         if (article == null)
             throw new NotFoundException("Không tìm thấy bài đăng");
@@ -199,10 +204,6 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
             article.setRoommate(roommate);
         } else
             article.setRoommate(null);
-
-        Optional<Ward> wardOptional = wardRepository.findById(articleUpdateRequest.getWardId());
-        if (!wardOptional.isPresent())
-            throw new BadRequestException("Mã phường/xã không hợp lệ");
 
         article.setWard(wardOptional.get());
 

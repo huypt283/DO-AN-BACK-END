@@ -66,6 +66,8 @@ public class ArticleServiceImpl {
         location.put("districtName", article.getWard().getDistrict().getDistrictName());
         location.put("cityId", article.getWard().getDistrict().getCity().getCityId() + "");
         location.put("cityName", article.getWard().getDistrict().getCity().getCityName());
+        location.put("homeAddress", article.getAddress().split(",")[0]);
+        location.put("address", article.getAddress());
         articleResponse.setLocation(location);
 
         return articleResponse;

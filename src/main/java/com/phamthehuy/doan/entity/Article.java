@@ -1,5 +1,6 @@
 package com.phamthehuy.doan.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -74,9 +75,11 @@ public class Article extends BaseEntity implements Serializable {
     @JoinColumn(name = "wardId", nullable = false)
     private Ward ward;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "article", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<FavoriteArticle> favoriteArticles;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "article", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<StaffArticle> staffArticles;
 }

@@ -1,5 +1,6 @@
 package com.phamthehuy.doan.model.request;
 
+import com.phamthehuy.doan.validation.ValidNumber;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,5 +34,6 @@ public class SignupRequest {
 
     @Size(min = 9, max = 11, message = "Số điện thoại phải có 9-11 số")
     @NotNull(message = "Số điện thoại không được trống")
+    @ValidNumber(message = "Số điện thoại phải là số")
     private String phone;
 }

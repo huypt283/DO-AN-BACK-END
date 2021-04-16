@@ -21,6 +21,4 @@ public interface CustomerService {
     MessageResponse deleteCustomerById(Integer id) throws Exception;
 
     MessageResponse deleteAllBlockCustomers() throws Exception;
-
-
 }

@@ -19,7 +19,7 @@ public class NewsResponse {
 
     private String author;
 
-    private Date lastUpdatedTime;
+    private Date timeUpdated;
 
     private Boolean deleted;
 }

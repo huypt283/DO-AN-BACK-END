@@ -17,7 +17,6 @@ import com.phamthehuy.doan.repository.StaffArticleRepository;
 import com.phamthehuy.doan.repository.StaffRepository;
 import com.phamthehuy.doan.service.AdminArticleService;
 import com.phamthehuy.doan.util.MailSender;
-import com.phamthehuy.doan.util.auth.JwtUtil;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -223,7 +222,7 @@ public class AdminArticleServiceImpI implements AdminArticleService {
 
             return new MessageResponse("Ẩn bài thành công");
         } else
-            throw new BadRequestException("Bài đăng không tồn tại");
+            throw new NotFoundException("Bài đăng không tồn tại");
     }
 
     public void validateStaff(Staff staff) {

@@ -1,65 +1,58 @@
 package com.phamthehuy.doan.controller.admin;
 
-import com.phamthehuy.doan.exception.BadRequestException;
 import com.phamthehuy.doan.model.request.NewsInsertRequest;
 import com.phamthehuy.doan.model.request.NewsUpdateRequest;
-import com.phamthehuy.doan.model.response.MessageResponse;
-import com.phamthehuy.doan.model.response.NewsResponse;
 import com.phamthehuy.doan.service.NewsService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @RestController
 @RequestMapping("/admin/news")
 public class AdminNewsController {
-    final
-    NewsService newsService;
-
-    public AdminNewsController(NewsService newsService) {
-        this.newsService = newsService;
-    }
+    @Autowired
+    private NewsService newsService;
 
     @GetMapping
-    public List<NewsResponse> listNewspaper(@RequestParam(required = false) String sort,
-                                            @RequestParam(required = false) Boolean hidden,
-                                            @RequestParam(required = false) String title,
-                                            @RequestParam Integer page,
-                                            @RequestParam Integer limit) {
-        return newsService.listNews(sort, hidden, title, page, limit);
+    public ResponseEntity<?> listAllNews() {
+        return new ResponseEntity<>(newsService.listAllNews(), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public NewsResponse newspaperDetail(@PathVariable Integer id) throws BadRequestException {
-        return newsService.findNewsById(id);
+    public ResponseEntity<?> getNewsById(@PathVariable Integer id) throws Exception {
+        return new ResponseEntity<>(newsService.findNewsById(id), HttpStatus.OK);
     }
 
     @PostMapping
-    public NewsResponse insertNewspaper(@Valid @RequestBody NewsInsertRequest newsInsertRequest)
-            throws BadRequestException {
-        return newsService.insertNews(newsInsertRequest);
+    public ResponseEntity<?> insertNews(@Valid @RequestBody NewsInsertRequest newsInsertRequest,
+                                        @AuthenticationPrincipal UserDetails currentUser)
+            throws Exception {
+        return new ResponseEntity<>(newsService.insertNews(newsInsertRequest, currentUser), HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    public NewsResponse updateNewspaper(@Valid @RequestBody NewsUpdateRequest newsUpdateRequest,
-                                        @PathVariable Integer id)
-            throws BadRequestException {
-        return newsService.updateNews(newsUpdateRequest, id);
+    public ResponseEntity<?> updateNewsById(@PathVariable Integer id,
+                                            @Valid @RequestBody NewsUpdateRequest newsUpdateRequest) throws Exception {
+        return new ResponseEntity<>(newsService.updateNewsById(id, newsUpdateRequest), HttpStatus.OK);
     }
 
     @PutMapping("/hide/{id}")
-    public MessageResponse hiddenNewspaper(@PathVariable Integer id) throws BadRequestException {
-        return newsService.hideNews(id);
+    public ResponseEntity<?> hideNewsById(@PathVariable Integer id) throws Exception {
+        return new ResponseEntity<>(newsService.hideNewsById(id), HttpStatus.OK);
     }
 
-    @PutMapping("/show/{id}")
-    public MessageResponse activeNewspaper(@PathVariable Integer id) throws BadRequestException {
-        return newsService.activeNews(id);
+    @PutMapping("/active/{id}")
+    public ResponseEntity<?> activeNewsById(@PathVariable Integer id) throws Exception {
+        return new ResponseEntity<>(newsService.activeNewsById(id), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public MessageResponse deleteNewspaper(@PathVariable Integer id) throws BadRequestException {
-        return newsService.delteNews(id);
+    public ResponseEntity<?> deleteNewsById(@PathVariable Integer id) throws Exception {
+        return new ResponseEntity<>(newsService.deleteNewsById(id), HttpStatus.OK);
     }
 }

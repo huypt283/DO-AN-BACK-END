@@ -1,169 +1,112 @@
 package com.phamthehuy.doan.service.impl;
 
-import com.phamthehuy.doan.repository.NewsRepository;
-import com.phamthehuy.doan.repository.StaffRepository;
-import com.phamthehuy.doan.exception.BadRequestException;
+import com.phamthehuy.doan.entity.News;
+import com.phamthehuy.doan.entity.Staff;
+import com.phamthehuy.doan.exception.NotFoundException;
 import com.phamthehuy.doan.model.request.NewsInsertRequest;
 import com.phamthehuy.doan.model.request.NewsUpdateRequest;
 import com.phamthehuy.doan.model.response.MessageResponse;
 import com.phamthehuy.doan.model.response.NewsResponse;
-import com.phamthehuy.doan.entity.News;
-import com.phamthehuy.doan.entity.Staff;
+import com.phamthehuy.doan.repository.NewsRepository;
+import com.phamthehuy.doan.repository.StaffRepository;
 import com.phamthehuy.doan.service.NewsService;
-import org.modelmapper.ModelMapper;
-import org.modelmapper.convention.MatchingStrategies;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class NewsServiceImpl implements NewsService {
-    final
-    NewsRepository newsRepository;
+    @Autowired
+    private NewsRepository newsRepository;
 
-    final
-    StaffRepository staffRepository;
+    @Autowired
+    private StaffRepository staffRepository;
 
-    public NewsServiceImpl(NewsRepository newsRepository, StaffRepository staffRepository) {
-        this.newsRepository = newsRepository;
-        this.staffRepository = staffRepository;
+    public List<NewsResponse> listAllNews() {
+        List<News> newses = newsRepository.findAll();
+        return newses.stream().map(this::convertToOutputDTO).collect(Collectors.toList());
     }
 
     @Override
-    public List<NewsResponse> listNews(String sort, Boolean hidden, String title,
-                                       Integer page, Integer limit) {
-        if (title == null) title = "";
-        Page<News> newspaperPage;
-        if (hidden != null) {
-            if (sort != null && sort.equals("asc")) {
-                newspaperPage = newsRepository.
-                        findByTitleLikeAndDeleted("%" + title + "%", hidden,
-                                PageRequest.of(page, limit, Sort.by("timeCreated").ascending()));
-            } else {
-                newspaperPage = newsRepository.
-                        findByTitleLikeAndDeleted("%" + title + "%", hidden,
-                                PageRequest.of(page, limit, Sort.by("timeCreated").descending()));
-            }
-        } else {
-            if (sort != null && sort.equals("asc")) {
-                newspaperPage = newsRepository.
-                        findByTitleLike("%" + title + "%",
-                                PageRequest.of(page, limit, Sort.by("timeCreated").ascending()));
-            } else {
-                newspaperPage = newsRepository.
-                        findByTitleLike("%" + title + "%",
-                                PageRequest.of(page, limit, Sort.by("timeCreated").descending()));
-            }
-        }
+    public NewsResponse findNewsById(Integer id) throws Exception {
+        News news = newsRepository.findByNewId(id);
+        validateNews(news);
 
-        List<News> newsList = newspaperPage.toList();
-
-        List<NewsResponse> newsResponseList = new ArrayList<>();
-        for (News news : newsList) {
-            newsResponseList.add(convertToOutputDTO(news));
-        }
-        return newsResponseList;
+        return convertToOutputDTO(newsRepository.save(news));
     }
 
     @Override
-    public NewsResponse findNewsById(Integer id) throws BadRequestException {
-        Optional<News> newspaperOptional = newsRepository.findById(id);
-        if (newspaperOptional.isPresent()) {
-            return convertToOutputDTO(newspaperOptional.get());
-        } else {
-            throw new BadRequestException("Tin tức với id " + id + " không tồn tại");
-        }
+    public NewsResponse insertNews(NewsInsertRequest newsInsertRequest, UserDetails currentUser) throws Exception {
+        Staff staff = staffRepository.findByEmail(currentUser.getUsername());
+        validateStaff(staff);
+
+        News news = new News();
+        BeanUtils.copyProperties(newsInsertRequest, news);
+        news.setStaff(staff);
+        news.setTimeUpdated(new Date());
+        return convertToOutputDTO(newsRepository.save(news));
     }
 
     @Override
-    public NewsResponse insertNews(NewsInsertRequest newsInsertRequest) throws BadRequestException {
-        Optional<Staff> staffOptional = staffRepository.findById(newsInsertRequest.getStaffId());
-        if(!staffOptional.isPresent())
-            throw new BadRequestException("Nhân viên với id " + newsInsertRequest.getStaffId() + " không tồn tại");
+    public NewsResponse updateNewsById(Integer id, NewsUpdateRequest newsUpdateRequest) throws Exception {
+        News news = newsRepository.findByNewId(id);
+        validateNews(news);
 
-        try {
-            ModelMapper modelMapper = new ModelMapper();
-            modelMapper.getConfiguration()
-                    .setMatchingStrategy(MatchingStrategies.STRICT);
-            News news = modelMapper.map(newsInsertRequest, News.class);
-            news.setStaff(staffOptional.get());
-            return convertToOutputDTO(newsRepository.save(news));
-        } catch (Exception e) {
-            throw new BadRequestException("Thêm mới thất bại");
-        }
+        BeanUtils.copyProperties(newsUpdateRequest, news);
+        news.setTimeUpdated(new Date());
+        return convertToOutputDTO(newsRepository.save(news));
     }
 
     @Override
-    public NewsResponse updateNews(NewsUpdateRequest newsUpdateRequest,
-                                   Integer id) throws BadRequestException {
-        Optional<Staff> staffOptional = staffRepository.findById(newsUpdateRequest.getStaffId());
-        if (!staffOptional.isPresent())
-            throw new BadRequestException("Nhân viên với id " + newsUpdateRequest.getStaffId() + " không tồn tại");
-        Optional<News> newspaperOptional = newsRepository.findById(id);
-        if (!newspaperOptional.isPresent())
-            throw new BadRequestException("Bản tin với id " + id + " không tồn tại");
-        try {
-                News news = newspaperOptional.get();
-                news.setTitle(newsUpdateRequest.getTitle());
-                news.setContent(newsUpdateRequest.getContent());
-                news.setImage(newsUpdateRequest.getImage());
-                news.setStaff(staffOptional.get());
-                news.setTimeCreated(new Date());
-                return convertToOutputDTO(newsRepository.save(news));
-        } catch (Exception e) {
-            throw new BadRequestException("Cập nhật thất bại");
-        }
+    public MessageResponse hideNewsById(Integer id) throws Exception {
+        News news = newsRepository.findByNewId(id);
+        validateNews(news);
+
+        news.setDeleted(true);
+        newsRepository.save(news);
+        return new MessageResponse("Ẩn bài viết thành công");
     }
 
     @Override
-    public MessageResponse hideNews(Integer id) throws BadRequestException {
-        Optional<News> newspaperOptional = newsRepository.findById(id);
-        if (newspaperOptional.isPresent()) {
-            News news = newspaperOptional.get();
-            news.setDeleted(true);
-            newsRepository.save(news);
-            return new MessageResponse("Ẩn bài viết thành công");
-        } else {
-            throw new BadRequestException("Tin tức với id " + id + " không tồn tại");
-        }
+    public MessageResponse activeNewsById(Integer id) throws Exception {
+        News news = newsRepository.findByNewId(id);
+        validateNews(news);
+
+        news.setDeleted(false);
+        newsRepository.save(news);
+        return new MessageResponse("Hiện bài viết thành công");
     }
 
     @Override
-    public MessageResponse activeNews(Integer id) throws BadRequestException {
-        Optional<News> newspaperOptional = newsRepository.findById(id);
-        if (newspaperOptional.isPresent()) {
-            News news = newspaperOptional.get();
-            news.setDeleted(false);
-            newsRepository.save(news);
-            return new MessageResponse("Hiện bài viết thành công");
-        } else {
-            throw new BadRequestException("Tin tức với id " + id + " không tồn tại");
-        }
-    }
-
-    @Override
-    public MessageResponse delteNews(Integer id) throws BadRequestException {
+    public MessageResponse deleteNewsById(Integer id) throws Exception {
         try {
             newsRepository.deleteById(id);
             return new MessageResponse("Xoá bài viết thành công");
         } catch (Exception e) {
-            throw new BadRequestException("Tin tức với id " + id + " không tồn tại");
+            throw new NotFoundException("Bài viết không tồn tại");
         }
     }
 
-    public NewsResponse convertToOutputDTO(News news) {
-        ModelMapper modelMapper = new ModelMapper();
-        modelMapper.getConfiguration()
-                .setMatchingStrategy(MatchingStrategies.STRICT);
-        NewsResponse newsResponse = modelMapper.map(news, NewsResponse.class);
+    private NewsResponse convertToOutputDTO(News news) {
+        NewsResponse newsResponse = new NewsResponse();
+        BeanUtils.copyProperties(news, newsResponse);
         newsResponse.setAuthor(news.getStaff().getName() + " (" + news.getStaff().getEmail() + ")");
-        newsResponse.setLastUpdatedTime(news.getTimeCreated());
+        newsResponse.setTimeUpdated(news.getTimeUpdated() != null ? news.getTimeUpdated() : news.getTimeUpdated());
         return newsResponse;
+    }
+
+    private void validateStaff(Staff staff) {
+        if (staff == null)
+            throw new NotFoundException("Nhân viên không tồn tại");
+    }
+
+    private void validateNews(News news) {
+        if (news == null)
+            throw new NotFoundException("Bài viết không tồn tại");
     }
 }

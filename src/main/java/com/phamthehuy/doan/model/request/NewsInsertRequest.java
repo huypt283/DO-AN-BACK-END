@@ -21,7 +21,4 @@ public class NewsInsertRequest {
     @NotBlank(message = "Ảnh không được trống")
     @NotNull(message = "Ảnh không được null")
     private String image;
-
-    @NotNull(message = "staff Id đăng bài không được trống")
-    private Integer staffId;
 }

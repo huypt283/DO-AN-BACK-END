@@ -1,6 +1,7 @@
 package com.phamthehuy.doan.service;
 
 import com.phamthehuy.doan.model.request.ContactCustomerRequest;
+import com.phamthehuy.doan.model.request.HideArticleRequest;
 import com.phamthehuy.doan.model.response.ArticleResponse;
 import com.phamthehuy.doan.model.response.MessageResponse;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,5 +25,5 @@ public interface AdminArticleService {
 
     MessageResponse activeArticle(Integer id, UserDetails admin) throws Exception;
 
-    MessageResponse hideArticle(Integer id, UserDetails admin, String reason) throws Exception;
+    MessageResponse hideArticle(Integer id, UserDetails admin, HideArticleRequest hideArticleRequest) throws Exception;
 }

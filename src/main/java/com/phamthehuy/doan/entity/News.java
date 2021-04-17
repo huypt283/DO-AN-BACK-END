@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Date;
 
 @Entity
 @Getter
@@ -26,6 +27,9 @@ public class News extends BaseEntity implements Serializable {
 
     @Column(nullable = false)
     private String image;
+
+    @Column
+    private Date timeUpdated;
 
     @ManyToOne
     @JoinColumn(name = "staffId", nullable = false)

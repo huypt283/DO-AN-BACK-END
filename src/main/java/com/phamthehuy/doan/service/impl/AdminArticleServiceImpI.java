@@ -9,6 +9,7 @@ import com.phamthehuy.doan.exception.ConflictException;
 import com.phamthehuy.doan.exception.NotFoundException;
 import com.phamthehuy.doan.helper.Helper;
 import com.phamthehuy.doan.model.request.ContactCustomerRequest;
+import com.phamthehuy.doan.model.request.HideArticleRequest;
 import com.phamthehuy.doan.model.response.ArticleResponse;
 import com.phamthehuy.doan.model.response.MessageResponse;
 import com.phamthehuy.doan.repository.ArticleRepository;
@@ -38,8 +39,6 @@ public class AdminArticleServiceImpI implements AdminArticleService {
     private StaffArticleRepository staffArticleRepository;
     @Autowired
     private MailSender mailSender;
-    @Autowired
-    private JwtUtil jwtUtil;
     @Autowired
     private StaffRepository staffRepository;
     @Autowired
@@ -107,8 +106,8 @@ public class AdminArticleServiceImpI implements AdminArticleService {
 
             //duyệt bài
             //chuyển deleted thành false
-            if (article.getDeleted() != null)
-                throw new ConflictException("Chỉ được duyệt bài có trạng thái là chưa duyệt");
+            if (BooleanUtils.isFalse(article.getDeleted()))
+                throw new ConflictException("Chỉ được kích hoạt bài có trạng thái là chưa duyệt hoặc đang ẩn");
             article.setDeleted(false);
 
             //tạo thời hạn
@@ -159,11 +158,11 @@ public class AdminArticleServiceImpI implements AdminArticleService {
 
             return new MessageResponse("Duyệt bài thành công");
         } else
-            throw new BadRequestException("Bài đăng với không tồn tại");
+            throw new NotFoundException("Bài đăng không tồn tại");
     }
 
     @Override
-    public MessageResponse hideArticle(Integer id, UserDetails admin, String reason) throws Exception {
+    public MessageResponse hideArticle(Integer id, UserDetails admin, HideArticleRequest hideArticleRequest) throws Exception {
         Article article = articleRepository.findByArticleId(id);
         if (article != null) {
             Staff staff = staffRepository.findByEmail(admin.getUsername());
@@ -176,8 +175,8 @@ public class AdminArticleServiceImpI implements AdminArticleService {
 
             //ẩn bài
             //chuyển deleted thành true
-            if (BooleanUtils.isFalse(article.getDeleted()))
-                throw new BadRequestException("Không thể ẩn bài viết đang ẩn");
+            if (BooleanUtils.isTrue(article.getDeleted()))
+                throw new ConflictException("Không thể ẩn bài viết đang ẩn");
 
             article.setDeleted(true);
 
@@ -189,7 +188,7 @@ public class AdminArticleServiceImpI implements AdminArticleService {
             staffArticleRepository.save(staffArticle);
 
             article = articleRepository.save(article);
-
+            String reason = hideArticleRequest.getReason();
             //gửi thư
             if (reason == null || reason.trim().equals("")) reason = "không có lý do cụ thể";
             String to = article.getCustomer().getEmail();

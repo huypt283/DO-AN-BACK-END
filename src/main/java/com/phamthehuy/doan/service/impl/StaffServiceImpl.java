@@ -1,7 +1,6 @@
 package com.phamthehuy.doan.service.impl;
 
 import com.phamthehuy.doan.entity.Staff;
-import com.phamthehuy.doan.exception.BadRequestException;
 import com.phamthehuy.doan.exception.ConflictException;
 import com.phamthehuy.doan.exception.InternalServerError;
 import com.phamthehuy.doan.exception.NotFoundException;
@@ -16,17 +15,13 @@ import com.phamthehuy.doan.service.StaffService;
 import com.phamthehuy.doan.util.MailSender;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.BooleanUtils;
-import org.modelmapper.ModelMapper;
-import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service

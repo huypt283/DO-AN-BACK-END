@@ -1,6 +1,7 @@
 package com.phamthehuy.doan.controller.admin;
 
 import com.phamthehuy.doan.model.request.ContactCustomerRequest;
+import com.phamthehuy.doan.model.request.HideArticleRequest;
 import com.phamthehuy.doan.model.response.ArticleResponse;
 import com.phamthehuy.doan.service.AdminArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,17 +38,17 @@ public class AdminArticleController {
         return new ResponseEntity<>(adminArticleService.contactToCustomer(id, admin, contactCustomerRequest), HttpStatus.OK);
     }
 
-    @PutMapping("/active/{id}")
+    @PostMapping("/active/{id}")
     public ResponseEntity<?> activeArticle(@PathVariable Integer id,
                                            @AuthenticationPrincipal UserDetails admin) throws Exception {
         return new ResponseEntity<>(adminArticleService.activeArticle(id, admin), HttpStatus.OK);
     }
 
-    @PutMapping("/hide/{id}")
+    @PostMapping("/hide/{id}")
     public ResponseEntity<?> hiddenArticle(@PathVariable Integer id,
                                            @AuthenticationPrincipal UserDetails admin,
-                                           @RequestBody String reason) throws Exception {
-        return new ResponseEntity<>(adminArticleService.hideArticle(id, admin, reason), HttpStatus.OK);
+                                           @Valid @RequestBody HideArticleRequest hideArticleRequest) throws Exception {
+        return new ResponseEntity<>(adminArticleService.hideArticle(id, admin, hideArticleRequest), HttpStatus.OK);
     }
 
     //    list bài đăng	/admin/article

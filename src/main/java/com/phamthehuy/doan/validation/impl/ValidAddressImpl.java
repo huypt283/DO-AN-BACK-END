@@ -1,12 +1,12 @@
 package com.phamthehuy.doan.validation.impl;
 
-import com.phamthehuy.doan.validation.ValidBirthday;
+import com.phamthehuy.doan.validation.ValidAddress;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
-public class ValidAddressImpl implements ConstraintValidator<ValidBirthday, String> {
-    public void initialize(ValidBirthday constraintAnnotation) {
+public class ValidAddressImpl implements ConstraintValidator<ValidAddress, String> {
+    public void initialize(ValidAddress constraintAnnotation) {
 
     }
 

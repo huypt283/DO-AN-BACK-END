@@ -23,8 +23,8 @@ public class AccountController {
     }
 
     @PostMapping("/sign-up")
-    public ResponseEntity<?> customerSignup(@Valid @RequestBody SignupRequest signupRequest, HttpServletRequest request) throws Exception {
-        return new ResponseEntity<>(accountService.customerSignup(signupRequest, request), HttpStatus.OK);
+    public ResponseEntity<?> customerSignUp(@Valid @RequestBody SignupRequest signupRequest) throws Exception {
+        return new ResponseEntity<>(accountService.customerSignUp(signupRequest), HttpStatus.OK);
     }
 
     @GetMapping("/confirm")
@@ -56,7 +56,7 @@ public class AccountController {
 
     @PutMapping("/profile")
     public ResponseEntity<?> updateProfile(@Valid @RequestBody AccountUpdateRequest accountUpdateRequest,
-                                                @AuthenticationPrincipal UserDetails currentUser)
+                                           @AuthenticationPrincipal UserDetails currentUser)
             throws Exception {
         return new ResponseEntity<>(accountService.updateProfile(accountUpdateRequest, currentUser), HttpStatus.OK);
     }
@@ -79,5 +79,10 @@ public class AccountController {
                                             @AuthenticationPrincipal UserDetails currentUser)
             throws Exception {
         return new ResponseEntity<>(accountService.changePassword(changePassRequest, currentUser), HttpStatus.OK);
+    }
+
+    @PostMapping("/sign-out")
+    public ResponseEntity<?> signOut(@AuthenticationPrincipal UserDetails currentUser) throws Exception {
+        return new ResponseEntity<>(accountService.signOut(currentUser), HttpStatus.OK);
     }
 }

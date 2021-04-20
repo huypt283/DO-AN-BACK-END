@@ -22,6 +22,9 @@ public class News extends BaseEntity implements Serializable {
     @Column(nullable = false)
     private String title;
 
+    @Column(nullable = false, unique = true)
+    private String slug;
+
     @Column(length = 65535, columnDefinition = "text", nullable = false)
     private String content;
 

@@ -14,7 +14,7 @@ import javax.validation.constraints.Size;
 @Getter
 @Setter
 public class ArticleUpdateRequest {
-    @Size(min = 3, max = 220, message = "Tiêu đề phải có từ 3-220 kí tự")
+    @Size(min = 5, max = 220, message = "Tiêu đề phải có 5-220 kí tự")
     @NotNull(message = "Tiêu đề không được trống")
     private String title;
 
@@ -42,7 +42,7 @@ public class ArticleUpdateRequest {
     private Integer wifiPrice;
 
     @NotNull(message = "Diện tích không được trống")
-    @Min(value = 5, message = "Diện tích nhỏ nhất là 5 m2")
+    @Min(value = 5, message = "Diện tích nhỏ nhất là 5m2")
     private Double acreage;
 
     @NotNull(message = "Địa chỉ không được trống")
@@ -59,5 +59,6 @@ public class ArticleUpdateRequest {
     private RoommateRequest roommateRequest;
 
     @NotNull(message = "Phường không được trống")
+    @Min(value = 1, message = "Mã phường không hợp lệ")
     private Integer wardId;
 }

@@ -23,7 +23,6 @@ public class ArticleServiceImpl {
         ArticleResponse articleResponse = new ArticleResponse();
         BeanUtils.copyProperties(article, articleResponse);
 
-        articleResponse.setSlug(article.getSlug());
         articleResponse.setCreateTime(article.getTimeCreated());
         articleResponse.setLastUpdateTime(article.getTimeUpdated());
         if (article.getDeleted() != null) {

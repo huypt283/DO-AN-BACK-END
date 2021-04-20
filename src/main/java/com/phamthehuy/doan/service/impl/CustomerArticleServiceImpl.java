@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -65,9 +66,29 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
     }
 
     @Override
-    public List<ArticleResponse> getListNewArticle(Integer page, Integer limit) throws Exception {
+    public List<ArticleResponse> getListSuggestionArticle(String email, Integer page, Integer limit) throws Exception {
         OffsetBasedPageRequest pageable = new OffsetBasedPageRequest((page - 1) * limit, limit, Sort.by("timeUpdated").descending().and(Sort.by("timeCreated").descending()));
-        return articleRepository.findByDeletedFalse(pageable).stream().map(articleService::convertToArticleResponse).collect(Collectors.toList());
+        List<Article> articles = null;
+        if (!email.trim().equals("")) {
+            Customer customer = customerRepository.findByEmail(email);
+            if (customer != null) {
+                Set<FavoriteArticle> favoriteArticles = customer.getFavoriteArticles();
+                if (favoriteArticles != null && favoriteArticles.size() > 0) {
+                    articles = articleRepository.findByWardInAndDeletedFalse(favoriteArticles.stream()
+                            .map(favoriteArticle -> favoriteArticle.getArticle().getWard())
+                            .collect(Collectors.toSet()), pageable);
+                }
+            }
+        }
+
+        if (articles == null || articles.size() < 1)
+            articles = articleRepository.findByDeletedFalse(pageable);
+        else if (articles.size() < 6) {
+            pageable = new OffsetBasedPageRequest((page - 1) * limit, 6 - articles.size(), Sort.by("timeUpdated").descending().and(Sort.by("timeCreated").descending()));
+            articles.addAll(articleRepository.findByDeletedFalse(pageable));
+        }
+
+        return articles.stream().map(articleService::convertToArticleResponse).collect(Collectors.toList());
     }
 
     @Override

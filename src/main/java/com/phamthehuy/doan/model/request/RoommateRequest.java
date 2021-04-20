@@ -12,7 +12,7 @@ public class RoommateRequest {
     @NotNull(message = "Giới tính không được trống")
     private Boolean gender;
 
-    @NotNull(message = "Số lượng người ở chung không được null")
+    @NotNull(message = "Số lượng người ở chung không được trống")
     @Min(value = 1, message = "Số lượng người ở chung nhỏ nhất là 1")
     private Integer quantity;
 

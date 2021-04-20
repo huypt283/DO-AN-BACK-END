@@ -10,10 +10,10 @@ import javax.validation.constraints.Size;
 @Setter
 public class ChangePassRequest {
     @NotNull(message = "Mật khẩu cũ không được trống")
-    @Size(min = 6, max = 30, message = "Mật khẩu cũ phải có từ 6-30 kí tự")
+    @Size(min = 6, max = 30, message = "Mật khẩu cũ phải có 6-30 kí tự")
     String oldPass;
 
     @NotNull(message = "Mật khẩu mới không được trống")
-    @Size(min = 6, max = 30, message = "Mật khẩu mới phải có từ 6-30 kí tự")
+    @Size(min = 6, max = 30, message = "Mật khẩu mới phải có 6-30 kí tự")
     String newPass;
 }

@@ -13,11 +13,11 @@ import java.util.Date;
 @Getter
 @Setter
 public class StaffUpdateRequest {
-    @Size(min = 3, max = 50, message = "Tên phải có từ 3 đến 50 kí tự")
+    @Size(min = 3, max = 50, message = "Tên phải có từ 3-50 kí tự")
     @NotNull(message = "Tên không được trống")
     private String name;
 
-    @Size(min = 9, max = 12, message = "Số CMND phải có từ 9-12 kí tự")
+    @Size(min = 9, max = 12, message = "Số CMND phải có 9-12 kí tự")
     @NotNull(message = "Số CMND không được trống")
     @ValidNumber(message = "Số CMND phải là số")
     private String cardId;

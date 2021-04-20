@@ -25,7 +25,7 @@ public class AdminNewsController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getNewsById(@PathVariable Integer id) throws Exception {
-        return new ResponseEntity<>(newsService.findNewsById(id), HttpStatus.OK);
+        return new ResponseEntity<>(newsService.getNewsById(id), HttpStatus.OK);
     }
 
     @PostMapping

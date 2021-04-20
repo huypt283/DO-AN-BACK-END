@@ -17,7 +17,7 @@ public interface CustomerArticleService {
 
     ArticleResponse getArticleBySlug(String slug) throws Exception;
 
-    List<ArticleResponse> getListNewArticle(Integer page, Integer limit) throws Exception;
+    List<ArticleResponse> getListSuggestionArticle(String email, Integer page, Integer limit) throws Exception;
 
     List<ArticleResponse> listCurrentUserArticleByEmail(Long start, Long end, String roomType,
                                                         Integer ward, Integer district, Integer city,

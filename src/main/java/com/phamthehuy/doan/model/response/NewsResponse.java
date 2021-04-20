@@ -13,6 +13,8 @@ public class NewsResponse {
 
     private String title;
 
+    private String slug;
+
     private String content;
 
     private String image;

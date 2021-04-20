@@ -1,13 +1,11 @@
 package com.phamthehuy.doan.service.impl;
 
-import com.phamthehuy.doan.authentication.CustomUserDetailsService;
 import com.phamthehuy.doan.entity.Customer;
 import com.phamthehuy.doan.entity.Staff;
 import com.phamthehuy.doan.exception.*;
 import com.phamthehuy.doan.helper.Helper;
 import com.phamthehuy.doan.model.request.*;
 import com.phamthehuy.doan.model.response.AccountResponse;
-import com.phamthehuy.doan.model.response.CustomerResponse;
 import com.phamthehuy.doan.model.response.MessageResponse;
 import com.phamthehuy.doan.repository.CustomerRepository;
 import com.phamthehuy.doan.repository.StaffRepository;
@@ -19,7 +17,6 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -43,10 +40,6 @@ public class AccountServiceImpl implements AccountService {
     @Autowired
     private StaffRepository staffRepository;
     @Autowired
-    private AuthenticationManager authenticationManager;
-    @Autowired
-    private CustomUserDetailsService userDetailsService;
-    @Autowired
     private JwtUtil jwtTokenUtil;
     @Autowired
     private Helper helper;
@@ -55,11 +48,8 @@ public class AccountServiceImpl implements AccountService {
     private String clientUrl;
 
     @Override
-    public MessageResponse customerSignup(SignupRequest signupRequest, HttpServletRequest request) throws Exception {
+    public MessageResponse customerSignUp(SignupRequest signupRequest) throws Exception {
         //validate
-        if (!signupRequest.getPhone().matches("[0-9]+"))
-            throw new BadRequestException("Số điện thoại phải là số");
-
         if (customerRepository.findByEmail(signupRequest.getEmail()) != null
                 || staffRepository.findByEmail(signupRequest.getEmail()) != null)
             throw new ConflictException("Email này đã được sử dụng");
@@ -82,7 +72,7 @@ public class AccountServiceImpl implements AccountService {
                     signupRequest.getEmail(),
                     "Xác nhận địa chỉ email",
                     "Click vào đường link sau để xác nhận email và kích hoạt tài khoản của bạn:<br/>" +
-                            this.clientUrl + "/confirm?token=" + token
+                            this.clientUrl + "/xac-nhan-email?token=" + token
                             + "&email=" + signupRequest.getEmail(),
                     "Thời hạn xác nhận, 10 phút kể từ khi đăng kí"
             );
@@ -262,7 +252,7 @@ public class AccountServiceImpl implements AccountService {
                 email,
                 "Quên mật khẩu",
                 "Click vào đường link sau để tạo mới mật khẩu của bạn:<br/>" +
-                        this.clientUrl + "/reset-password?token=" + token
+                        this.clientUrl + "/dat-lai-mat-khau?token=" + token
                         + "&email=" + email,
                 "Chúc bạn thành công"
         );
@@ -311,11 +301,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public AccountResponse getProfile(UserDetails currentUser) throws Exception {
-        String email = currentUser.getUsername();
         String role = getRoleFromAuthority(currentUser.getAuthorities());
-
-        if (email == null || email.trim().equals(""))
-            throw new UnauthenticatedException("Token không hợp lệ");
 
         if (role.equals("SUPER_ADMIN") || role.equals("ADMIN")) {
             Staff staff = staffRepository.findByEmail(currentUser.getUsername());
@@ -353,11 +339,8 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public AccountResponse updateProfile(AccountUpdateRequest accountUpdateRequest,
                                          UserDetails currentUser) throws Exception {
-        String email = currentUser.getUsername();
         String role = getRoleFromAuthority(currentUser.getAuthorities());
 
-        if (email == null || email.trim().equals(""))
-            throw new UnauthenticatedException("Token không hợp lệ");
         try {
             if (role.equals("SUPER_ADMIN") || role.equals("ADMIN")) {
                 Staff staff = staffRepository.findByEmail(currentUser.getUsername());
@@ -401,83 +384,98 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
-    @Override
-    public CustomerResponse customerProfile(UserDetails currentUser) throws Exception {
-        Customer customer = customerRepository.findByEmail(currentUser.getUsername());
-
-        if (customer == null)
-            throw new BadRequestException("Không tìm thấy tài khoản");
-        else
-            validateCustomer(customer);
-
-        CustomerResponse customerResponse = new CustomerResponse();
-        BeanUtils.copyProperties(customer, customerResponse);
-        customerResponse.setBirthday(customer.getDob());
-        customerResponse.setRole("CUSTOMER");
-        return customerResponse;
-    }
-
-    @Override
-    public CustomerResponse customerUpdateProfile(CustomerUpdateRequest customerUpdateRequest, UserDetails currentUser) throws Exception {
-        //update
-        Customer customer = customerRepository.findByEmail(currentUser.getUsername());
-        if (customer == null)
-            throw new NotFoundException("Không tìm thấy tài khoản");
-        else
-            validateCustomer(customer);
-
-        BeanUtils.copyProperties(customerUpdateRequest, customer);
-        customer.setDob(customerUpdateRequest.getBirthday());
-
-        customer = customerRepository.save(customer);
-
-        CustomerResponse customerResponse = new CustomerResponse();
-        BeanUtils.copyProperties(customer, customerResponse);
-        customerResponse.setBirthday(customer.getDob());
-
-        return customerResponse;
-    }
+//    @Override
+//    public CustomerResponse customerProfile(UserDetails currentUser) throws Exception {
+//        Customer customer = customerRepository.findByEmail(currentUser.getUsername());
+//
+//        if (customer == null)
+//            throw new BadRequestException("Không tìm thấy tài khoản");
+//        else
+//            validateCustomer(customer);
+//
+//        CustomerResponse customerResponse = new CustomerResponse();
+//        BeanUtils.copyProperties(customer, customerResponse);
+//        customerResponse.setBirthday(customer.getDob());
+//        customerResponse.setRole("CUSTOMER");
+//        return customerResponse;
+//    }
+//
+//    @Override
+//    public CustomerResponse customerUpdateProfile(CustomerUpdateRequest customerUpdateRequest, UserDetails currentUser) throws Exception {
+//        //update
+//        Customer customer = customerRepository.findByEmail(currentUser.getUsername());
+//        if (customer == null)
+//            throw new NotFoundException("Không tìm thấy tài khoản");
+//        else
+//            validateCustomer(customer);
+//
+//        BeanUtils.copyProperties(customerUpdateRequest, customer);
+//        customer.setDob(customerUpdateRequest.getBirthday());
+//
+//        customer = customerRepository.save(customer);
+//
+//        CustomerResponse customerResponse = new CustomerResponse();
+//        BeanUtils.copyProperties(customer, customerResponse);
+//        customerResponse.setBirthday(customer.getDob());
+//
+//        return customerResponse;
+//    }
 
     @Override
     public MessageResponse changePassword(ChangePassRequest changePassRequest, UserDetails currentUser) throws Exception {
-        try {
-            String email = currentUser.getUsername();
-            String role = getRoleFromAuthority(currentUser.getAuthorities());
+        String role = getRoleFromAuthority(currentUser.getAuthorities());
 
-            if (email == null || email.trim().equals(""))
-                throw new UnauthenticatedException("Token không hợp lệ");
+        if (role.equals("SUPER_ADMIN") || role.equals("ADMIN")) {
+            Staff staff = staffRepository.findByEmail(currentUser.getUsername());
+            if (staff != null) {
+                validateStaff(staff);
 
-            if (role.equals("SUPER_ADMIN") || role.equals("ADMIN")) {
-                Staff staff = staffRepository.findByEmail(email);
-                if (staff != null) {
-                    validateStaff(staff);
+                if (!passwordEncoder.matches(changePassRequest.getOldPass(), staff.getPass()))
+                    throw new BadRequestException("Mật khẩu cũ không chính xác");
+                staff.setPass(passwordEncoder.encode(changePassRequest.getNewPass()));
+                staffRepository.save(staff);
+                return new MessageResponse("Đổi mật khẩu cho nhân viên: " + staff.getEmail() + " thành công");
+            } else
+                throw new NotFoundException("Không tìm thấy tài khoản");
+        } else {
+            Customer customer = customerRepository.findByEmail(currentUser.getUsername());
+            if (customer != null) {
+                validateCustomer(customer);
 
-                    if (!passwordEncoder.matches(changePassRequest.getOldPass(), staff.getPass()))
-                        throw new BadRequestException("Mật khẩu cũ không chính xác");
-                    staff.setPass(passwordEncoder.encode(changePassRequest.getNewPass()));
-                    staffRepository.save(staff);
-                    return new MessageResponse("Đổi mật khẩu cho nhân viên: " + staff.getEmail() + " thành công");
-                } else
-                    throw new NotFoundException("Không tìm thấy tài khoản");
-            } else {
-                Customer customer = customerRepository.findByEmail(email);
-                if (customer != null) {
-                    validateCustomer(customer);
+                if (!passwordEncoder.matches(changePassRequest.getOldPass(), customer.getPass()))
+                    throw new BadRequestException("Mật khẩu cũ không chính xác");
+                customer.setPass(passwordEncoder.encode(changePassRequest.getNewPass()));
+                customerRepository.save(customer);
+                return new MessageResponse("Đổi mật khẩu khách hàng: " + customer.getEmail() + " thành công");
+            } else
+                throw new NotFoundException("Không tìm thấy tài khoản");
+        }
+    }
 
-                    if (!passwordEncoder.matches(changePassRequest.getOldPass(), customer.getPass()))
-                        throw new BadRequestException("Mật khẩu cũ không chính xác");
-                    customer.setPass(passwordEncoder.encode(changePassRequest.getNewPass()));
-                    customerRepository.save(customer);
-                    return new MessageResponse("Đổi mật khẩu khách hàng: " + customer.getEmail() + " thành công");
-                } else
-                    throw new NotFoundException("Không tìm thấy tài khoản");
-            }
-        } catch (BadRequestException e) {
-            throw new BadRequestException(e.getMessage());
-        } catch (NotFoundException e) {
-            throw new NotFoundException(e.getMessage());
-        } catch (Exception e) {
-            throw new BadRequestException("Đổi mật khẩu thất bại");
+    @Override
+    public MessageResponse signOut(UserDetails currentUser) throws Exception {
+        String role = getRoleFromAuthority(currentUser.getAuthorities());
+
+        if (role.equals("SUPER_ADMIN") || role.equals("ADMIN")) {
+            Staff staff = staffRepository.findByEmail(currentUser.getUsername());
+            if (staff != null) {
+                validateStaff(staff);
+
+                staff.setRefreshToken(null);
+                staffRepository.save(staff);
+                return new MessageResponse("Đăng xuất thành công");
+            } else
+                throw new NotFoundException("Không tìm thấy tài khoản");
+        } else {
+            Customer customer = customerRepository.findByEmail(currentUser.getUsername());
+            if (customer != null) {
+                validateCustomer(customer);
+
+                customer.setRefreshToken(null);
+                customerRepository.save(customer);
+                return new MessageResponse("Đăng xuất thành công");
+            } else
+                throw new NotFoundException("Không tìm thấy tài khoản");
         }
     }
 

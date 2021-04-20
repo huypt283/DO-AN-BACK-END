@@ -9,9 +9,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.List;
 
 public interface NewsService {
+    List<NewsResponse> listNews(Integer page, Integer limit);
+
+    List<NewsResponse> listNewsNotHidden();
+
+    NewsResponse getNewsBySlug(String slug) throws Exception;
+
     List<NewsResponse> listAllNews();
 
-    NewsResponse findNewsById(Integer id) throws Exception;
+    NewsResponse getNewsById(Integer id) throws Exception;
 
     NewsResponse insertNews(NewsInsertRequest newsInsertRequest, UserDetails currentUser) throws Exception;
 

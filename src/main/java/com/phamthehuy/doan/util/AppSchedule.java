@@ -1,34 +1,32 @@
 package com.phamthehuy.doan.util;
 
 import com.phamthehuy.doan.entity.Article;
+import com.phamthehuy.doan.entity.ArticleStatistic;
 import com.phamthehuy.doan.repository.ArticleRepository;
+import com.phamthehuy.doan.repository.ArticleStatisticRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Component
 public class AppSchedule {
-    final
-    ArticleRepository articleRepository;
-
-    final
-    MailSender mailSender;
-
-    public AppSchedule(ArticleRepository articleRepository, MailSender mailSender) {
-        this.articleRepository = articleRepository;
-        this.mailSender = mailSender;
-    }
+    @Autowired
+    private ArticleRepository articleRepository;
+    @Autowired
+    private ArticleStatisticRepository articleStatisticRepository;
+    @Autowired
+    private MailSender mailSender;
 
     @Scheduled(cron = "0 0 0 * * *")
-    public void AutoArticle() {
-        List<Article> articleList = articleRepository.findByDeletedFalse();
+    public void AutoArticleHandle() {
+        List<Article> articles = articleRepository.findByDeletedFalse();
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-        if (articleList.size() > 0) {
-            for (Article article : articleList) {
+        if (articles != null && articles.size() > 0) {
+            for (Article article : articles) {
                 //ẩn bài đăng hết hạn
                 if (new Date().after(article.getExpTime())) {
                     article.setDeleted(true);
@@ -61,5 +59,33 @@ public class AppSchedule {
                 }
             }
         }
+    }
+
+    @Scheduled(cron = "0 0 20 * * *")
+//    @Scheduled(cron = "0 */5 * * * *")
+    public void AutoArticleStatistic() {
+        System.out.println("Cron go here OK");
+        List<Article> articles = articleRepository.findAll();
+        Map<String, Integer> statistic = new HashMap<>();
+        if (articles.size() > 0) {
+            articles.forEach(article -> {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(article.getTimeCreated());
+                String key = cal.get(Calendar.MONTH) + 1 + "/" + cal.get(Calendar.YEAR);
+
+                statistic.computeIfAbsent(key, total -> 0);
+                statistic.put(key, statistic.get(key) + 1);
+            });
+        }
+
+        statistic.forEach((k, v) -> {
+            ArticleStatistic articleStatistic = articleStatisticRepository.findByTime(k);
+            if (articleStatistic == null) {
+                articleStatistic = new ArticleStatistic();
+                articleStatistic.setTime(k);
+            }
+            articleStatistic.setCount(v);
+            articleStatisticRepository.save(articleStatistic);
+        });
     }
 }

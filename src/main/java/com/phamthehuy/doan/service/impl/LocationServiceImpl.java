@@ -28,13 +28,11 @@ public class LocationServiceImpl implements LocationService {
 
     @Override
     public List<District> getDistricts(Integer cityId) throws Exception {
-//        cityId != null && cityId > 0 ? districtRepository.findDistrictsByCity_CityId(cityId) :
         return cityId != null && cityId > 0 ? districtRepository.findDistrictsByCity_CityId(cityId) : districtRepository.findAll();
     }
 
     @Override
     public List<Ward> getWards(Integer districtId) throws Exception {
-//        districtId != null && districtId > 0 ? wardRepository.findWardsByDistrict_DistrictId(districtId) :
         return districtId != null && districtId > 0 ? wardRepository.findWardsByDistrict_DistrictId(districtId) : wardRepository.findAll();
     }
 }

@@ -16,6 +16,7 @@ import java.util.Date;
 public class StaffInsertRequest {
     @Email(message = "Email không đúng định dạng")
     @NotBlank(message = "Email không được trống")
+    @NotNull(message = "Email không được trống")
     private String email;
 
     @Size(min = 3, max = 50, message = "Tên phải có 3-50 kí tự")

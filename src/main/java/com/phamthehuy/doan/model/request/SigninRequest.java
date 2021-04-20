@@ -17,10 +17,10 @@ import javax.validation.constraints.Size;
 public class SigninRequest {
     @Email(message = "Email không đúng định dạng")
     @NotBlank(message = "Email không được trống")
-    @NotNull(message = "Email không được null")
+    @NotNull(message = "Email không được trống")
     String email;
 
     @Size(min = 6, max = 30, message = "Mật khẩu phải có 6-30 kí tự")
-    @NotNull(message = "Mật khẩu không được null")
+    @NotNull(message = "Mật khẩu không được trống")
     String password;
 }

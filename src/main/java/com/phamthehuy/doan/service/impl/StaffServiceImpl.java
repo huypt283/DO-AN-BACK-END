@@ -1,6 +1,7 @@
 package com.phamthehuy.doan.service.impl;
 
 import com.phamthehuy.doan.entity.Staff;
+import com.phamthehuy.doan.exception.AccessDeniedException;
 import com.phamthehuy.doan.exception.ConflictException;
 import com.phamthehuy.doan.exception.InternalServerError;
 import com.phamthehuy.doan.exception.NotFoundException;
@@ -43,7 +44,7 @@ public class StaffServiceImpl implements StaffService {
     @Override
     public List<StaffResponse> listAllStaff() {
         List<Staff> staffs = staffRepository.findAll();
-        return staffs.stream().map(this::convertToStaffResponse).collect(Collectors.toList());
+        return staffs.stream().filter(staff -> staff.getStaffId() != 1).map(this::convertToStaffResponse).collect(Collectors.toList());
     }
 
     @Override
@@ -106,6 +107,10 @@ public class StaffServiceImpl implements StaffService {
         Staff staff = staffRepository.findByStaffId(id);
         validateStaff(staff);
 
+        if (staff.getStaffId() == 1) {
+            throw new AccessDeniedException("Không được cập nhật tài khoản này");
+        }
+
         BeanUtils.copyProperties(staffUpdateRequest, staff);
         staff.setDob(staffUpdateRequest.getBirthday());
 
@@ -121,6 +126,10 @@ public class StaffServiceImpl implements StaffService {
         if (BooleanUtils.isFalse(staff.getDeleted()))
             throw new ConflictException("Nhân viên này không bị khoá");
 
+        if (staff.getStaffId() == 1) {
+            throw new AccessDeniedException("Không được cập nhật tài khoản này");
+        }
+
         staff.setDeleted(false);
         staffRepository.save(staff);
         return new MessageResponse("Kích hoạt nhân viên thành công");
@@ -133,6 +142,10 @@ public class StaffServiceImpl implements StaffService {
         if (BooleanUtils.isTrue(staff.getDeleted()))
             throw new ConflictException("Nhân viên này đã bị khoá");
 
+        if (staff.getStaffId() == 1) {
+            throw new AccessDeniedException("Không được cập nhật tài khoản này");
+        }
+
         staff.setDeleted(true);
         staffRepository.save(staff);
         return new MessageResponse("Khoá nhân viên thành công");
@@ -142,6 +155,10 @@ public class StaffServiceImpl implements StaffService {
     public MessageResponse deleteStaffById(Integer id) throws Exception {
         Staff staff = staffRepository.findByStaffId(id);
         validateStaff(staff);
+
+        if (staff.getStaffId() == 1) {
+            throw new AccessDeniedException("Không được xoá tài khoản này");
+        }
 
         staffRepository.delete(staff);
         return new MessageResponse("Xóa nhân viên thành công");

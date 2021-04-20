@@ -110,7 +110,8 @@ public class AdminArticleServiceImpI implements AdminArticleService {
             article.setDeleted(false);
 
             //tạo thời hạn
-            article.setExpTime(helper.addDayForDate(article.getDays(), new Date()));
+            article.setExpTime(helper.addDayForDate(article.getDays(),
+                    article.getExpTime() != null ? article.getExpTime() : new Date()));
             article.setDays(0);
 
             StaffArticle staffArticle = new StaffArticle();
@@ -151,7 +152,7 @@ public class AdminArticleServiceImpI implements AdminArticleService {
                     "\n" +
                     "<p>Bạn có thể vào theo đường dẫn sau để xem bài viết của mình:</p>\n" +
                     "\n" +
-                    "<p> " + this.clientUrl + "/articles/" + article.getSlug() + " </p>\n";
+                    "<p> " + this.clientUrl + "/bai-dang/" + article.getSlug() + " </p>\n";
 
             mailSender.send(to, title, content, note);
 

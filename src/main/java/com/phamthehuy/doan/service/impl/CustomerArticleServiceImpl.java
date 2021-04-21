@@ -9,10 +9,7 @@ import com.phamthehuy.doan.helper.Helper;
 import com.phamthehuy.doan.model.request.*;
 import com.phamthehuy.doan.model.response.ArticleResponse;
 import com.phamthehuy.doan.model.response.MessageResponse;
-import com.phamthehuy.doan.repository.ArticleRepository;
-import com.phamthehuy.doan.repository.CustomerRepository;
-import com.phamthehuy.doan.repository.TransactionRepository;
-import com.phamthehuy.doan.repository.WardRepository;
+import com.phamthehuy.doan.repository.*;
 import com.phamthehuy.doan.service.CustomerArticleService;
 import com.phamthehuy.doan.util.SlugUtil;
 import org.apache.commons.lang3.BooleanUtils;
@@ -35,6 +32,8 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
     private ArticleServiceImpl articleService;
     @Autowired
     private ArticleRepository articleRepository;
+    @Autowired
+    private RoomateRepository roomateRepository;
     @Autowired
     private CustomerRepository customerRepository;
     @Autowired
@@ -217,14 +216,19 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
         RoomService roomService = article.getRoomService();
         BeanUtils.copyProperties(articleUpdateRequest, roomService);
         article.setRoomService(roomService);
+        article.setRoomType(articleUpdateRequest.getRoomType().toString());
 
         RoommateRequest roommateRequest = articleUpdateRequest.getRoommateRequest();
         if (roommateRequest != null) {
             Roommate roommate = article.getRoommate() != null ? article.getRoommate() : new Roommate();
             BeanUtils.copyProperties(roommateRequest, roommate);
             article.setRoommate(roommate);
-        } else
+        } else {
+            Roommate roommate = article.getRoommate();
+            if (roommate != null)
+                roomateRepository.delete(roommate);
             article.setRoommate(null);
+        }
 
         article.setWard(wardOptional.get());
 

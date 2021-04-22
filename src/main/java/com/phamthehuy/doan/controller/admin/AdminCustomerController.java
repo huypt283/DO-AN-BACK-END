@@ -26,11 +26,11 @@ public class AdminCustomerController {
         return new ResponseEntity<>(customerService.findCustomerById(id), HttpStatus.OK);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateCustomer(@PathVariable Integer id,
-                                            @Valid @RequestBody CustomerUpdateRequest customerUpdateRequest) throws Exception {
-        return new ResponseEntity<>(customerService.updateCustomerById(customerUpdateRequest, id), HttpStatus.OK);
-    }
+//    @PutMapping("/{id}")
+//    public ResponseEntity<?> updateCustomer(@PathVariable Integer id,
+//                                            @Valid @RequestBody CustomerUpdateRequest customerUpdateRequest) throws Exception {
+//        return new ResponseEntity<>(customerService.updateCustomerById(customerUpdateRequest, id), HttpStatus.OK);
+//    }
 
     @PostMapping("/active/{id}")
     public ResponseEntity<?> activeCustomer(@PathVariable Integer id) throws Exception {
@@ -42,8 +42,8 @@ public class AdminCustomerController {
         return new ResponseEntity<>(customerService.blockCustomerById(id), HttpStatus.OK);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteCustomer(@PathVariable Integer id) throws Exception {
-        return new ResponseEntity<>(customerService.deleteCustomerById(id), HttpStatus.OK);
-    }
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<?> deleteCustomer(@PathVariable Integer id) throws Exception {
+//        return new ResponseEntity<>(customerService.deleteCustomerById(id), HttpStatus.OK);
+//    }
 }

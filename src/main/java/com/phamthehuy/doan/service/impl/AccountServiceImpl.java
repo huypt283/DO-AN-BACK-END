@@ -453,6 +453,60 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public MessageResponse changeAvatar(ChangeAvatarRequest changeAvatarRequest, UserDetails currentUser) throws Exception {
+        String role = getRoleFromAuthority(currentUser.getAuthorities());
+
+        if (role.equals("SUPER_ADMIN") || role.equals("ADMIN")) {
+            Staff staff = staffRepository.findByEmail(currentUser.getUsername());
+            if (staff != null) {
+                validateStaff(staff);
+
+                staff.setImage(changeAvatarRequest.getImage());
+                staffRepository.save(staff);
+                return new MessageResponse("Cập nhật ảnh đại diện thành công");
+            } else
+                throw new NotFoundException("Không tìm thấy tài khoản");
+        } else {
+            Customer customer = customerRepository.findByEmail(currentUser.getUsername());
+            if (customer != null) {
+                validateCustomer(customer);
+
+                customer.setImage(changeAvatarRequest.getImage());
+                customerRepository.save(customer);
+                return new MessageResponse("Cập nhật ảnh đại diện thành công");
+            } else
+                throw new NotFoundException("Không tìm thấy tài khoản");
+        }
+    }
+
+    @Override
+    public MessageResponse deleteAvatar(UserDetails currentUser) throws Exception {
+        String role = getRoleFromAuthority(currentUser.getAuthorities());
+
+        if (role.equals("SUPER_ADMIN") || role.equals("ADMIN")) {
+            Staff staff = staffRepository.findByEmail(currentUser.getUsername());
+            if (staff != null) {
+                validateStaff(staff);
+
+                staff.setImage(null);
+                staffRepository.save(staff);
+                return new MessageResponse("Xóa ảnh đại diện thành công");
+            } else
+                throw new NotFoundException("Không tìm thấy tài khoản");
+        } else {
+            Customer customer = customerRepository.findByEmail(currentUser.getUsername());
+            if (customer != null) {
+                validateCustomer(customer);
+
+                customer.setImage(null);
+                customerRepository.save(customer);
+                return new MessageResponse("Xóa ảnh đại diện thành công");
+            } else
+                throw new NotFoundException("Không tìm thấy tài khoản");
+        }
+    }
+
+    @Override
     public MessageResponse signOut(UserDetails currentUser) throws Exception {
         String role = getRoleFromAuthority(currentUser.getAuthorities());
 

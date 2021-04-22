@@ -47,10 +47,10 @@ public class SuperAdminStaffController {
         return new ResponseEntity<>(staffService.blockStaffById(id), HttpStatus.OK);
     }
 
-    @DeleteMapping("{id}")
-    public ResponseEntity<?> deleteStaffById(@PathVariable Integer id) throws Exception {
-        return new ResponseEntity<>(staffService.deleteStaffById(id), HttpStatus.OK);
-    }
+//    @DeleteMapping("{id}")
+//    public ResponseEntity<?> deleteStaffById(@PathVariable Integer id) throws Exception {
+//        return new ResponseEntity<>(staffService.deleteStaffById(id), HttpStatus.OK);
+//    }
 
 //    @GetMapping("/staffs")
 //    public List<StaffResponse> listStaffs

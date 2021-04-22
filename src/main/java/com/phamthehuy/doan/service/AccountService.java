@@ -34,5 +34,10 @@ public interface AccountService {
     MessageResponse changePassword(ChangePassRequest changePassRequest,
                                    UserDetails currentUser) throws Exception;
 
+    MessageResponse changeAvatar(ChangeAvatarRequest changeAvatarRequest,
+                                   UserDetails currentUser) throws Exception;
+
+    MessageResponse deleteAvatar(UserDetails currentUser) throws Exception;
+
     MessageResponse signOut(UserDetails currentUser) throws Exception;
 }

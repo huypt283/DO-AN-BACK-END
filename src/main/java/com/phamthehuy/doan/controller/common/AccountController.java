@@ -81,6 +81,17 @@ public class AccountController {
         return new ResponseEntity<>(accountService.changePassword(changePassRequest, currentUser), HttpStatus.OK);
     }
 
+    @PostMapping("/avatar")
+    public ResponseEntity<?> changeAvatar(@Valid @RequestBody ChangeAvatarRequest changeAvatarRequest,
+                                          @AuthenticationPrincipal UserDetails currentUser) throws Exception {
+        return new ResponseEntity<>(accountService.changeAvatar(changeAvatarRequest, currentUser), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/avatar")
+    public ResponseEntity<?> deleteAvatar(@AuthenticationPrincipal UserDetails currentUser) throws Exception {
+        return new ResponseEntity<>(accountService.deleteAvatar(currentUser), HttpStatus.OK);
+    }
+
     @PostMapping("/sign-out")
     public ResponseEntity<?> signOut(@AuthenticationPrincipal UserDetails currentUser) throws Exception {
         return new ResponseEntity<>(accountService.signOut(currentUser), HttpStatus.OK);

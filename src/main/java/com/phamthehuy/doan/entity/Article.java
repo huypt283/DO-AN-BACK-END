@@ -46,6 +46,9 @@ public class Article extends BaseEntity implements Serializable {
     @Column(nullable = false, columnDefinition = "BOOLEAN")
     private Boolean vip;
 
+    @Column(nullable = false, columnDefinition = "BOOLEAN")
+    private Boolean blocked;
+
     @Column(nullable = false)
     private Double acreage;
 

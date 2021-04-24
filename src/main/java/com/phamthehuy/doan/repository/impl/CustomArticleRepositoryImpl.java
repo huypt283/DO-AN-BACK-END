@@ -189,6 +189,7 @@ public class CustomArticleRepositoryImpl implements CustomArticleRepository {
 
         //tìm theo status
         predicate = builder.and(predicate, builder.isFalse(root.get("deleted")));
+        predicate = builder.and(predicate, builder.isFalse(root.get("blocked")));
 
         query.where(predicate);
 

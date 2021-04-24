@@ -8,8 +8,8 @@ import com.phamthehuy.doan.exception.BadRequestException;
 import com.phamthehuy.doan.exception.ConflictException;
 import com.phamthehuy.doan.exception.NotFoundException;
 import com.phamthehuy.doan.helper.Helper;
+import com.phamthehuy.doan.model.request.BlockArticleRequest;
 import com.phamthehuy.doan.model.request.ContactCustomerRequest;
-import com.phamthehuy.doan.model.request.HideArticleRequest;
 import com.phamthehuy.doan.model.response.ArticleResponse;
 import com.phamthehuy.doan.model.response.MessageResponse;
 import com.phamthehuy.doan.repository.ArticleRepository;
@@ -54,13 +54,13 @@ public class AdminArticleServiceImpI implements AdminArticleService {
         return articles.stream().map(articleService::convertToArticleResponse).collect(Collectors.toList());
     }
 
-    @Override
-    public List<ArticleResponse> listArticle(String sort, Long start, Long end, Integer ward, Integer district, Integer city, Boolean roommate, String status, Boolean vip, String search, Integer minAcreage, Integer maxAcreage, Integer page, Integer limit) {
-        List<Article> articles = articleRepository.findCustom(sort, start, end, ward, district, city,
-                roommate, status, vip, search, minAcreage, maxAcreage);
-
-        return articles.stream().map(articleService::convertToArticleResponse).collect(Collectors.toList());
-    }
+//    @Override
+//    public List<ArticleResponse> listArticle(String sort, Long start, Long end, Integer ward, Integer district, Integer city, Boolean roommate, String status, Boolean vip, String search, Integer minAcreage, Integer maxAcreage, Integer page, Integer limit) {
+//        List<Article> articles = articleRepository.findCustom(sort, start, end, ward, district, city,
+//                roommate, status, vip, search, minAcreage, maxAcreage);
+//
+//        return articles.stream().map(articleService::convertToArticleResponse).collect(Collectors.toList());
+//    }
 
     @Override
     public ArticleResponse detailArticle(Integer id) throws Exception {
@@ -96,17 +96,15 @@ public class AdminArticleServiceImpI implements AdminArticleService {
         Article article = articleRepository.findByArticleId(id);
         if (article != null) {
             Staff staff = staffRepository.findByEmail(admin.getUsername());
-            if (staff == null)
-                throw new NotFoundException("Không tìm thấy tài khoản");
-            else if (!staff.getEnabled())
-                throw new AccessDeniedException("Tài khoản này chưa được kích hoạt");
-            else if (staff.getDeleted())
-                throw new AccessDeniedException("Tài khoản này đang bị khoá");
+            validateStaff(staff);
 
-            //duyệt bài
+            //duyệt bài đăng
             //chuyển deleted thành false
-            if (BooleanUtils.isFalse(article.getDeleted()))
-                throw new ConflictException("Chỉ được kích hoạt bài có trạng thái là chưa duyệt hoặc đang ẩn");
+            if (article.getDeleted() != null || BooleanUtils.isTrue(article.getBlocked()))
+                throw new ConflictException("Chỉ được duyệt bài có trạng thái là chưa duyệt");
+            else if (article.getDays() <= 0) {
+                throw new ConflictException("Bài đăng đã hết hạn");
+            }
             article.setDeleted(false);
 
             //tạo thời hạn
@@ -117,8 +115,8 @@ public class AdminArticleServiceImpI implements AdminArticleService {
             StaffArticle staffArticle = new StaffArticle();
             staffArticle.setStaff(staff);
             staffArticle.setArticle(article);
-            staffArticle.setAction(true);
-            //lưu vết người duyệt bài
+            staffArticle.setAction("Duyệt bài");
+            //lưu vết người duyệt bài đăng
             staffArticleRepository.save(staffArticle);
 
             article = articleRepository.save(article);
@@ -141,7 +139,6 @@ public class AdminArticleServiceImpI implements AdminArticleService {
                     "\n" +
                     "<p>Thời gian đăng: " + simpleDateFormat.format(article.getTimeCreated()) + "</p>\n" +
                     "\n" +
-                    "\n" +
                     "<p>Thời gian duyệt bài: " + simpleDateFormat.format(new Date()) + "</p>\n" +
                     "\n" +
                     "<p>Trạng thái: <strong><span style=\"color:#2980b9\">đã được duyệt</span></strong></p>\n" +
@@ -162,40 +159,33 @@ public class AdminArticleServiceImpI implements AdminArticleService {
     }
 
     @Override
-    public MessageResponse hideArticle(Integer id, UserDetails admin, HideArticleRequest hideArticleRequest) throws Exception {
+    public MessageResponse unblockArticle(Integer id, UserDetails admin) throws Exception {
         Article article = articleRepository.findByArticleId(id);
         if (article != null) {
             Staff staff = staffRepository.findByEmail(admin.getUsername());
-            if (staff == null)
-                throw new NotFoundException("Không tìm thấy tài khoản");
-            else if (!staff.getEnabled())
-                throw new AccessDeniedException("Tài khoản này chưa được kích hoạt");
-            else if (staff.getDeleted())
-                throw new AccessDeniedException("Tài khoản này đang bị khoá");
+            validateStaff(staff);
 
-            //ẩn bài
-            //chuyển deleted thành true
-            if (BooleanUtils.isTrue(article.getDeleted()))
-                throw new ConflictException("Không thể ẩn bài viết đang ẩn");
-
-            article.setDeleted(true);
+            //mở khoá bài đăng
+            //chuyển blocked thành false
+            if (BooleanUtils.isFalse(article.getBlocked()))
+                throw new ConflictException("Bài đăng không bị khoá");
+            article.setBlocked(false);
 
             StaffArticle staffArticle = new StaffArticle();
             staffArticle.setStaff(staff);
             staffArticle.setArticle(article);
-            staffArticle.setAction(false);
-            //lưu vết người ẩn bài
+            staffArticle.setAction("Mở khoá bài");
+            //lưu vết người mở khoá cho bài đăng
             staffArticleRepository.save(staffArticle);
 
             article = articleRepository.save(article);
-            String reason = hideArticleRequest.getReason();
+
             //gửi thư
-            if (reason == null || reason.trim().equals("")) reason = "không có lý do cụ thể";
             String to = article.getCustomer().getEmail();
-            String note = "Nhân viên duyệt bài: " + staff.getName() + "<br/>"
+            String note = "Nhân viên mở khoá bài đăng: " + staff.getName() + "<br/>"
                     + "Email: " + staff.getEmail() + "<br/>"
                     + "Thời gian: " + simpleDateFormat.format(new Date());
-            String title = "Bài đăng số: " + article.getArticleId() + " đã bị ẩn";
+            String title = "Bài đăng số: " + article.getArticleId() + " đã được mở khoá";
             String content = "<p>Bài đăng số: " + article.getArticleId() + "</p>\n" +
                     "\n" +
                     "<p>Tiêu đề: " + article.getTitle() + "</p>\n" +
@@ -208,20 +198,74 @@ public class AdminArticleServiceImpI implements AdminArticleService {
                     "\n" +
                     "<p>Thời gian đăng: " + simpleDateFormat.format(article.getTimeCreated()) + "</p>\n" +
                     "\n" +
+                    "<p>Thời gian mở khoá bài đăng: " + simpleDateFormat.format(new Date()) + "</p>\n" +
                     "\n" +
-                    "<p>Thời gian ẩn bài: " + simpleDateFormat.format(new Date()) + "</p>\n" +
+                    "<p>Bài đăng của bạn đã được nhân viên <em><strong>" + staff.getName() + " </strong></em>(email: <em><strong>" + staff.getEmail() + "</strong></em>) mở khoá vào lúc <em><strong>" + simpleDateFormat.format(new Date()) + "</strong></em>.</p>\n";
+
+            mailSender.send(to, title, content, note);
+
+            return new MessageResponse("Duyệt bài thành công");
+        } else
+            throw new NotFoundException("Bài đăng không tồn tại");
+    }
+
+    @Override
+    public MessageResponse blockArticle(Integer id, UserDetails admin, BlockArticleRequest blockArticleRequest) throws Exception {
+        Article article = articleRepository.findByArticleId(id);
+        if (article != null) {
+            Staff staff = staffRepository.findByEmail(admin.getUsername());
+            if (staff == null)
+                throw new NotFoundException("Không tìm thấy tài khoản");
+            else if (!staff.getEnabled())
+                throw new AccessDeniedException("Tài khoản này chưa được kích hoạt");
+            else if (staff.getDeleted())
+                throw new AccessDeniedException("Tài khoản này đang bị khoá");
+
+            //ẩn bài đăng
+            //chuyển deleted thành true
+            if (BooleanUtils.isTrue(article.getBlocked()))
+                throw new ConflictException("Bài đăng đang bị khoá");
+
+            article.setBlocked(true);
+
+            StaffArticle staffArticle = new StaffArticle();
+            staffArticle.setStaff(staff);
+            staffArticle.setArticle(article);
+            staffArticle.setAction("Khoá bài");
+            //lưu vết người ẩn bài đăng
+            staffArticleRepository.save(staffArticle);
+
+            article = articleRepository.save(article);
+            String reason = blockArticleRequest.getReason();
+            //gửi thư
+            String to = article.getCustomer().getEmail();
+            String note = "Nhân viên khoá bài đăng: " + staff.getName() + "<br/>"
+                    + "Email: " + staff.getEmail() + "<br/>"
+                    + "Thời gian: " + simpleDateFormat.format(new Date());
+            String title = "Bài đăng số: " + article.getArticleId() + " đã bị khoá";
+            String content = "<p>Bài đăng số: " + article.getArticleId() + "</p>\n" +
                     "\n" +
-                    "<p>Trạng thái: <strong><span style=\"color:red\">đã bị ẩn</span></strong></p>\n" +
+                    "<p>Tiêu đề: " + article.getTitle() + "</p>\n" +
+                    "\n" +
+                    "<p>Người đăng: " + article.getCustomer().getName() + "</p>\n" +
+                    "\n" +
+                    "<p>Email: " + article.getCustomer().getEmail() + "</p>\n" +
+                    "\n" +
+                    "<p>SĐT: " + article.getCustomer().getPhone() + "</p>\n" +
+                    "\n" +
+                    "<p>Thời gian đăng: " + simpleDateFormat.format(article.getTimeCreated()) + "</p>\n" +
+                    "\n" +
+                    "<p>Thời gian khoá bài đăng: " + simpleDateFormat.format(new Date()) + "</p>\n" +
                     "\n" +
                     "<p>Lý do: <strong><span style=\"color:blue\">" + reason + "</span></strong></p>\n" +
                     "\n" +
-                    "<p>Bài đăng của bạn đã bị nhân viên <em><strong>" + staff.getName() + " </strong></em>(email: <em><strong>" + staff.getEmail() + "</strong></em>) ẩn vào lúc <em><strong>" + simpleDateFormat.format(new Date()) + "</strong></em>.</p>\n" +
+                    "<p>Bài đăng của bạn đã bị nhân viên <em><strong>" + staff.getName() + " </strong></em>(email: <em><strong>" + staff.getEmail() + "</strong></em>) khoá vào lúc <em><strong>" + simpleDateFormat.format(new Date()) + "</strong></em>.</p>\n" +
                     "\n" +
                     "<p>Chúng tôi rất tiếc về điều này, bạn vui lòng xem lại bài đăng của mình đã phù hợp với nội quy website chưa. Mọi thắc mắc xin liên hệ theo email nhân viên đã duyệt bài.</p>\n";
 
             mailSender.send(to, title, content, note);
 
-            return new MessageResponse("Ẩn bài thành công");
+            return new MessageResponse("Khoá bài thành công");
         } else
             throw new NotFoundException("Bài đăng không tồn tại");
     }

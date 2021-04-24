@@ -1,7 +1,7 @@
 package com.phamthehuy.doan.controller.admin;
 
 import com.phamthehuy.doan.model.request.ContactCustomerRequest;
-import com.phamthehuy.doan.model.request.HideArticleRequest;
+import com.phamthehuy.doan.model.request.BlockArticleRequest;
 import com.phamthehuy.doan.model.response.ArticleResponse;
 import com.phamthehuy.doan.service.AdminArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,11 +44,17 @@ public class AdminArticleController {
         return new ResponseEntity<>(adminArticleService.activeArticle(id, admin), HttpStatus.OK);
     }
 
-    @PostMapping("/hide/{id}")
-    public ResponseEntity<?> hiddenArticle(@PathVariable Integer id,
-                                           @AuthenticationPrincipal UserDetails admin,
-                                           @Valid @RequestBody HideArticleRequest hideArticleRequest) throws Exception {
-        return new ResponseEntity<>(adminArticleService.hideArticle(id, admin, hideArticleRequest), HttpStatus.OK);
+    @PostMapping("/unblock/{id}")
+    public ResponseEntity<?> showArticle(@PathVariable Integer id,
+                                         @AuthenticationPrincipal UserDetails admin) throws Exception {
+        return new ResponseEntity<>(adminArticleService.unblockArticle(id, admin), HttpStatus.OK);
+    }
+
+    @PostMapping("/block/{id}")
+    public ResponseEntity<?> blockArticle(@PathVariable Integer id,
+                                          @AuthenticationPrincipal UserDetails admin,
+                                          @Valid @RequestBody BlockArticleRequest blockArticleRequest) throws Exception {
+        return new ResponseEntity<>(adminArticleService.blockArticle(id, admin, blockArticleRequest), HttpStatus.OK);
     }
 
     //    list bài đăng	/admin/article

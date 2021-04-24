@@ -58,7 +58,7 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
         if (article == null) {
             throw new NotFoundException("Bài viết không tồn tại");
         }
-        if (article.getDeleted() == null || article.getDeleted()) {
+        if (article.getDeleted() == null || article.getDeleted() || article.getBlocked()) {
             throw new NotFoundException("Bài viết bị ẩn hoặc chưa được duyệt");
         }
         return articleService.convertToArticleResponse(article);
@@ -73,7 +73,7 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
             if (customer != null) {
                 Set<FavoriteArticle> favoriteArticles = customer.getFavoriteArticles();
                 if (favoriteArticles != null && favoriteArticles.size() > 0) {
-                    articles = articleRepository.findByWardInAndDeletedFalse(favoriteArticles.stream()
+                    articles = articleRepository.findByWardInAndDeletedFalseAndBlockedFalse(favoriteArticles.stream()
                             .map(favoriteArticle -> favoriteArticle.getArticle().getWard())
                             .collect(Collectors.toSet()), pageable);
                 }
@@ -81,10 +81,10 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
         }
 
         if (articles == null || articles.size() < 1)
-            articles = articleRepository.findByDeletedFalse(pageable);
+            articles = articleRepository.findByDeletedFalseAAndBlockedFalse(pageable);
         else if (articles.size() < 6) {
             pageable = new OffsetBasedPageRequest((page - 1) * limit, 6 - articles.size(), Sort.by("timeUpdated").descending().and(Sort.by("timeCreated").descending()));
-            articles.addAll(articleRepository.findByDeletedFalse(pageable));
+            articles.addAll(articleRepository.findByDeletedFalseAAndBlockedFalse(pageable));
         }
 
         return articles.stream().map(articleService::convertToArticleResponse).collect(Collectors.toList());
@@ -181,6 +181,7 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
 
         article.setTimeCreated(new Date());
         article.setDeleted(null);
+        article.setBlocked(false);
 
         customer = customerRepository.save(customer);
         article.setCustomer(customer);
@@ -234,6 +235,7 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
 
         article.setTimeUpdated(new Date());
         article.setDeleted(null);
+        article.setBlocked(false);
 
         article = articleRepository.save(article);
 
@@ -262,8 +264,8 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
         Article article = articleRepository.findByArticleId(id);
         if (article == null)
             throw new NotFoundException("Không tìm thấy bài đăng");
-        else if (BooleanUtils.isTrue(article.getDeleted()))
-            throw new ConflictException("Gia hạn không áp dụng với bài đăng đã ẩn");
+        else if (BooleanUtils.isTrue(article.getBlocked()))
+            throw new ConflictException("Gia hạn không áp dụng với bài đăng đã bị khoá");
 
         Customer customer = article.getCustomer();
         validateCustomer(customer);
@@ -304,6 +306,9 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
         } else {
             //tạo thời hạn
             article.setExpTime(helper.addDayForDate(days, article.getExpTime()));
+
+            if (article.getDeleted())
+                article.setDeleted(false);
         }
 
         customer.setAccountBalance(customer.getAccountBalance() - money);
@@ -322,6 +327,8 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
         Article article = articleRepository.findByArticleId(id);
         if (article == null)
             throw new NotFoundException("Không tìm thấy bài đăng");
+        else if (article.getDeleted() == null)
+            throw new ConflictException("Bài đăng chưa được duyệt");
         else if (BooleanUtils.isTrue(article.getDeleted()))
             throw new ConflictException("Bài đăng đã ẩn");
 
@@ -345,6 +352,8 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
         } else {
             if (article.getDeleted() == null)
                 throw new AccessDeniedException("Bài đăng chưa được duyệt");
+            else if (BooleanUtils.isTrue(article.getBlocked()))
+                throw new AccessDeniedException("Bài đăng đang bị khoá");
             else if (BooleanUtils.isFalse(article.getDeleted()))
                 throw new ConflictException("Bài đăng không bị ẩn");
             else if (new Date().after(article.getExpTime()))

@@ -21,6 +21,8 @@ public class ArticleResponse {
 
     private String roomType;
 
+    private Integer days;
+
     private Integer roomPrice;
 
     private String description;
@@ -52,4 +54,6 @@ public class ArticleResponse {
     private Map<String, String> location;
 
     private Boolean deleted;
+
+    private Boolean blocked;
 }

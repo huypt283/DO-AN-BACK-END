@@ -19,8 +19,8 @@ public interface ArticleRepository extends JpaRepository<Article, Integer>, Cust
 
     List<Article> findByDeletedFalse();
 
-    @Query("select a from Article a where a.deleted = false")
-    List<Article> findByDeletedFalse(OffsetBasedPageRequest pageable);
+    @Query("select a from Article a where a.deleted = false and a.blocked = false")
+    List<Article> findByDeletedFalseAAndBlockedFalse(OffsetBasedPageRequest pageable);
 
-    List<Article> findByWardInAndDeletedFalse(Set<Ward> wards, OffsetBasedPageRequest pageable);
+    List<Article> findByWardInAndDeletedFalseAndBlockedFalse(Set<Ward> wards, OffsetBasedPageRequest pageable);
 }

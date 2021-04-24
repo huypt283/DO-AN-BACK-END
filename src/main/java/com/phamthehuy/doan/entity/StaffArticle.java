@@ -28,5 +28,5 @@ public class StaffArticle implements Serializable {
     private Date time = new Date();
 
     @Column(nullable = false)
-    private Boolean action;
+    private String action;
 }

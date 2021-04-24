@@ -8,7 +8,7 @@ import javax.validation.constraints.Size;
 
 @Getter
 @Setter
-public class HideArticleRequest {
+public class BlockArticleRequest {
     @Size(min = 10, message = "Lý do phải có ít nhất 10 kí tự")
     @NotNull(message = "Lý do không được trống")
     private String reason;

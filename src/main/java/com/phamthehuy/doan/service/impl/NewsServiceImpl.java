@@ -81,11 +81,15 @@ public class NewsServiceImpl implements NewsService {
     }
 
     @Override
-    public NewsResponse updateNewsById(Integer id, NewsRequest newsRequest) throws Exception {
+    public NewsResponse updateNewsById(Integer id, NewsRequest newsRequest, UserDetails currentUser) throws Exception {
+        Staff staff = staffRepository.findByEmail(currentUser.getUsername());
+        validateStaff(staff);
+
         News news = newsRepository.findByNewId(id);
         validateNews(news);
 
         BeanUtils.copyProperties(newsRequest, news);
+        news.setStaff(staff);
         news.setTimeUpdated(new Date());
         return convertToOutputDTO(newsRepository.save(news));
     }
@@ -123,7 +127,7 @@ public class NewsServiceImpl implements NewsService {
     private NewsResponse convertToOutputDTO(News news) {
         NewsResponse newsResponse = new NewsResponse();
         BeanUtils.copyProperties(news, newsResponse);
-        newsResponse.setAuthor(String.format("%s (%s)", news.getStaff().getName(), news.getStaff().getEmail()));
+        newsResponse.setLastModified(String.format("%s <%s>", news.getStaff().getName(), news.getStaff().getEmail()));
         newsResponse.setTimeUpdated(news.getTimeUpdated() != null ? news.getTimeUpdated() : news.getTimeUpdated());
         List<String> images = Arrays.asList(news.getImages().split(",@"));
         newsResponse.setImages(images);

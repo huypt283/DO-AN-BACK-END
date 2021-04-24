@@ -2,7 +2,6 @@ package com.phamthehuy.doan.model.response;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 import java.util.List;
@@ -20,7 +19,9 @@ public class NewsResponse {
 
     private List<String> images;
 
-    private String author;
+    private String lastModified;
+
+    private Date timeCreated;
 
     private Date timeUpdated;
 

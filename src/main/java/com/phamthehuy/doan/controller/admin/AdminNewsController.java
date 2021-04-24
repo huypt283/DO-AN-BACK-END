@@ -29,15 +29,15 @@ public class AdminNewsController {
 
     @PostMapping
     public ResponseEntity<?> insertNews(@Valid @RequestBody NewsRequest newsRequest,
-                                        @AuthenticationPrincipal UserDetails currentUser)
-            throws Exception {
+                                        @AuthenticationPrincipal UserDetails currentUser) throws Exception {
         return new ResponseEntity<>(newsService.insertNews(newsRequest, currentUser), HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateNewsById(@PathVariable Integer id,
-                                            @Valid @RequestBody NewsRequest newsRequest) throws Exception {
-        return new ResponseEntity<>(newsService.updateNewsById(id, newsRequest), HttpStatus.OK);
+                                            @Valid @RequestBody NewsRequest newsRequest,
+                                            @AuthenticationPrincipal UserDetails currentUser) throws Exception {
+        return new ResponseEntity<>(newsService.updateNewsById(id, newsRequest, currentUser), HttpStatus.OK);
     }
 
     @PutMapping("/hide/{id}")

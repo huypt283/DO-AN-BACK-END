@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
@@ -17,7 +18,7 @@ public class NewsResponse {
 
     private String content;
 
-    private String image;
+    private List<String> images;
 
     private String author;
 

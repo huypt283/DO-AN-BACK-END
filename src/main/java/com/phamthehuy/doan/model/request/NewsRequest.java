@@ -9,7 +9,7 @@ import javax.validation.constraints.Size;
 
 @Getter
 @Setter
-public class NewsUpdateRequest {
+public class NewsRequest {
     @Size(min = 3, max = 225, message = "Tiêu đề phải có 3-225 kí tự")
     @NotNull(message = "Tiêu đề không được trống")
     private String title;
@@ -20,5 +20,5 @@ public class NewsUpdateRequest {
 
     @NotBlank(message = "Ảnh không được trống")
     @NotNull(message = "Ảnh không được trống")
-    private String image;
+    private String images;
 }

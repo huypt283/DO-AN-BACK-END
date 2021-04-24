@@ -1,7 +1,6 @@
 package com.phamthehuy.doan.service;
 
-import com.phamthehuy.doan.model.request.NewsInsertRequest;
-import com.phamthehuy.doan.model.request.NewsUpdateRequest;
+import com.phamthehuy.doan.model.request.NewsRequest;
 import com.phamthehuy.doan.model.response.MessageResponse;
 import com.phamthehuy.doan.model.response.NewsResponse;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,9 +18,9 @@ public interface NewsService {
 
     NewsResponse getNewsById(Integer id) throws Exception;
 
-    NewsResponse insertNews(NewsInsertRequest newsInsertRequest, UserDetails currentUser) throws Exception;
+    NewsResponse insertNews(NewsRequest newsRequest, UserDetails currentUser) throws Exception;
 
-    NewsResponse updateNewsById(Integer id, NewsUpdateRequest newsUpdateRequest) throws Exception;
+    NewsResponse updateNewsById(Integer id, NewsRequest newsRequest) throws Exception;
 
     MessageResponse activeNewsById(Integer id) throws Exception;
 

@@ -1,7 +1,6 @@
 package com.phamthehuy.doan.controller.admin;
 
-import com.phamthehuy.doan.model.request.NewsInsertRequest;
-import com.phamthehuy.doan.model.request.NewsUpdateRequest;
+import com.phamthehuy.doan.model.request.NewsRequest;
 import com.phamthehuy.doan.service.NewsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,16 +28,16 @@ public class AdminNewsController {
     }
 
     @PostMapping
-    public ResponseEntity<?> insertNews(@Valid @RequestBody NewsInsertRequest newsInsertRequest,
+    public ResponseEntity<?> insertNews(@Valid @RequestBody NewsRequest newsRequest,
                                         @AuthenticationPrincipal UserDetails currentUser)
             throws Exception {
-        return new ResponseEntity<>(newsService.insertNews(newsInsertRequest, currentUser), HttpStatus.OK);
+        return new ResponseEntity<>(newsService.insertNews(newsRequest, currentUser), HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateNewsById(@PathVariable Integer id,
-                                            @Valid @RequestBody NewsUpdateRequest newsUpdateRequest) throws Exception {
-        return new ResponseEntity<>(newsService.updateNewsById(id, newsUpdateRequest), HttpStatus.OK);
+                                            @Valid @RequestBody NewsRequest newsRequest) throws Exception {
+        return new ResponseEntity<>(newsService.updateNewsById(id, newsRequest), HttpStatus.OK);
     }
 
     @PutMapping("/hide/{id}")

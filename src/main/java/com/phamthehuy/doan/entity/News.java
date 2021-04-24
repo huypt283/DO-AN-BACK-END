@@ -29,7 +29,7 @@ public class News extends BaseEntity implements Serializable {
     private String content;
 
     @Column(nullable = false)
-    private String image;
+    private String images;
 
     @Column
     private Date timeUpdated;

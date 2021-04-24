@@ -3,8 +3,7 @@ package com.phamthehuy.doan.service.impl;
 import com.phamthehuy.doan.entity.News;
 import com.phamthehuy.doan.entity.Staff;
 import com.phamthehuy.doan.exception.NotFoundException;
-import com.phamthehuy.doan.model.request.NewsInsertRequest;
-import com.phamthehuy.doan.model.request.NewsUpdateRequest;
+import com.phamthehuy.doan.model.request.NewsRequest;
 import com.phamthehuy.doan.model.request.OffsetBasedPageRequest;
 import com.phamthehuy.doan.model.response.MessageResponse;
 import com.phamthehuy.doan.model.response.NewsResponse;
@@ -19,6 +18,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -68,24 +68,24 @@ public class NewsServiceImpl implements NewsService {
     }
 
     @Override
-    public NewsResponse insertNews(NewsInsertRequest newsInsertRequest, UserDetails currentUser) throws Exception {
+    public NewsResponse insertNews(NewsRequest newsRequest, UserDetails currentUser) throws Exception {
         Staff staff = staffRepository.findByEmail(currentUser.getUsername());
         validateStaff(staff);
 
         News news = new News();
-        BeanUtils.copyProperties(newsInsertRequest, news);
-        news.setSlug(SlugUtil.makeSlug(newsInsertRequest.getTitle()) + "-" + System.currentTimeMillis());
+        BeanUtils.copyProperties(newsRequest, news);
+        news.setSlug(SlugUtil.makeSlug(newsRequest.getTitle()) + "-" + System.currentTimeMillis());
         news.setStaff(staff);
         news.setTimeUpdated(new Date());
         return convertToOutputDTO(newsRepository.save(news));
     }
 
     @Override
-    public NewsResponse updateNewsById(Integer id, NewsUpdateRequest newsUpdateRequest) throws Exception {
+    public NewsResponse updateNewsById(Integer id, NewsRequest newsRequest) throws Exception {
         News news = newsRepository.findByNewId(id);
         validateNews(news);
 
-        BeanUtils.copyProperties(newsUpdateRequest, news);
+        BeanUtils.copyProperties(newsRequest, news);
         news.setTimeUpdated(new Date());
         return convertToOutputDTO(newsRepository.save(news));
     }
@@ -125,6 +125,8 @@ public class NewsServiceImpl implements NewsService {
         BeanUtils.copyProperties(news, newsResponse);
         newsResponse.setAuthor(String.format("%s (%s)", news.getStaff().getName(), news.getStaff().getEmail()));
         newsResponse.setTimeUpdated(news.getTimeUpdated() != null ? news.getTimeUpdated() : news.getTimeUpdated());
+        List<String> images = Arrays.asList(news.getImages().split(",@"));
+        newsResponse.setImages(images);
         return newsResponse;
     }
 

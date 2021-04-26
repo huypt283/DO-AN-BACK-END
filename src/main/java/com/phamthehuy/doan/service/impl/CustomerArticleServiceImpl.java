@@ -234,7 +234,8 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
         article.setWard(wardOptional.get());
 
         article.setTimeUpdated(new Date());
-        article.setDeleted(null);
+        if (BooleanUtils.isFalse(article.getDeleted()))
+            article.setDeleted(null);
         article.setBlocked(false);
 
         article = articleRepository.save(article);

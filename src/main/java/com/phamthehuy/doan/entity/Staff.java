@@ -1,6 +1,5 @@
 package com.phamthehuy.doan.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,7 +9,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.Set;
 
 @Entity
 @Getter
@@ -62,11 +60,11 @@ public class Staff extends BaseEntity implements Serializable {
     @Column
     private String refreshToken;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "staff", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<News> news;
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "staff", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<StaffArticle> staffArticles;
+//    @JsonIgnore
+//    @OneToMany(mappedBy = "staff", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+//    private Set<News> news;
+//
+//    @JsonIgnore
+//    @OneToMany(mappedBy = "staff", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+//    private Set<StaffArticle> staffArticles;
 }

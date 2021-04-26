@@ -2,8 +2,12 @@ package com.phamthehuy.doan.util;
 
 import com.phamthehuy.doan.entity.Article;
 import com.phamthehuy.doan.entity.ArticleStatistic;
+import com.phamthehuy.doan.entity.Transaction;
+import com.phamthehuy.doan.entity.TransactionStatistic;
 import com.phamthehuy.doan.repository.ArticleRepository;
 import com.phamthehuy.doan.repository.ArticleStatisticRepository;
+import com.phamthehuy.doan.repository.TransactionRepository;
+import com.phamthehuy.doan.repository.TransactionStatisticRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -17,6 +21,10 @@ public class AppSchedule {
     private ArticleRepository articleRepository;
     @Autowired
     private ArticleStatisticRepository articleStatisticRepository;
+    @Autowired
+    private TransactionRepository transactionRepository;
+    @Autowired
+    private TransactionStatisticRepository transactionStatisticRepository;
     @Autowired
     private MailSender mailSender;
 
@@ -64,19 +72,16 @@ public class AppSchedule {
     @Scheduled(cron = "0 0 20 * * *")
 //    @Scheduled(cron = "0 */5 * * * *")
     public void AutoArticleStatistic() {
-        System.out.println("Cron go here OK");
         List<Article> articles = articleRepository.findAll();
         Map<String, Integer> statistic = new HashMap<>();
-        if (articles.size() > 0) {
-            articles.forEach(article -> {
-                Calendar cal = Calendar.getInstance();
-                cal.setTime(article.getTimeCreated());
-                String key = cal.get(Calendar.MONTH) + 1 + "/" + cal.get(Calendar.YEAR);
+        articles.forEach(article -> {
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(article.getTimeCreated());
+            String key = cal.get(Calendar.MONTH) + 1 + "/" + cal.get(Calendar.YEAR);
 
-                statistic.computeIfAbsent(key, total -> 0);
-                statistic.put(key, statistic.get(key) + 1);
-            });
-        }
+            statistic.computeIfAbsent(key, total -> 0);
+            statistic.put(key, statistic.get(key) + 1);
+        });
 
         statistic.forEach((k, v) -> {
             ArticleStatistic articleStatistic = articleStatisticRepository.findByTime(k);
@@ -87,5 +92,29 @@ public class AppSchedule {
             articleStatistic.setCount(v);
             articleStatisticRepository.save(articleStatistic);
         });
+    }
+
+    @Scheduled(cron = "0 0 20 * * *")
+    public void AutoTransactionStatistic() {
+        List<Transaction> transactions = transactionRepository.findAll();
+        Map<String, Integer> statistic = new HashMap<>();
+        transactions.forEach(transaction -> {
+            String status = transaction.getStatus();
+            statistic.computeIfAbsent(status, total -> 0);
+            statistic.put(status, statistic.get(status) + 1);
+        });
+        List<TransactionStatistic> transactionStatistics = transactionStatisticRepository.findAll();
+        statistic.forEach((k, v) -> {
+            Optional<TransactionStatistic> transactionStatistic = transactionStatistics.stream().filter(i -> i.getStatus().equals(k)).findFirst();
+            if (transactionStatistic.isPresent()) {
+                transactionStatistic.get().setCount(v);
+            } else {
+                TransactionStatistic newStatistic = new TransactionStatistic();
+                newStatistic.setStatus(k);
+                newStatistic.setCount(v);
+                transactionStatistics.add(newStatistic);
+            }
+        });
+        transactionStatisticRepository.saveAll(transactionStatistics);
     }
 }

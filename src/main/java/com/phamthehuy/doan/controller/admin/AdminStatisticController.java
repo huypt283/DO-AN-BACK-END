@@ -1,8 +1,10 @@
 package com.phamthehuy.doan.controller.admin;
 
 import com.phamthehuy.doan.entity.ArticleStatistic;
+import com.phamthehuy.doan.entity.TransactionStatistic;
 import com.phamthehuy.doan.model.response.ArticleStatisticResponse;
 import com.phamthehuy.doan.repository.ArticleStatisticRepository;
+import com.phamthehuy.doan.repository.TransactionStatisticRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,8 @@ import java.util.stream.Collectors;
 public class AdminStatisticController {
     @Autowired
     private ArticleStatisticRepository articleStatisticRepository;
+    @Autowired
+    private TransactionStatisticRepository transactionStatisticRepository;
 
     @GetMapping("/article")
     public ResponseEntity<?> articleStatistic() {
@@ -31,7 +35,14 @@ public class AdminStatisticController {
                 .map(this::convertToArticleStatisticResponse).collect(Collectors.toList())
                 , HttpStatus.OK);
     }
-    
+
+    @GetMapping("/transaction")
+    public ResponseEntity<?> transactionStatistic() {
+        List<TransactionStatistic> transactionStatistics = transactionStatisticRepository.findAll();
+
+        return new ResponseEntity<>(transactionStatistics, HttpStatus.OK);
+    }
+
     private ArticleStatisticResponse convertToArticleStatisticResponse(ArticleStatistic articleStatistic) {
         return new ArticleStatisticResponse(articleStatistic.getTime(), articleStatistic.getCount());
     }

@@ -66,11 +66,11 @@ public class Customer extends BaseEntity implements Serializable {
     @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<FavoriteArticle> favoriteArticles;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<Article> articles;
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<Transaction> transactions;
+//    @JsonIgnore
+//    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+//    private Set<Article> articles;
+//
+//    @JsonIgnore
+//    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+//    private Set<Transaction> transactions;
 }

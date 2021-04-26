@@ -100,17 +100,18 @@ public class AdminArticleServiceImpI implements AdminArticleService {
 
             //duyệt bài đăng
             //chuyển deleted thành false
-            if (article.getDeleted() != null || BooleanUtils.isTrue(article.getBlocked()))
-                throw new ConflictException("Chỉ được duyệt bài có trạng thái là chưa duyệt");
-            else if (article.getDays() <= 0) {
-                throw new ConflictException("Bài đăng đã hết hạn");
+            if (BooleanUtils.isFalse(article.getDeleted()) || BooleanUtils.isTrue(article.getBlocked()))
+                throw new ConflictException("Bài đăng đang hiển thị");
+            else if (article.getDays() <= 0 && new Date().after(article.getExpTime())) {
+                throw new ConflictException("Bài đăng cần được gia hạn");
             }
             article.setDeleted(false);
 
             //tạo thời hạn
-            article.setExpTime(helper.addDayForDate(article.getDays(),
-                    article.getExpTime() != null ? article.getExpTime() : new Date()));
-            article.setDays(0);
+            if (article.getDays() > 0) {
+                article.setExpTime(helper.addDayForDate(article.getDays(), article.getExpTime()));
+                article.setDays(0);
+            }
 
             StaffArticle staffArticle = new StaffArticle();
             staffArticle.setStaff(staff);
@@ -261,7 +262,7 @@ public class AdminArticleServiceImpI implements AdminArticleService {
                     "\n" +
                     "<p>Bài đăng của bạn đã bị nhân viên <em><strong>" + staff.getName() + " </strong></em>(email: <em><strong>" + staff.getEmail() + "</strong></em>) khoá vào lúc <em><strong>" + simpleDateFormat.format(new Date()) + "</strong></em>.</p>\n" +
                     "\n" +
-                    "<p>Chúng tôi rất tiếc về điều này, bạn vui lòng xem lại bài đăng của mình đã phù hợp với nội quy website chưa. Mọi thắc mắc xin liên hệ theo email nhân viên đã duyệt bài.</p>\n";
+                    "<p>Chúng tôi rất tiếc về điều này, bạn vui lòng xem lại bài đăng của mình đã phù hợp với nội quy website chưa. Hãy cập nhật bài đăng theo đúng nội quy để được duyệt lại. Mọi thắc mắc xin liên hệ theo email nhân viên đã duyệt bài.</p>\n";
 
             mailSender.send(to, title, content, note);
 

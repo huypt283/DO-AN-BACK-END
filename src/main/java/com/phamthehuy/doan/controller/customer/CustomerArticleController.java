@@ -68,11 +68,11 @@ public class CustomerArticleController {
     }
 
     //    xóa bài đăng
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteArticle(@PathVariable Integer id,
-                                           @AuthenticationPrincipal UserDetails currentUser) throws Exception {
-        return new ResponseEntity<>(customerArticleService.deleteArticle(currentUser, id), HttpStatus.OK);
-    }
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<?> deleteArticle(@PathVariable Integer id,
+//                                           @AuthenticationPrincipal UserDetails currentUser) throws Exception {
+//        return new ResponseEntity<>(customerArticleService.deleteArticle(currentUser, id), HttpStatus.OK);
+//    }
 
     //    gia hạn bài đăng
     @PostMapping("/extend/{id}")

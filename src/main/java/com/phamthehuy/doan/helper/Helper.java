@@ -79,6 +79,7 @@ public class Helper {
     }
 
     public Date addDayForDate(Integer days, Date date) {
+        date = date == null || new Date().after(date) ? new Date() : date;
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         calendar.add(Calendar.DAY_OF_MONTH, days);

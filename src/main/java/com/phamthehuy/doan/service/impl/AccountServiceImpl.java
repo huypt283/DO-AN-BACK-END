@@ -296,7 +296,7 @@ public class AccountServiceImpl implements AccountService {
             } else
                 throw new NotFoundException("Không tìm thấy tài khoản cần đặt lại mật khẩu");
         }
-        return new MessageResponse("Làm mới mật khẩu thành công");
+        return new MessageResponse("Đặt lại mật khẩu thành công");
     }
 
     @Override

@@ -29,7 +29,7 @@ public class AppSchedule {
     private MailSender mailSender;
 
     @Scheduled(cron = "0 0 0 * * *")
-    public void AutoArticleHandle() {
+    public void AutoArticleHandle() throws Exception {
         List<Article> articles = articleRepository.findByDeletedFalse();
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");

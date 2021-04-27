@@ -1,6 +1,6 @@
 package com.phamthehuy.doan.util;
 
-import com.phamthehuy.doan.exception.BadRequestException;
+import com.phamthehuy.doan.exception.InternalServerError;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -20,7 +20,7 @@ public class MailSender {
     }
 
     public void send(String to,
-                     String subject, String body, String note, String... attachments) throws BadRequestException {
+                     String subject, String body, String note, String... attachments) throws Exception {
         try {
             String from = "daihoccongnghiep283@gmail.com";
 
@@ -64,7 +64,7 @@ public class MailSender {
             javaMailSender.send(mimeMailMessage);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new BadRequestException("Gửi mail thất bại");
+            throw new InternalServerError("Gửi mail thất bại");
         }
     }
 }

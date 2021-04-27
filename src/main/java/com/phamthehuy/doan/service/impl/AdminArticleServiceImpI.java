@@ -88,7 +88,7 @@ public class AdminArticleServiceImpI implements AdminArticleService {
 
             return new MessageResponse("Gửi mail thành công");
         } else
-            throw new BadRequestException("Bài đăng không tồn tại");
+            throw new NotFoundException("Bài đăng không tồn tại");
     }
 
     @Override
@@ -215,12 +215,7 @@ public class AdminArticleServiceImpI implements AdminArticleService {
         Article article = articleRepository.findByArticleId(id);
         if (article != null) {
             Staff staff = staffRepository.findByEmail(admin.getUsername());
-            if (staff == null)
-                throw new NotFoundException("Không tìm thấy tài khoản");
-            else if (!staff.getEnabled())
-                throw new AccessDeniedException("Tài khoản này chưa được kích hoạt");
-            else if (staff.getDeleted())
-                throw new AccessDeniedException("Tài khoản này đang bị khoá");
+            validateStaff(staff);
 
             //ẩn bài đăng
             //chuyển deleted thành true
@@ -273,7 +268,7 @@ public class AdminArticleServiceImpI implements AdminArticleService {
 
     public void validateStaff(Staff staff) {
         if (staff == null)
-            throw new NotFoundException("Không tìm thấy tài khoản");
+            throw new AccessDeniedException("Không tìm thấy tài khoản");
         if (BooleanUtils.isNotTrue(staff.getEnabled()))
             throw new AccessDeniedException("Tài khoản này chưa được kích hoạt");
         else if (BooleanUtils.isTrue(staff.getDeleted()))

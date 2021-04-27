@@ -352,13 +352,13 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
             throw new NotFoundException("Không tìm thấy bài đăng");
         } else {
             if (article.getDeleted() == null)
-                throw new AccessDeniedException("Bài đăng chưa được duyệt");
+                throw new ConflictException("Bài đăng chưa được duyệt");
             else if (BooleanUtils.isTrue(article.getBlocked()))
-                throw new AccessDeniedException("Bài đăng đang bị khoá");
+                throw new ConflictException("Bài đăng đang bị khoá");
             else if (BooleanUtils.isFalse(article.getDeleted()))
                 throw new ConflictException("Bài đăng không bị ẩn");
             else if (new Date().after(article.getExpTime()))
-                throw new AccessDeniedException("Bài đăng đã hết hạn");
+                throw new ConflictException("Bài đăng đã hết hạn");
         }
 
         Customer customer = article.getCustomer();
@@ -385,7 +385,7 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
 
     private void validateCustomer(Customer customer) {
         if (customer == null) {
-            throw new ConflictException("Không tìm thấy tài khoản đăng bài");
+            throw new AccessDeniedException("Không tìm thấy tài khoản đăng bài");
         } else if (BooleanUtils.isNotTrue(customer.getEnabled()))
             throw new AccessDeniedException("Tài khoản này chưa được kích hoạt");
         else if (BooleanUtils.isTrue(customer.getDeleted()))

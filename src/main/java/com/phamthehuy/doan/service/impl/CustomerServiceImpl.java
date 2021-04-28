@@ -36,14 +36,14 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public CustomerResponse findCustomerById(Integer id) throws Exception {
+    public CustomerResponse getCustomerById(Integer id) throws Exception {
         Customer customer = customerRepository.findByCustomerId(id);
         validateCustomer(customer);
         return this.convertToCustomerResponse(customer);
     }
 
     @Override
-    public CustomerResponse updateCustomerById(CustomerUpdateRequest customerUpdateRequest,
+    public MessageResponse updateCustomerById(CustomerUpdateRequest customerUpdateRequest,
                                                Integer id) throws Exception {
         Customer customer = customerRepository.findByCustomerId(id);
         validateCustomer(customer);
@@ -52,7 +52,7 @@ public class CustomerServiceImpl implements CustomerService {
         customer.setDob(customerUpdateRequest.getBirthday());
         customer = customerRepository.save(customer);
 
-        return this.convertToCustomerResponse(customer);
+        return new MessageResponse("Cập nhật khách hàng thành công");
     }
 
     private CustomerResponse convertToCustomerResponse(Customer customer) {

@@ -22,12 +22,6 @@ public class CustomerArticleController {
     @Autowired
     private CustomerArticleService customerArticleService;
 
-    //    list bài đăng cá nhân
-    //    lọc bài đăng theo trạng thái
-    //    lọc bài đang theo loại phòng
-    //    lọc bài đăng theo khoảng thời gian	?start={millisecond}&end={millisecond}
-    //    lọc bài đăng theo isVip
-    //    tìm kiếm bài đăng theo title
     @GetMapping
     public List<ArticleResponse> listArticle(@RequestParam(required = false) Long start,
                                              @RequestParam(required = false) Long end,

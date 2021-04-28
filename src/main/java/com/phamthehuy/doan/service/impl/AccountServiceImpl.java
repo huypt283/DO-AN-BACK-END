@@ -114,9 +114,9 @@ public class AccountServiceImpl implements AccountService {
                 customer.setToken(null);
                 customerRepository.save(customer);
             } else
-                throw new ConflictException("Xác nhận email thất bại");
+                throw new ConflictException("Link xác nhận không hợp lệ hoặc đã hết hạn");
         }
-        return new MessageResponse("Xác nhận email thành công");
+        return new MessageResponse("Xác nhận email thành công. Bạn có thể đăng nhập ngay bây giờ");
     }
 
     @Override
@@ -128,7 +128,7 @@ public class AccountServiceImpl implements AccountService {
         if (staff == null) {
             customer = customerRepository.findByEmail(signinRequest.getEmail());
             if (customer == null) {
-                throw new NotFoundException("Email không tồn tại");
+                throw new NotFoundException("Tài khoản không tồn tại");
             } else
                 validateCustomer(customer);
         } else

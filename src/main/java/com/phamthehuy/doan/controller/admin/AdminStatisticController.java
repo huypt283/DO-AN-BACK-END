@@ -39,7 +39,6 @@ public class AdminStatisticController {
     @GetMapping("/transaction")
     public ResponseEntity<?> transactionStatistic() {
         List<TransactionStatistic> transactionStatistics = transactionStatisticRepository.findAll();
-
         return new ResponseEntity<>(transactionStatistics, HttpStatus.OK);
     }
 

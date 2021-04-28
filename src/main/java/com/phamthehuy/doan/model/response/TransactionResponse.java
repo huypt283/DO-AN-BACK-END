@@ -3,6 +3,8 @@ package com.phamthehuy.doan.model.response;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Date;
+
 @Getter
 @Setter
 public class TransactionResponse {
@@ -12,4 +14,5 @@ public class TransactionResponse {
     private String status;
     private String description;
     private String email;
+    private Date timeCreated;
 }

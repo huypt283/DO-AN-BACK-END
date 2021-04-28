@@ -68,7 +68,7 @@ public class NewsServiceImpl implements NewsService {
     }
 
     @Override
-    public NewsResponse insertNews(NewsRequest newsRequest, UserDetails currentUser) throws Exception {
+    public MessageResponse insertNews(NewsRequest newsRequest, UserDetails currentUser) throws Exception {
         Staff staff = staffRepository.findByEmail(currentUser.getUsername());
         validateStaff(staff);
 
@@ -77,11 +77,11 @@ public class NewsServiceImpl implements NewsService {
         news.setSlug(SlugUtil.makeSlug(newsRequest.getTitle()) + "-" + System.currentTimeMillis());
         news.setStaff(staff);
         news.setTimeUpdated(new Date());
-        return convertToOutputDTO(newsRepository.save(news));
+        return new MessageResponse("Thêm tin tức mới thành công");
     }
 
     @Override
-    public NewsResponse updateNewsById(Integer id, NewsRequest newsRequest, UserDetails currentUser) throws Exception {
+    public MessageResponse updateNewsById(Integer id, NewsRequest newsRequest, UserDetails currentUser) throws Exception {
         Staff staff = staffRepository.findByEmail(currentUser.getUsername());
         validateStaff(staff);
 
@@ -91,7 +91,7 @@ public class NewsServiceImpl implements NewsService {
         BeanUtils.copyProperties(newsRequest, news);
         news.setStaff(staff);
         news.setTimeUpdated(new Date());
-        return convertToOutputDTO(newsRepository.save(news));
+        return new MessageResponse("Cập nhật tin tức thành công");
     }
 
     @Override

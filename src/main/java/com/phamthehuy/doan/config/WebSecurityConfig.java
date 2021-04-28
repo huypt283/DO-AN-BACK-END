@@ -23,11 +23,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @ComponentScan
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
-    CustomUserDetailsService customUserDetailsService;
+    private CustomUserDetailsService customUserDetailsService;
     @Autowired
-    CustomJwtAuthenticationFilter customJwtAuthenticationFilter;
+    private CustomJwtAuthenticationFilter customJwtAuthenticationFilter;
     @Autowired
-    JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -55,10 +55,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/customer/**").hasRole("CUSTOMER")
                 .antMatchers("/profile").authenticated()
                 .antMatchers("/sign-in", "/sign-up", "/forgot-password", "/reset-password", "/refresh-token").permitAll()
-                .antMatchers(HttpMethod.POST,"/**").authenticated()
-                .antMatchers(HttpMethod.PUT,"/**").authenticated()
-                .antMatchers(HttpMethod.DELETE,"/**").authenticated()
-                .antMatchers(HttpMethod.PATCH,"/**").authenticated()
+                .antMatchers(HttpMethod.POST, "/**").authenticated()
+                .antMatchers(HttpMethod.PUT, "/**").authenticated()
+                .antMatchers(HttpMethod.DELETE, "/**").authenticated()
+                .antMatchers(HttpMethod.PATCH, "/**").authenticated()
                 .anyRequest().permitAll()
                 .and().exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)

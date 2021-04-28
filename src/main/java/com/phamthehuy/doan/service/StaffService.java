@@ -14,7 +14,7 @@ public interface StaffService {
 
     MessageResponse insertStaff(StaffInsertRequest staffInsertRequest) throws Exception;
 
-    StaffResponse updateStaffById(Integer id, StaffUpdateRequest staffUpdateRequest) throws Exception;
+    MessageResponse updateStaffById(Integer id, StaffUpdateRequest staffUpdateRequest) throws Exception;
 
     MessageResponse activeStaffById(Integer id) throws Exception;
 

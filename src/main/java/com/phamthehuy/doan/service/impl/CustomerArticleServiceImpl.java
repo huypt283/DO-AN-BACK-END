@@ -119,7 +119,7 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
 
     @Transactional
     @Override
-    public ArticleResponse insertArticle(UserDetails currentUser, ArticleInsertRequest articleInsertRequest)
+    public MessageResponse insertArticle(UserDetails currentUser, ArticleInsertRequest articleInsertRequest)
             throws Exception {
         Optional<Ward> ward = wardRepository.findById(articleInsertRequest.getWardId());
         if (!ward.isPresent())
@@ -191,12 +191,12 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
         String description = "Thanh toán " + money + " VNĐ cho bài đăng số: " + article.getArticleId() + " - " + article.getTitle();
         createTransactionPay(money, customer, description);
 
-        return articleService.convertToArticleResponse(article);
+        return new MessageResponse("Đăng bài thành công");
     }
 
     @Transactional
     @Override
-    public ArticleResponse updateArticle(UserDetails currentUser, Integer id, ArticleUpdateRequest articleUpdateRequest)
+    public MessageResponse updateArticle(UserDetails currentUser, Integer id, ArticleUpdateRequest articleUpdateRequest)
             throws Exception {
         Optional<Ward> wardOptional = wardRepository.findById(articleUpdateRequest.getWardId());
         if (!wardOptional.isPresent())
@@ -240,7 +240,7 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
 
         article = articleRepository.save(article);
 
-        return articleService.convertToArticleResponse(article);
+        return new MessageResponse("Cập nhật bài đăng thành công");
     }
 
     @Override

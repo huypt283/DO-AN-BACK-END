@@ -9,9 +9,9 @@ import java.util.List;
 public interface CustomerService {
     List<CustomerResponse> listCustomer(Integer page, Integer limit) throws Exception;
 
-    CustomerResponse findCustomerById(Integer id) throws Exception;
+    CustomerResponse getCustomerById(Integer id) throws Exception;
 
-    CustomerResponse updateCustomerById(CustomerUpdateRequest customerUpdateRequest,
+    MessageResponse updateCustomerById(CustomerUpdateRequest customerUpdateRequest,
                                         Integer id) throws Exception;
 
     MessageResponse activeCustomerById(Integer id) throws Exception;

@@ -27,10 +27,10 @@ public interface CustomerArticleService {
 
     ArticleResponse detailArticle(UserDetails currentUser, Integer id) throws Exception;
 
-    ArticleResponse insertArticle(UserDetails currentUser, ArticleInsertRequest articleInsertRequest)
+    MessageResponse insertArticle(UserDetails currentUser, ArticleInsertRequest articleInsertRequest)
             throws Exception;
 
-    ArticleResponse updateArticle(UserDetails currentUser, Integer id, ArticleUpdateRequest articleUpdateRequest)
+    MessageResponse updateArticle(UserDetails currentUser, Integer id, ArticleUpdateRequest articleUpdateRequest)
             throws Exception;
 
     MessageResponse deleteArticle(UserDetails currentUser, Integer id) throws Exception;

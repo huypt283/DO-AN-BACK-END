@@ -1,6 +1,7 @@
 package com.phamthehuy.doan.util;
 
 import com.phamthehuy.doan.exception.InternalServerError;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -9,15 +10,10 @@ import javax.mail.internet.MimeMessage;
 
 @Service
 public class MailSender {
-    final
-    JavaMailSender javaMailSender;
-    final
-    UploadFile uploadFile;
-
-    public MailSender(JavaMailSender javaMailSender, UploadFile uploadFile) {
-        this.javaMailSender = javaMailSender;
-        this.uploadFile = uploadFile;
-    }
+    @Autowired
+    private JavaMailSender javaMailSender;
+    @Autowired
+    private UploadFile uploadFile;
 
     public void send(String to,
                      String subject, String body, String note, String... attachments) throws Exception {

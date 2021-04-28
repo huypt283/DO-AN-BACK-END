@@ -103,7 +103,7 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public StaffResponse updateStaffById(Integer id, StaffUpdateRequest staffUpdateRequest) throws Exception {
+    public MessageResponse updateStaffById(Integer id, StaffUpdateRequest staffUpdateRequest) throws Exception {
         Staff staff = staffRepository.findByStaffId(id);
         validateStaff(staff);
 
@@ -116,7 +116,7 @@ public class StaffServiceImpl implements StaffService {
 
         staff = staffRepository.save(staff);
 
-        return this.convertToStaffResponse(staff);
+        return new MessageResponse("Cập nhật thông tin nhân viên thành công");
     }
 
     @Override

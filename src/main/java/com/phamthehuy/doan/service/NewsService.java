@@ -18,9 +18,9 @@ public interface NewsService {
 
     NewsResponse getNewsById(Integer id) throws Exception;
 
-    NewsResponse insertNews(NewsRequest newsRequest, UserDetails currentUser) throws Exception;
+    MessageResponse insertNews(NewsRequest newsRequest, UserDetails currentUser) throws Exception;
 
-    NewsResponse updateNewsById(Integer id, NewsRequest newsRequest, UserDetails currentUser) throws Exception;
+    MessageResponse updateNewsById(Integer id, NewsRequest newsRequest, UserDetails currentUser) throws Exception;
 
     MessageResponse activeNewsById(Integer id) throws Exception;
 

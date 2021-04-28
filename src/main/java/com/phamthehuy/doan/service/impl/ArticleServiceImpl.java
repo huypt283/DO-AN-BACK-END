@@ -16,8 +16,8 @@ import java.util.Map;
 
 @Service
 public class ArticleServiceImpl {
-    @Autowired
-    private StaffArticleRepository staffArticleRepository;
+//    @Autowired
+//    private StaffArticleRepository staffArticleRepository;
 
     public ArticleResponse convertToArticleResponse(Article article) {
         ArticleResponse articleResponse = new ArticleResponse();
@@ -32,16 +32,16 @@ public class ArticleServiceImpl {
                 articleResponse.setStatus("Đang hiển thị");
         } else articleResponse.setStatus("Chưa duyệt");
 
-        StaffArticle staffArticle = staffArticleRepository.
-                findFirstByArticle_ArticleId(article.getArticleId(), Sort.by("time").descending());
-
-        if (staffArticle != null && article.getDeleted() != null) {
-            Map<String, String> moderator = new HashMap<>();
-            moderator.put("staffId", staffArticle.getStaff().getStaffId() + "");
-            moderator.put("name", staffArticle.getStaff().getName());
-            moderator.put("email", staffArticle.getStaff().getEmail());
-            articleResponse.setModerator(moderator);
-        }
+//        StaffArticle staffArticle = staffArticleRepository.
+//                findFirstByArticle_ArticleId(article.getArticleId(), Sort.by("time").descending());
+//
+//        if (staffArticle != null && article.getDeleted() != null) {
+//            Map<String, String> moderator = new HashMap<>();
+//            moderator.put("staffId", staffArticle.getStaff().getStaffId() + "");
+//            moderator.put("name", staffArticle.getStaff().getName());
+//            moderator.put("email", staffArticle.getStaff().getEmail());
+//            articleResponse.setModerator(moderator);
+//        }
 
         Map<String, String> customer = new HashMap<>();
         customer.put("customerId", article.getCustomer().getCustomerId() + "");

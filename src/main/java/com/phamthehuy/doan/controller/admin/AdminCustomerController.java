@@ -23,7 +23,7 @@ public class AdminCustomerController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> detailCustomer(@PathVariable Integer id) throws Exception {
-        return new ResponseEntity<>(customerService.findCustomerById(id), HttpStatus.OK);
+        return new ResponseEntity<>(customerService.getCustomerById(id), HttpStatus.OK);
     }
 
 //    @PutMapping("/{id}")

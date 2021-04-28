@@ -37,7 +37,7 @@ public class ArticleController {
     }
 
     @GetMapping("/suggestion")
-    public ResponseEntity<?> getListNewArticle(@RequestParam(value = "page", defaultValue = "1") Integer page,
+    public ResponseEntity<?> getListSuggestionArticle(@RequestParam(value = "page", defaultValue = "1") Integer page,
                                                @RequestParam(value = "limit", defaultValue = "6") Integer limit,
                                                @RequestParam(value = "email", defaultValue = "") String email) throws Exception {
         return new ResponseEntity<>(articleService.getListSuggestionArticle(email, page, limit), HttpStatus.OK);

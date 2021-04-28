@@ -20,10 +20,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -67,15 +64,13 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
     @Override
     public List<ArticleResponse> getListSuggestionArticle(String email, Integer page, Integer limit) throws Exception {
         OffsetBasedPageRequest pageable = new OffsetBasedPageRequest((page - 1) * limit, limit, Sort.by("timeUpdated").descending().and(Sort.by("timeCreated").descending()));
-        List<Article> articles = null;
+        List<Article> articles = new ArrayList<>();
         if (!email.trim().equals("")) {
             Customer customer = customerRepository.findByEmail(email);
             if (customer != null) {
                 Set<FavoriteArticle> favoriteArticles = customer.getFavoriteArticles();
                 if (favoriteArticles != null && favoriteArticles.size() > 0) {
-                    articles = articleRepository.findByWardInAndDeletedFalseAndBlockedFalse(favoriteArticles.stream()
-                            .map(favoriteArticle -> favoriteArticle.getArticle().getWard())
-                            .collect(Collectors.toSet()), pageable);
+                    articles = articleRepository.suggestion(favoriteArticles);
                 }
             }
         }

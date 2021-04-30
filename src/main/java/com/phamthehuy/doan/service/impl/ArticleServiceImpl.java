@@ -1,18 +1,17 @@
 package com.phamthehuy.doan.service.impl;
 
 import com.phamthehuy.doan.entity.Article;
+import com.phamthehuy.doan.entity.FavoriteArticle;
 import com.phamthehuy.doan.entity.StaffArticle;
 import com.phamthehuy.doan.model.response.ArticleResponse;
 import com.phamthehuy.doan.repository.StaffArticleRepository;
+import io.jsonwebtoken.lang.Collections;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class ArticleServiceImpl {
@@ -50,9 +49,7 @@ public class ArticleServiceImpl {
         customer.put("phone", article.getCustomer().getPhone());
         articleResponse.setCustomer(customer);
 
-//        if (article.getDeleted() != null && !article.getDeleted()) {
         articleResponse.setExpDate(article.getExpTime());
-//        }
 
         articleResponse.setLastUpdateTime(article.getTimeUpdated() != null ? article.getTimeUpdated() : article.getTimeCreated());
         List<String> images = Arrays.asList(article.getImages().split(",@"));
@@ -68,6 +65,20 @@ public class ArticleServiceImpl {
         location.put("homeAddress", article.getAddress().split(",")[0]);
         location.put("address", article.getAddress());
         articleResponse.setLocation(location);
+
+        return articleResponse;
+    }
+
+    public ArticleResponse convertToArticleResponseWithFavorite(Article article, List<FavoriteArticle> favoriteArticles) {
+        ArticleResponse articleResponse = this.convertToArticleResponse(article);
+
+        final Integer articleId = article.getArticleId();
+        if (!Collections.isEmpty(favoriteArticles)) {
+            Optional<FavoriteArticle> favoriteArticle = favoriteArticles.stream().filter(fa -> fa.getArticle().getArticleId().equals(articleId)).findFirst();
+            if (favoriteArticle.isPresent()) {
+                articleResponse.setFavorite(true);
+            }
+        }
 
         return articleResponse;
     }

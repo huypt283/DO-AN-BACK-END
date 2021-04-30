@@ -56,4 +56,6 @@ public class ArticleResponse {
     private Boolean deleted;
 
     private Boolean blocked;
+
+    private Boolean favorite = false;
 }

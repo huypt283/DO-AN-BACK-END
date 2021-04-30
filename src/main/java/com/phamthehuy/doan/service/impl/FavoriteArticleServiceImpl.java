@@ -31,10 +31,21 @@ public class FavoriteArticleServiceImpl implements FavoriteArticleService {
     private ArticleServiceImpl articleService;
 
     @Override
+    public List<FavoriteArticle> listFavoriteArticle(String email) throws Exception {
+        if (!email.equals("") && email.contains("@"))
+            return favoriteArticleRepository.findByCustomer_Email(email);
+        return null;
+    }
+
+    @Override
     public List<ArticleResponse> listFavoriteArticle(UserDetails currentUser) throws Exception {
         List<FavoriteArticle> favoriteArticles = favoriteArticleRepository.findByCustomer_Email(currentUser.getUsername());
         return favoriteArticles.stream()
-                .map(favoriteArticle -> articleService.convertToArticleResponse(favoriteArticle.getArticle())).collect(Collectors.toList());
+                .map(favoriteArticle -> {
+                    ArticleResponse articleResponse = articleService.convertToArticleResponse(favoriteArticle.getArticle());
+                    articleResponse.setFavorite(true);
+                    return articleResponse;
+                }).collect(Collectors.toList());
     }
 
     @Override

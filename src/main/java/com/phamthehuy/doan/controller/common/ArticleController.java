@@ -26,20 +26,22 @@ public class ArticleController {
                                             @RequestParam(required = false) Integer minPrice,
                                             @RequestParam(required = false) Integer maxPrice,
                                             @RequestParam(required = false) Integer minAcreage,
-                                            @RequestParam(required = false) Integer maxAcreage) throws Exception {
+                                            @RequestParam(required = false) Integer maxAcreage,
+                                            @RequestParam(value = "email", defaultValue = "") String email) throws Exception {
         return new ResponseEntity<>(articleService.listArticleNotHidden(roomType != null ? roomType.toString() : null, title,
-                ward, district, city, minPrice, maxPrice, minAcreage, maxAcreage), HttpStatus.OK);
+                ward, district, city, minPrice, maxPrice, minAcreage, maxAcreage, email), HttpStatus.OK);
     }
 
     @GetMapping("/{slug}")
-    public ResponseEntity<?> getArticleBySlug(@PathVariable String slug) throws Exception {
-        return new ResponseEntity<>(articleService.getArticleBySlug(slug), HttpStatus.OK);
+    public ResponseEntity<?> getArticleBySlug(@PathVariable String slug,
+                                              @RequestParam(value = "email", defaultValue = "") String email) throws Exception {
+        return new ResponseEntity<>(articleService.getArticleBySlug(slug, email), HttpStatus.OK);
     }
 
     @GetMapping("/suggestion")
     public ResponseEntity<?> getListSuggestionArticle(@RequestParam(value = "page", defaultValue = "1") Integer page,
-                                               @RequestParam(value = "limit", defaultValue = "6") Integer limit,
-                                               @RequestParam(value = "email", defaultValue = "") String email) throws Exception {
+                                                      @RequestParam(value = "limit", defaultValue = "6") Integer limit,
+                                                      @RequestParam(value = "email", defaultValue = "") String email) throws Exception {
         return new ResponseEntity<>(articleService.getListSuggestionArticle(email, page, limit), HttpStatus.OK);
     }
 }

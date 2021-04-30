@@ -13,9 +13,9 @@ public interface CustomerArticleService {
     List<ArticleResponse> listArticleNotHidden(String roomType, String title,
                                                Integer ward, Integer district, Integer city,
                                                Integer minPrice, Integer maxPrice,
-                                               Integer minAcreage, Integer maxAcreage) throws Exception;
+                                               Integer minAcreage, Integer maxAcreage, String email) throws Exception;
 
-    ArticleResponse getArticleBySlug(String slug) throws Exception;
+    ArticleResponse getArticleBySlug(String slug, String email) throws Exception;
 
     List<ArticleResponse> getListSuggestionArticle(String email, Integer page, Integer limit) throws Exception;
 

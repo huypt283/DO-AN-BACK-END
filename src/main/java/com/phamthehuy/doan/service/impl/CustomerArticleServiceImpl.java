@@ -11,10 +11,12 @@ import com.phamthehuy.doan.model.response.ArticleResponse;
 import com.phamthehuy.doan.model.response.MessageResponse;
 import com.phamthehuy.doan.repository.*;
 import com.phamthehuy.doan.service.CustomerArticleService;
+import com.phamthehuy.doan.service.FavoriteArticleService;
 import com.phamthehuy.doan.util.SlugUtil;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,8 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
     @Autowired
     private ArticleServiceImpl articleService;
     @Autowired
+    private FavoriteArticleService favoriteArticleService;
+    @Autowired
     private ArticleRepository articleRepository;
     @Autowired
     private RoomateRepository roomateRepository;
@@ -40,17 +44,31 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
     @Autowired
     private TransactionRepository transactionRepository;
 
+    @Value("${price.dayVip}")
+    private Integer dayVip;
+    @Value("${price.dayNotVip}")
+    private Integer dayNotVip;
+    @Value("${price.weekVip}")
+    private Integer weekVip;
+    @Value("${price.weekNotVip}")
+    private Integer weekNotVip;
+    @Value("${price.monthVip}")
+    private Integer monthVip;
+    @Value("${price.monthNotVip}")
+    private Integer monthNotVip;
+
     @Override
     public List<ArticleResponse> listArticleNotHidden(String roomType, String title,
                                                       Integer ward, Integer district, Integer city,
                                                       Integer minPrice, Integer maxPrice,
-                                                      Integer minAcreage, Integer maxAcreage) throws Exception {
+                                                      Integer minAcreage, Integer maxAcreage, String email) throws Exception {
         List<Article> articles = articleRepository.findCustomNotHidden(roomType, title, ward, district, city, minPrice, maxPrice, minAcreage, maxAcreage);
-        return articles.stream().map(articleService::convertToArticleResponse).collect(Collectors.toList());
+        final List<FavoriteArticle> favoriteArticles = favoriteArticleService.listFavoriteArticle(email);
+        return articles.stream().map(article -> articleService.convertToArticleResponseWithFavorite(article, favoriteArticles)).collect(Collectors.toList());
     }
 
     @Override
-    public ArticleResponse getArticleBySlug(String slug) throws Exception {
+    public ArticleResponse getArticleBySlug(String slug, String email) throws Exception {
         Article article = articleRepository.findBySlug(slug);
         if (article == null) {
             throw new NotFoundException("Bài viết không tồn tại");
@@ -58,14 +76,15 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
         if (article.getDeleted() == null || article.getDeleted() || article.getBlocked()) {
             throw new NotFoundException("Bài viết bị ẩn hoặc chưa được duyệt");
         }
-        return articleService.convertToArticleResponse(article);
+        final List<FavoriteArticle> favoriteArticles = favoriteArticleService.listFavoriteArticle(email);
+        return articleService.convertToArticleResponseWithFavorite(article, favoriteArticles);
     }
 
     @Override
     public List<ArticleResponse> getListSuggestionArticle(String email, Integer page, Integer limit) throws Exception {
         OffsetBasedPageRequest pageable = new OffsetBasedPageRequest((page - 1) * limit, limit, Sort.by("timeUpdated").descending().and(Sort.by("timeCreated").descending()));
         List<Article> articles = new ArrayList<>();
-        if (!email.trim().equals("")) {
+        if (!email.equals("") && email.contains("@")) {
             Customer customer = customerRepository.findByEmail(email);
             if (customer != null) {
                 Set<FavoriteArticle> favoriteArticles = customer.getFavoriteArticles();
@@ -128,9 +147,9 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
 
         //kiểm tra và trừ tiền
         Integer money = 0;
-        int priceDay = articleInsertRequest.getVip() ? 10000 : 2000;
-        int priceWeek = articleInsertRequest.getVip() ? 60000 : 12000;
-        int priceMonth = articleInsertRequest.getVip() ? 200000 : 40000;
+        int priceDay = articleInsertRequest.getVip() ? dayVip : dayNotVip;
+        int priceWeek = articleInsertRequest.getVip() ? weekVip : weekNotVip;
+        int priceMonth = articleInsertRequest.getVip() ? monthVip : monthNotVip;
 
         Integer times = articleInsertRequest.getTimes(), days = 0;
         String timeType = articleInsertRequest.getTimeType();
@@ -271,9 +290,9 @@ public class CustomerArticleServiceImpl implements CustomerArticleService {
 
         //kiểm tra và trừ tiền
         Integer money = 0, days = 0;
-        int priceDay = article.getVip() ? 10000 : 2000;
-        int priceWeek = article.getVip() ? 60000 : 12000;
-        int priceMonth = article.getVip() ? 200000 : 40000;
+        int priceDay = article.getVip() ? dayVip : dayNotVip;
+        int priceWeek = article.getVip() ? weekVip : weekNotVip;
+        int priceMonth = article.getVip() ? monthVip : monthNotVip;
         String timeType = extendArticleExpRequest.getTimeType();
         Integer times = extendArticleExpRequest.getTimes();
         switch (timeType) {

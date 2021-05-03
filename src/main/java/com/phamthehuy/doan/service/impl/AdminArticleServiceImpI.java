@@ -205,7 +205,7 @@ public class AdminArticleServiceImpI implements AdminArticleService {
 
             mailSender.send(to, title, content, note);
 
-            return new MessageResponse("Duyệt bài thành công");
+            return new MessageResponse("Mở khoá bài đăng thành công");
         } else
             throw new NotFoundException("Bài đăng không tồn tại");
     }
@@ -261,7 +261,7 @@ public class AdminArticleServiceImpI implements AdminArticleService {
 
             mailSender.send(to, title, content, note);
 
-            return new MessageResponse("Khoá bài thành công");
+            return new MessageResponse("Khoá bài đăng thành công");
         } else
             throw new NotFoundException("Bài đăng không tồn tại");
     }

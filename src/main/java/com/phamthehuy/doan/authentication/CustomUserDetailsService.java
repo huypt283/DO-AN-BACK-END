@@ -2,6 +2,7 @@ package com.phamthehuy.doan.authentication;
 
 import com.phamthehuy.doan.entity.Customer;
 import com.phamthehuy.doan.entity.Staff;
+import com.phamthehuy.doan.exception.NotFoundException;
 import com.phamthehuy.doan.repository.CustomerRepository;
 import com.phamthehuy.doan.repository.StaffRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,6 @@ public class CustomUserDetailsService implements UserDetailsService {
             }
         }
 
-        throw new UsernameNotFoundException("User not found with the name " + email);
+        throw new NotFoundException("Không tìm thấy tài khoản");
     }
 }

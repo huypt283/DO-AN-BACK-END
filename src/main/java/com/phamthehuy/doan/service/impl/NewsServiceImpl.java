@@ -49,7 +49,7 @@ public class NewsServiceImpl implements NewsService {
         validateNews(news);
 
         if (BooleanUtils.isTrue(news.getDeleted()))
-            throw new NotFoundException("Bài viết này đã bị ẩn");
+            throw new NotFoundException("Tin tức này đã bị ẩn");
 
         return this.convertToOutputDTO(news);
     }
@@ -77,6 +77,8 @@ public class NewsServiceImpl implements NewsService {
         news.setSlug(SlugUtil.makeSlug(newsRequest.getTitle()) + "-" + System.currentTimeMillis());
         news.setStaff(staff);
         news.setTimeUpdated(new Date());
+
+        newsRepository.save(news);
         return new MessageResponse("Thêm tin tức mới thành công");
     }
 
@@ -91,6 +93,8 @@ public class NewsServiceImpl implements NewsService {
         BeanUtils.copyProperties(newsRequest, news);
         news.setStaff(staff);
         news.setTimeUpdated(new Date());
+
+        newsRepository.save(news);
         return new MessageResponse("Cập nhật tin tức thành công");
     }
 

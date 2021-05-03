@@ -59,7 +59,6 @@ public class MailSender {
             }
             javaMailSender.send(mimeMailMessage);
         } catch (Exception e) {
-            e.printStackTrace();
             throw new InternalServerError("Gửi mail thất bại");
         }
     }

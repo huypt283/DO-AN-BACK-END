@@ -3,13 +3,11 @@ package com.phamthehuy.doan.util.auth;
 import com.phamthehuy.doan.exception.UnauthenticatedException;
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 @Service
@@ -74,9 +72,9 @@ public class JwtUtil {
             Boolean authorized = claims.get("authorized", Boolean.class);
             return !"".equals(role) && authorized != null && authorized;
         } catch (SignatureException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException ex) {
-            throw new BadCredentialsException("INVALID_CREDENTIALS", ex);
+            throw new UnauthenticatedException("Xác thực người dùng không hợp lệ. Đăng nhập để thử lại");
         } catch (ExpiredJwtException ex) {
-            throw new UnauthenticatedException("Token hết hạn sử dụng");
+            throw new UnauthenticatedException("Phiên đăng nhập đã hết hạn");
         }
     }
 
@@ -85,15 +83,10 @@ public class JwtUtil {
             Jwts.parser().setSigningKey(rf_secret).parseClaimsJws(refreshToken);
             return true;
         } catch (SignatureException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException ex) {
-            throw new BadCredentialsException("INVALID_CREDENTIALS", ex);
+            throw new UnauthenticatedException("Xác thực người dùng không hợp lệ. Đăng nhập để thử lại");
         } catch (ExpiredJwtException ex) {
-            throw new UnauthenticatedException("Token hết hạn sử dụng");
+            throw new UnauthenticatedException("Phiên đăng nhập đã hết hạn");
         }
-    }
-
-    //return email from token
-    public String getEmailFromToken(String token) {
-        return getClaims(token).getSubject();
     }
 
     public String getEmailFromClaims(Claims claims) {

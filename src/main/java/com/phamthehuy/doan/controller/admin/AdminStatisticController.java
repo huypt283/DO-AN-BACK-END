@@ -6,6 +6,7 @@ import com.phamthehuy.doan.model.response.ArticleStatisticResponse;
 import com.phamthehuy.doan.repository.ArticleStatisticRepository;
 import com.phamthehuy.doan.repository.TransactionStatisticRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +25,7 @@ public class AdminStatisticController {
     private TransactionStatisticRepository transactionStatisticRepository;
 
     @GetMapping("/article")
+    @Cacheable(value = "article-statistic")
     public ResponseEntity<?> articleStatistic() {
         List<ArticleStatistic> articleStatistics = articleStatisticRepository.findAll();
         articleStatistics.add(0, new ArticleStatistic(0, "3/2021", 20));
@@ -37,6 +39,7 @@ public class AdminStatisticController {
     }
 
     @GetMapping("/transaction")
+    @Cacheable(value = "transaction-statistic")
     public ResponseEntity<?> transactionStatistic() {
         List<TransactionStatistic> transactionStatistics = transactionStatisticRepository.findAll();
         return new ResponseEntity<>(transactionStatistics, HttpStatus.OK);

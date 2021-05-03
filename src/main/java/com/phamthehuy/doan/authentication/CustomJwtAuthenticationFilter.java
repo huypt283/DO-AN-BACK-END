@@ -1,10 +1,9 @@
 package com.phamthehuy.doan.authentication;
 
+import com.phamthehuy.doan.exception.UnauthenticatedException;
 import com.phamthehuy.doan.util.auth.JwtUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,8 +22,6 @@ import java.io.IOException;
 
 @Component
 public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
     @Autowired
     private JwtUtil jwtTokenUtil;
 
@@ -48,8 +45,12 @@ public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
                     throw new BadCredentialsException("INVALID_CREDENTIALS");
             } else
                 throw new BadCredentialsException("INVALID_CREDENTIALS");
-        } catch (ExpiredJwtException | BadCredentialsException ex) {
-            request.setAttribute("exception", ex);
+        } catch (ExpiredJwtException e) {
+            request.setAttribute("exception",
+                    new UnauthenticatedException("Phiên đăng nhập đã hết hạn"));
+        } catch (Exception ex) {
+            request.setAttribute("exception",
+                    new UnauthenticatedException("Xác thực không hợp lệ. Đăng nhập để thử lại"));
         }
         chain.doFilter(request, response);
     }

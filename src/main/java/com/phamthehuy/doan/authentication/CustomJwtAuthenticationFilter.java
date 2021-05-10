@@ -36,10 +36,9 @@ public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
                     UserDetails userDetails = new User(jwtTokenUtil.getEmailFromClaims(claims),
                             "", jwtTokenUtil.getRolesFromClaims(claims));
 
-                    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
-                    // After setting the Authentication in the context, we specify
-                    // that the current user is authenticated. So it passes the
+                    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
                     SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
                 } else
                     throw new BadCredentialsException("INVALID_CREDENTIALS");

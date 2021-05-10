@@ -72,7 +72,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         customer.setDeleted(false);
         customerRepository.save(customer);
-        return new MessageResponse("Kích hoạt khách hàng thành công");
+        return new MessageResponse("Mở khoá khách hàng thành công");
     }
 
     @Override

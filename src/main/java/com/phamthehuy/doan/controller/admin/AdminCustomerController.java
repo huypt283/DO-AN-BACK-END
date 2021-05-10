@@ -1,13 +1,10 @@
 package com.phamthehuy.doan.controller.admin;
 
-import com.phamthehuy.doan.model.request.CustomerUpdateRequest;
 import com.phamthehuy.doan.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/admin/customers")

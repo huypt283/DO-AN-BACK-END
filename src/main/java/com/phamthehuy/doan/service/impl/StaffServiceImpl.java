@@ -49,6 +49,10 @@ public class StaffServiceImpl implements StaffService {
 
     @Override
     public StaffResponse findStaffById(Integer id) throws Exception {
+        if (id == 1) {
+            throw new NotFoundException("Không tìm thấy tài khoản này");
+        }
+
         Staff staff = staffRepository.findByStaffId(id);
         validateStaff(staff);
 
@@ -132,7 +136,7 @@ public class StaffServiceImpl implements StaffService {
 
         staff.setDeleted(false);
         staffRepository.save(staff);
-        return new MessageResponse("Kích hoạt nhân viên thành công");
+        return new MessageResponse("Mở khoá nhân viên thành công");
     }
 
     @Override
